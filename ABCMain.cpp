@@ -167,7 +167,7 @@ void vTerminate( CAbc *pcAbc )
  * @param pcCmd	コマンドチェッククラス
  * @param pcAbc	ABCアルゴリズムを実行するクラスインスタンス
  * @throw CAbcException
- * @author kobayashi
+ * @author kobayashr
  * @since 0.1 2015/07/28
  * @version 0.1
  */
@@ -267,19 +267,27 @@ void vOutputData( CCmdCheck *pcCmd, CAbc *pcAbc )
 	{
 		pcAbc->vOutputGlobalMaxAbcDataConstFuncValue();
 	}
+	else if( pcCmd->iGetOutputFlag() == 5 )
+	{
+		pcAbc->vOutputGlobalMinAbcData();
+	}
 	else if( pcCmd->iGetOutputFlag() == 6 )
 	{
-		pcAbc->vOutputAbcDataLocDist( 0 );
+		pcAbc->vOutputGlobalMinAbcDataConstFuncValue();
 	}
 	else if( pcCmd->iGetOutputFlag() == 7 )
 	{
-		pcAbc->vOutputAbcDataLocDist( 1 );
+		pcAbc->vOutputAbcDataLocDist( 0 );
 	}
 	else if( pcCmd->iGetOutputFlag() == 8 )
 	{
-		pcAbc->vOutputLocalMaxAbcData( 0 );
+		pcAbc->vOutputAbcDataLocDist( 1 );
 	}
 	else if( pcCmd->iGetOutputFlag() == 9 )
+	{
+		pcAbc->vOutputLocalMaxAbcData( 0 );
+	}
+	else if( pcCmd->iGetOutputFlag() == 10 )
 	{
 		pcAbc->vOutputLocalMaxAbcData( 1 );
 	}
