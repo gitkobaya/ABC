@@ -731,9 +731,11 @@ void CAbc::vModified2Abc()
 	{
 //		lfRand = lfNormalRand( lfSigma, 0.0 );
 		lfRand = 2.0*rnd()-1.0;
+		lfRand2 = 2.0*rnd()-1.0;
 		for( j = 0; j < iAbcVectorDimNum; j++ )
 			pplfVelocityData[i][j] = pplfAbcData[i][j];
-		pplfVelocityData[i][h] = pplfAbcData[i][h] + lfRand*( pplfAbcData[i][h] - pplfAbcData[m][h] );
+//		pplfVelocityData[i][h] = pplfAbcData[i][h] + lfRand*( pplfAbcData[i][h] - pplfAbcData[m][h] );
+		pplfVelocityData[i][h] = pplfAbcData[i][h] + lfRand*( pplfAbcData[i][h] - pplfAbcData[m][h] ) + lfRand2*( pplfAbcData[i][h] - pplfLocalMaxAbcData[m][h] );
 	}
 
 	// 各探索点と更新しなかった回数を格納する変数を更新します。
@@ -761,7 +763,7 @@ void CAbc::vModified2Abc()
 			// 適応度の算出
 			lfObjFunc = pflfObjectiveFunction( pplfAbcData[j], iAbcVectorDimNum );
 			if( lfObjFunc >= 0.0 )	lfFitProb = 1.0/( 1.0+lfObjFunc );
-			else			lfFitProb = 1.0+fabs( lfObjFunc );
+			else					lfFitProb = 1.0+fabs( lfObjFunc );
 			lfRes += lfFitProb;
 			plfFit[j] = lfFitProb;
 		}
@@ -792,7 +794,7 @@ void CAbc::vModified2Abc()
 		lfRand2 = 2.0*rnd()-1.0;
 		for( j = 0; j < iAbcVectorDimNum; j++ )
 			pplfVelocityData[c][j] = pplfAbcData[c][j];
-		pplfVelocityData[c][h] = pplfAbcData[c][h] + lfRand*( plfGlobalMinAbcData[h] - pplfAbcData[m][h] );
+		pplfVelocityData[c][h] = pplfAbcData[c][h] + lfRand*( pplfAbcData[c][h] - pplfAbcData[m][h] ) + lfRand2*( pplfAbcData[c][h] - plfGlobalMinAbcData[h] );
 		// 更新点候補を次のように更新します。
 		lfFunc1 = pflfObjectiveFunction( pplfVelocityData[c], iAbcVectorDimNum );
 		lfFunc2 = pflfObjectiveFunction( pplfAbcData[c], iAbcVectorDimNum );
@@ -836,9 +838,7 @@ void CAbc::vModified2Abc()
 		if( lfFunc1 > lfFunc2 )
 		{
 			for( j = 0;j < iAbcVectorDimNum; j++ )
-			{
 				pplfLocalMaxAbcData[i][j] = pplfAbcData[i][j];
-			}
 		}
 	}
 	
@@ -852,18 +852,14 @@ void CAbc::vModified2Abc()
 			iMinLoc = i;
 			lfGlobalMinAbcData = lfObjFunc;
 			for( j = 0; j < iAbcVectorDimNum; j++ )
-			{
 				plfGlobalMinAbcData[j] = pplfAbcData[i][j];
-			}
 		}
 		if( lfGlobalMaxAbcData <= lfObjFunc )
 		{
 			iMinLoc = i;
 			lfGlobalMaxAbcData = lfObjFunc;
 			for( j = 0; j < iAbcVectorDimNum; j++ )
-			{
 				plfGlobalMaxAbcData[j] = pplfAbcData[i][j];
-			}
 		}
 	}
 }
@@ -1078,13 +1074,13 @@ void CAbc::vModifiedAbc( int iUpdateCount )
 	for( i = 0;i < iAbcSearchNum; i++ )
 	{
 		lfObjFunc = pflfObjectiveFunction( pplfAbcData[i], iAbcVectorDimNum );
-		if( lfMin >= lfObjFunc )
+		if( lfGlobalMinAbcData >= lfObjFunc )
 		{
 			iMinLoc = j;
-			lfMin = lfObjFunc;
+			lfGlobalMinAbcData = lfObjFunc;
 			for( j = 0; j < iAbcVectorDimNum; j++ )
 			{
-				plfGlobalMaxAbcData[j] = pplfAbcData[i][j];
+				plfGlobalMinAbcData[j] = pplfAbcData[i][j];
 			}
 			lfFitCurrentBest = lfMin;
 		}
