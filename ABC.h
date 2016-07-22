@@ -190,6 +190,16 @@ public:
 
 	/**
 	 * <PRE>
+	 * 　ABC法改善手法を実行します。
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2015/8/3
+	 * @version 0.1
+	 */
+	void vModified3Abc( int iUpdateCount );
+
+	/**
+	 * <PRE>
 	 * 　人工蜂コロニー最適化法（交叉を導入した手法）を実行します。
 	 *   A Novel Hybrid Crossover based Artificial Bee Colony Algorithm for Optimization Problem International Journal of Computer Applications 2013より
 	 * </PRE>

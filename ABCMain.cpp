@@ -228,6 +228,10 @@ void vStartAbc( CCmdCheck *pcCmd, CAbc *pcAbc, int iLoc )
 	{
 		pcAbc->vModified2Abc();
 	}
+	else if( pcCmd->iGetAbcMethod() == 5 )
+	{
+		pcAbc->vModified3Abc( iLoc );
+	}
 	else
 	{
 	}
