@@ -137,6 +137,18 @@ void vInitialize( CCmdCheck *pcCmd, CAbc *pcAbc )
 		pcAbc->vInitialize( iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount );
 		pcAbc->vSetRange( lfRange );
 	}
+	//　新バージョンその２
+	else if( pcCmd->iGetAbcMethod() == 5 )
+	{
+		pcAbc->vInitialize( iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount );
+		pcAbc->vSetRange( lfRange );
+	}
+	//　Memetic ABC Algorithm
+	else if( pcCmd->iGetAbcMethod() == 6 )
+	{
+		pcAbc->vInitialize( iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount );
+		pcAbc->vSetRange( lfRange );
+	}
 }
 
 /**
@@ -231,6 +243,10 @@ void vStartAbc( CCmdCheck *pcCmd, CAbc *pcAbc, int iLoc )
 	else if( pcCmd->iGetAbcMethod() == 5 )
 	{
 		pcAbc->vModified3Abc( iLoc );
+	}
+	else if( pcCmd->iGetAbcMethod() == 6 )
+	{
+		pcAbc->vMeAbc( iLoc );
 	}
 	else
 	{
