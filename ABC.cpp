@@ -38,6 +38,9 @@ CAbc::CAbc()
 	lfSolveRange = 0.0;
 	lfGlobalMinAbcData = DBL_MAX;
 	lfGlobalMaxAbcData = -DBL_MAX;
+
+	plfXnew1 = NULL;
+	plfXnew2 = NULL;
 }
 
 /**
@@ -168,6 +171,8 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 		plfGlobalMaxAbcData = new double[iAbcVectorDimNum];
 		plfGlobalMinAbcData = new double[iAbcVectorDimNum];
 		plfCrossOverData = new double[iAbcVectorDimNum];
+		plfXnew1 = new double[iAbcVectorDimNum];
+		plfXnew2 = new double[iAbcVectorDimNum];
 
 		for( i= 0;i < iAbcDataNum; i++ )
 		{
@@ -193,6 +198,8 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			plfGlobalMaxAbcData[i] = 0.0;
 			plfGlobalMinAbcData[i] = 0.0;
 			plfCrossOverData[i] = 0.0;
+			plfXnew1[i] = 0.0;
+			plfXnew2[i] = 0.0;
 		}
 	}
 	catch( std::bad_alloc ba )
@@ -270,6 +277,8 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 		plfGlobalMaxAbcData = new double[iAbcVectorDimNum];
 		plfGlobalMinAbcData = new double[iAbcVectorDimNum];
 		plfCrossOverData = new double[iAbcVectorDimNum];
+		plfXnew1 = new double[iAbcVectorDimNum];
+		plfXnew2 = new double[iAbcVectorDimNum];
 
 		for( i= 0;i < iAbcDataNum; i++ )
 		{
@@ -295,6 +304,8 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			plfGlobalMaxAbcData[i] = 0.0;
 			plfGlobalMinAbcData[i] = 0.0;
 			plfCrossOverData[i] = 0.0;
+			plfXnew1[i] = 0.0;
+			plfXnew2[i] = 0.0;
 		}
 	}
 	catch( std::bad_alloc ba )
@@ -1335,6 +1346,9 @@ void CAbc::vMeAbc( int iUpdateCount )
 	double lfA    = -1.2;
 	double lfB    = 1.2;
 	double lfK = 0.0;
+	double lfPr = 0.3;
+	double lfF1 = 0.0;
+	double lfF2 = 0.0;
 
 	// employee bee の動作
 	// 更新点候補を算出します。
@@ -1404,8 +1418,6 @@ void CAbc::vMeAbc( int iUpdateCount )
 		m = mrand() % ( iAbcSearchNum-1 );
 		h = mrand() % ( iAbcVectorDimNum - 1);
 
-		lfSigma = 1.0/(double)iAbcSearchNum;
-//		lfRand = lfNormalRand( lfSigma, 0.0 );
 		lfRand = 2.0*rnd()-1.0;
 		lfRand2 = 2.0*rnd()-1.0;
 		for( j = 0; j < iAbcVectorDimNum; j++ )
@@ -1437,7 +1449,7 @@ void CAbc::vMeAbc( int iUpdateCount )
 			for( k = 0;k < iAbcVectorDimNum; k++ )
 			{
 				lfRand = rnd();
-				pplfAbcData[i][k] = plfGlobalMinAbcData[k] + lfCoe1*lfRand*( plfGlobalMaxAbcData[k]-plfGlobalMinAbcData[k] );
+				pplfAbcData[i][k] = plfGlobalMinAbcData[k] + lfRand*( plfGlobalMaxAbcData[k]-plfGlobalMinAbcData[k] );
 			}
 		}
 		else
@@ -1445,6 +1457,52 @@ void CAbc::vMeAbc( int iUpdateCount )
 			for( k = 0;k < iAbcVectorDimNum; k++ )
 			{
 				pplfAbcData[i][k] = pplfAbcData[i][k];
+			}
+		}
+	}
+
+	// Memetic artificial bee colony Algorithm(Prに関しては0～1の間の適当な値を設定。)
+	while( fabs(lfA-lfB) < 0.00000001 )
+	{
+		lfF1 = rnd()*( lfB-(lfB-lfA)*lfFai );
+		lfF2 = (1.0-rnd())*( lfA+(lfB-lfA)*lfFai );
+
+		for( k = 0;k < iAbcVectorDimNum; k++ )
+		{
+
+			if( rnd() > lfPr )
+			{
+				plfXnew1[k] = plfGlobalMinAbcData[k] + lfF1*(plfGlobalMinAbcData[k]-pplfAbcData[j][k]);
+				plfXnew2[k] = plfGlobalMinAbcData[k] + lfF2*(plfGlobalMinAbcData[k]-pplfAbcData[j][k]);
+			}
+			else
+			{
+				plfXnew1[k] = plfGlobalMinAbcData[k];
+				plfXnew2[k] = plfGlobalMinAbcData[k];
+			}
+		}
+		lfFunc1 = pflfObjectiveFunction( plfXnew1, iAbcVectorDimNum );
+		lfFunc2 = pflfObjectiveFunction( plfXnew2, iAbcVectorDimNum );
+		if( lfFunc1 < lfFunc2 )
+		{
+			lfB = lfF2;
+			if( lfFunc1 < lfGlobalMinAbcData )
+			{
+				for( k = 0;k < iAbcVectorDimNum; k++ )
+				{
+					plfGlobalMinAbcData[k] = plfXnew1[k];
+				}
+			}
+		}
+		else
+		{
+			lfA = lfF1;
+			if( lfFunc2 < lfGlobalMinAbcData )
+			{
+				for( k = 0;k < iAbcVectorDimNum; k++ )
+				{
+					plfGlobalMinAbcData[k] = plfXnew2[k];
+				}
 			}
 		}
 	}

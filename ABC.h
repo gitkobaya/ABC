@@ -200,6 +200,16 @@ public:
 
 	/**
 	 * <PRE>
+	 * 　2013 Memetic search in artificial bee colony algorthimより
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2015/7/28
+	 * @version 0.1
+	 */
+	void vMeAbc( int iUpdateCount );
+
+	/**
+	 * <PRE>
 	 * 　人工蜂コロニー最適化法（交叉を導入した手法）を実行します。
 	 *   A Novel Hybrid Crossover based Artificial Bee Colony Algorithm for Optimization Problem International Journal of Computer Applications 2013より
 	 * </PRE>
@@ -317,36 +327,39 @@ public:
 
 private:
 	int iGenerationNumber;				// 計算回数
-	int iAbcDataNum;				// コロニーの数
+	int iAbcDataNum;					// コロニーの数
 	int iAbcVectorDimNum;				// 蜂の特徴ベクトル
-	int iAbcSearchNum;				// 探索点数
-	int iAbcLimitCount;				// 更新しなかった回数
+	int iAbcSearchNum;					// 探索点数
+	int iAbcLimitCount;					// 更新しなかった回数
 	int iAbcIntervalMinNum;				// 最低反復回数
 	int iAbcUpperSearchNum;				// 探索点上位数
 	double lfConvergenceParam;			// 収束状況パラメータ
-	double lfFitBound;				// 適合度許容限界値
+	double lfFitBound;					// 適合度許容限界値
 	double lfFitAccuracy;				// 適合度評価精度
 	int *piLocalMaxAbcLoc;				// 
 	double **pplfAbcData;				// ABCデータ配列
 	double **pplfNAbcData;				// ABC更新用データ配列
 	double lfGlobalMaxAbcData;			// 大域的最適値
 	double lfGlobalMinAbcData;			// 大域的最小値
-	double *plfGlobalMaxAbcData;			// 大域的最適解を表す粒子のデータ
-	double *plfGlobalMinAbcData;			// 大域的最適解を表す粒子のデータ
+	double *plfGlobalMaxAbcData;		// 大域的最適解を表す粒子のデータ
+	double *plfGlobalMinAbcData;		// 大域的最適解を表す粒子のデータ
 	double *plfLocalMaxAbcData;			// 局所最適解を表す粒子のデータ
 	double lfLocalMaxAbcData;			// 局所最適値
-	double **pplfLocalMaxAbcData;			// 局所最適解を表す粒子ごとの最大値を格納するデータ
-	double *plfLocalMaxObjectiveAbcData;		// 局所最適解を表す粒子のデータ
+	double **pplfLocalMaxAbcData;		// 局所最適解を表す粒子ごとの最大値を格納するデータ
+	double *plfLocalMaxObjectiveAbcData;// 局所最適解を表す粒子のデータ
 	double **pplfVelocityData;			// ABCデータ速度配列
 	double **pplfNVelocityData;			// ABC更新用データ速度配列
-	double *plfFitProb;				// 適合度相対確率
-	double *plfFit;					// 適合度
+	double *plfFitProb;					// 適合度相対確率
+	double *plfFit;						// 適合度
 	int *piNonUpdateCount;				// 更新しない回数
+	int *piTotalNonUpdateCount;			// 更新しない総回数
 	double *plfVelocity;				// ルーレット選択により選択する速度ベクトル
 	double *plfCrossOverData;			// 交叉一時格納用配列
 	double lfSolveRange;				// 出力範囲
-	double lfFitInit;				// 平均評価値
+	double lfFitInit;					// 平均評価値
 	double lfFitCurrentBest;			// 現在の最良値の適応度
+	double *plfXnew1;					// Memetic Algorithm用更新配列
+	double *plfXnew2;					// Memetic Algorithm用更新配列
 };
 
 class CAbcException
