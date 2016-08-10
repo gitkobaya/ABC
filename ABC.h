@@ -320,6 +320,56 @@ public:
 	void vOutputLocalMaxAbcData( int iOutFlag );
 
 	void vSetRange( double lfRange );
+private:
+	/**
+	 * <PRE>
+	 * 　Employ Beeを実行します。
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/8/10
+	 * @version 0.1
+	 */
+	void vEmployBee();
+	
+	/**
+	 * <PRE>
+	 * 　Onlooker Beeを実行します。
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/8/10
+	 * @version 0.1
+	 */
+	void vOnlookerBee();
+	
+	/**
+	 * <PRE>
+	 * 　Scout Beeを実行します。
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/8/10
+	 * @version 0.1
+	 */
+	void vScoutBee();
+
+	/**
+	 * <PRE>
+	 * 　局所最大値、最小値を取得します。
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/8/10
+	 * @version 0.1
+	 */
+	void GetLocalMaxMin();
+
+	/**
+	 * <PRE>
+	 * 　大域的最大値、最小値を取得します。
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/8/10
+	 * @version 0.1
+	 */
+	void GetGlobalMaxMin();
 
 	void swap(double *swap1,double *swap2);
 	void qsort(int start,int end, double *sort );

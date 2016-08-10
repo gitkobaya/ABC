@@ -64,22 +64,28 @@ public:
 	int iGetAbcMethod();
 	int iGetOutputFlag();
 	double lfGetRange();
+	int iGetCrossOverNum();
+	double lfGetAlpha();
+	double lfGetBeta();
 
 private:
 	int iGenerationNumber;		// 計算回数
-	int iAbcDataNum;			// 粒子群の数
+	int iAbcDataNum;		// 粒子群の数
 	int iAbcVectorDimNum;		// 各粒子群の特徴ベクトル
-	int iAbcMethod;				// 粒子群最適化法の手法設定
-	char* pcFuncName;			// 使用する関数用フラグ
-	int iOutputFlag;			// 結果出力用フラグ
+	int iAbcMethod;			// 粒子群最適化法の手法設定
+	char* pcFuncName;		// 使用する関数用フラグ
+	int iOutputFlag;		// 結果出力用フラグ
 	int iIntervalMinNum;		// 最低反復回数
-	int iAbcSearchNum;			// employ beeの総数
-	int iAbcLimitCount;			// scout bee制御変数
+	int iAbcSearchNum;		// employ beeの総数
+	int iAbcLimitCount;		// scout bee制御変数
 	int iAbcUpperSearchNum;		// 探索点上位数
 	double lfConvergenceParam;	// 解への収束状況パラメータ
-	double lfFitBound;			// 適合度許容限界値
+	double lfFitBound;		// 適合度許容限界値
 	double lfFitAccuracy;		// 適合度の収束精度
-	double lfRange;				// 解の探索範囲
+	double lfRange;			// 解の探索範囲
+	int iCrossOverNum;		// 交叉回数
+	double lfAlpha;			// UNDXパラメータのα
+	double lfBeta;			// UNDXパラメータのβ
 };
 
 class CCmdCheckException

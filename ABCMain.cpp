@@ -97,8 +97,11 @@ void vInitialize( CCmdCheck *pcCmd, CAbc *pcAbc )
 	double lfFitBound;
 	double lfFitAccuracy;
 	double lfRange;
+	int iCrossOverNum;
+	double lfAlpha;
+	double lfBeta;
 	
-	printf("start initialization\n ");
+//	printf("start initialization\n ");
 	iGenerationNumber	= pcCmd->iGetGenerationNumber();
 	iIntervalMinNum		= pcCmd->iGetIntervalMinNum();
 	iAbcDataNum			= pcCmd->iGetAbcDataNum();
@@ -109,15 +112,18 @@ void vInitialize( CCmdCheck *pcCmd, CAbc *pcAbc )
 	lfConvergenceParam	= pcCmd->lfGetConvergenceParam();
 	lfFitBound			= pcCmd->lfGetFitBound();
 	lfFitAccuracy		= pcCmd->lfGetFitAccuracy();
-	lfRange				= pcCmd->lfGetRange();
+	lfRange			= pcCmd->lfGetRange();
+	iCorssOverNum		= pcCmd->iGetCrossOverNum();
+	lfAlpha			= pcCmd->lfGetAlpha();
+	lfBeta			= pcCmd->lfGetBeta();
 
-	// オリジナルArtificial Bee Colony Method
+	// オリジナルArtificial Bee Colony Method(2005)
 	if( pcCmd->iGetAbcMethod() == 1 )
 	{
-		printf("start initialization\n ");
+//		printf("start initialization\n ");
 		pcAbc->vInitialize( iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount );
 		pcAbc->vSetRange( lfRange );
-		printf("finish initialization\n ");
+//		printf("finish initialization\n ");
 	}
 	// 変形Artificial Bee Colony Method (2011)
 	else if( pcCmd->iGetAbcMethod() == 2 )
@@ -143,10 +149,16 @@ void vInitialize( CCmdCheck *pcCmd, CAbc *pcAbc )
 		pcAbc->vInitialize( iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount );
 		pcAbc->vSetRange( lfRange );
 	}
-	//　Memetic ABC Algorithm
+	//　Memetic ABC Algorithm(2013)
 	else if( pcCmd->iGetAbcMethod() == 6 )
 	{
 		pcAbc->vInitialize( iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount );
+		pcAbc->vSetRange( lfRange );
+	}
+	// UNDXを混ぜたハイブリッドABC法(提案手法)
+	else if( pcCmd->iGetAbcMethod() == 7 )
+	{
+		pcAbc->vInitialize( iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iCrossOverNum, lfAlpha, lfBeta );
 		pcAbc->vSetRange( lfRange );
 	}
 }
@@ -175,19 +187,40 @@ void vTerminate( CAbc *pcAbc )
  *<PRE>
  *  目的関数を設定します。
  *  ver 0.1 初版
+ *  ver 0.2 2016/08/10 ベンチマーク関数追加
  *</PRE>
  * @param pcCmd	コマンドチェッククラス
  * @param pcAbc	ABCアルゴリズムを実行するクラスインスタンス
  * @throw CAbcException
  * @author kobayashr
- * @since 0.1 2015/07/28
- * @version 0.1
+ * @since 0.1 2015/07/27
+ * @version 0.2
  */
 void vSetObjectiveFunction( CCmdCheck *pcCmd, CAbc *pcAbc )
 {
 	if( strcmp(pcCmd->pcGetFuncName(), "sphere" ) == 0 )
 	{
 		pcAbc->vSetConstraintFunction( lfSphere );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "hyper-ellipsoid" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfHyperEllipsoid );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "axis-parallel-hyper-ellipsoid" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfAxisParallelHyperEllipsoid );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "rotated-hyper-ellipsoid" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfRotatedHyperEllipsoid );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "moved-axis-parallel-hyper-ellipsoid" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfMovedAxisParallelHyperEllipsoid );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "sum-of-different-power" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfSumOfDifferentPower );
 	}
 	else if( strcmp(pcCmd->pcGetFuncName(), "rosenbrock" ) == 0 )
 	{
@@ -201,9 +234,49 @@ void vSetObjectiveFunction( CCmdCheck *pcCmd, CAbc *pcAbc )
 	{
 		pcAbc->vSetConstraintFunction( lfGriewank );
 	}
-	else if( strcmp(pcCmd->pcGetFuncName(), "5thDeJongs" ) == 0 )
+	else if( strcmp(pcCmd->pcGetFuncName(), "3rd-de-jongs" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lf3rdDeJongsFunc );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "modified-3rd-de-jongs" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfModified3rdDeJongsFunc );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "4th-de-jongs" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lf4thDeJongsFunc );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "modified-4th-de-jongs" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfModified4thDeJongsFunc );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "5th-de-jongs" ) == 0 )
 	{
 		pcAbc->vSetConstraintFunction( lf5thDeJongsFunc );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "Ackley" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfAckley );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "Branins" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfBraninsRCos );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "Schwefel" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfSchwefel );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "katsuura" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfKatsuura );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "langermann" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfLangermann );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "Shubert" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfShubert );
 	}
 	else
 	{
@@ -247,6 +320,10 @@ void vStartAbc( CCmdCheck *pcCmd, CAbc *pcAbc, int iLoc )
 	else if( pcCmd->iGetAbcMethod() == 6 )
 	{
 		pcAbc->vMeAbc( iLoc );
+	}
+	else if( pcCmd->iGetAbcMethod() == 7 )
+	{
+		pcAbc->vUndxAbc();
 	}
 	else
 	{

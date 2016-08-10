@@ -8,18 +8,21 @@
 CCmdCheck::CCmdCheck()
 {
 	iGenerationNumber = 0;		// 計算回数
-	iAbcDataNum = 0;			// 粒子群の数
+	iAbcDataNum = 0;		// 粒子群の数
 	iAbcVectorDimNum = 0;		// 各粒子群の特徴ベクトル
-	iAbcMethod = 0;				// 粒子群最適化法の手法設定
-	pcFuncName = NULL;			// 使用する関数用フラグ
-	iOutputFlag = 0;			// 結果出力用フラグ
+	iAbcMethod = 0;			// 粒子群最適化法の手法設定
+	pcFuncName = NULL;		// 使用する関数用フラグ
+	iOutputFlag = 0;		// 結果出力用フラグ
 	iIntervalMinNum = 0;		// 最低反復回数
-	iAbcSearchNum = 0;			// employ beeの総数
-	iAbcLimitCount = 0;			// scout bee制御変数
+	iAbcSearchNum = 0;		// employ beeの総数
+	iAbcLimitCount = 0;		// scout bee制御変数
 	iAbcUpperSearchNum = 0;		// 探索点上位数
 	lfConvergenceParam = 0.0;	// 解への収束状況パラメータ
-	lfFitBound = 0.0;			// 適合度許容限界値
+	lfFitBound = 0.0;		// 適合度許容限界値
 	lfFitAccuracy = 0.0;		// 適合度の収束精度
+	lfAlpha = 0.0;			// Undxのα
+	lfBeta = 0.0;			// Undxのβ
+	iCrossOverNum = 0;		// 交叉回数
 }
 
 CCmdCheck::~CCmdCheck()
@@ -174,6 +177,30 @@ long CCmdCheck::lCommandCheck( int argc, char* argv[] )
 			iOutputFlag = atoi( argv[i+1] );
 			i++;
 		}
+		/* 交叉回数 */
+		else if( strcmp( argv[i], "-cr" ) == 0 )
+		{
+			lRet = lCommandErrorCheck( argv[i] );
+			if( lRet != 0 ) return lRet;
+			iCrossOverNum = atoi( argv[i+1] );
+			i++;
+		}
+		/* Undxのパラメータα */
+		else if( strcmp( argv[i], "-alpha" ) == 0 )
+		{
+			lRet = lCommandErrorCheck( argv[i] );
+			if( lRet != 0 ) return lRet;
+			lfAlpha = atof( argv[i+1] );
+			i++;
+		}
+		/* Undxのパラメータβ */
+		else if( strcmp( argv[i], "-beta" ) == 0 )
+		{
+			lRet = lCommandErrorCheck( argv[i] );
+			if( lRet != 0 ) return lRet;
+			lfBeta = atof( argv[i+1] );
+			i++;
+		}
 		else
 		{
 			lRet = CCMD_ERROR_INVALID_DATA;
@@ -192,7 +219,7 @@ long CCmdCheck::lCommandCheck( int argc, char* argv[] )
  * @param argc
  * @param argv
  * @return 0
- *		  -1
+ *	  -1
  *        -2
  * @author kobayashi
  * @since 2013/1/1
@@ -213,8 +240,10 @@ long CCmdCheck::lCommandErrorCheck( char *argv )
 		( strcmp( argv, "-cp" ) == 0 ) ||
 		( strcmp( argv, "-abcm" ) == 0 ) ||
 		( strcmp( argv, "-f" ) == 0 ) ||
-		( strcmp( argv, "-r" ) == 0 ) ||
-		( strcmp( argv, "-out" ) == 0 ))
+		( strcmp( argv, "-out" ) == 0 ) ||
+		( strcmp( argv, "-cr" ) == 0 ) ||
+		( strcmp( argv, "-alpha" ) == 0 ) ||
+		( strcmp( argv, "-beta" ) == 0 ))
 	{
 		lRet = 0;
 	}
@@ -251,6 +280,9 @@ void CCmdCheck::vHelp()
 	printf("-abcm ABC法の手法設定\n");
 	printf("-f 目的関数の設定\n");
 	printf("-r 目的関数の解探索範囲\n");
+	printf("-cr 交叉回数\n");
+	printf("-alpha Undxのα\n");
+	printf("-beta Undxのβ\n");
 	printf("-out 結果出力\n");
 }
 
@@ -322,6 +354,21 @@ int CCmdCheck::iGetOutputFlag()
 double CCmdCheck::lfGetRange()
 {
 	return lfRange;
+}
+
+int CCmdCheck::iGetCrossOverNum()
+{
+	return iCrossOverNum;
+}
+
+double CCmdCheck::lfGetAlpha()
+{
+	return lfAlpha;
+}
+
+double CCmdCheck::lfGetBeta()
+{
+	return lfBeta;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
