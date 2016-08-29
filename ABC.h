@@ -1,6 +1,9 @@
 #ifndef _ABC_H_
 #define _ABC_H_
 
+#include"CRealCodedGa.h"
+#include"CUndx.h"
+#include"CRex.h"
 #include<string>
 
 const int ABC_SUCCESS = 0;
@@ -104,6 +107,74 @@ public:
 	 * @version 0.1
 	 */
 	void vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSearchNum, int iLimitCountData );
+
+	/**
+ 	* <PRE>
+ 	* 　人口蜂コロニーの初期化を実行します。
+ 	* </PRE>
+ 	* @param iGenCount      	 計算回数
+ 	* @param iGenNum        	 コロニー数
+ 	* @param iGenVectorDim  	 探索点の次元数
+ 	* @param iSearchNum  　 	 探索点の数
+ 	* @param iLimitCountData	 更新しなかった回数
+ 	* @param iCrossOverNumData	 交叉回数
+ 	* @param lfAlpha		 UNDXにおけるAlpha
+ 	* @param lfBeta			 UNDXにおけるBeta
+ 	* @throw AbcException
+ 	* @author kobayashi
+ 	* @since 2015/8/12
+ 	* @version 0.1
+ 	*/
+	void vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSearchNum, int iLimitCountData, int iCrossOverNumData, double lfAlpha, double lfBeta );
+
+	/**
+	 * <PRE>
+	 * 　人口蜂コロニーの初期化を実行します。
+	 * </PRE>
+	 * @param iGenCount       計算回数
+	 * @param iGenNum         コロニー数
+	 * @param iGenVectorDim   探索点の次元数
+	 * @param iSearchNum  　  探索点の数
+	 * @param iLimitCountData 更新しなかった回数
+	 * @param iIntervalMinNum 最低反復回数
+	 * @param iAlphaData      探索点上位数
+	 * @param lfDrData        収束状況判定
+	 * @param lfBoundData     適合度許容限界値
+	 * @param lfAccuracyData  適合度評価精度
+	 * @param iCrossOverNumData	 交叉回数
+	 * @param lfAlpha		 UNDXにおけるAlpha
+	 * @param lfBeta		 UNDXにおけるBeta
+	 * @throw AbcException
+	 * @author kobayashi
+	 * @since 2015/8/19
+	 * @version 0.1
+	 */
+	void vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSearchNum, int iLimitCountData, int iIntervalMinNumData, int iAlphaData, double lfDrData, double lfBoundData, double lfAccuracyData, int iCrossOverNumData, double lfAlphaData, double lfBetaData  );
+
+	/**
+	* <PRE>
+	* 　人口蜂コロニーの初期化を実行します。
+	* </PRE>
+	* @param iGenCount       計算回数
+	* @param iGenNum         コロニー数
+	* @param iGenVectorDim   探索点の次元数
+	* @param iSearchNum  　  探索点の数
+	* @param iLimitCountData 更新しなかった回数
+	* @param iIntervalMinNum 最低反復回数
+	* @param iAlphaData      探索点上位数
+	* @param lfDrData        収束状況判定
+	* @param lfBoundData     適合度許容限界値
+	* @param lfAccuracyData  適合度評価精度
+	* @param iParentNumberData			 交叉回数
+	* @param iChildrenNumber			 REXにおけるAlpha
+	* @param iUpperEvalChildrenNumber	 UNDXにおけるBeta
+	* @param lfLearningRate	 UNDXにおけるBeta
+	* @throw AbcException
+	* @author kobayashi
+	* @since 2016/8/26
+	* @version 0.1
+	*/
+	void vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSearchNum, int iLimitCountData, int iIntervalMinNumData, int iAlphaData, double lfDrData, double lfBoundData, double lfAccuracyData, int iParentNum, int iChildrenNum, int iUpperEvalChildrenNum, double lfLearningRateData  );
 
 	/**
 	 * <PRE>
@@ -220,6 +291,51 @@ public:
 	void vCbAbc();
 
 	/**
+	 * <PRE>
+	 * 　人工蜂コロニー最適化法（交叉を導入した手法）を実行します。
+	 *   完全自作アレンジ
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/8/12
+	 * @version 0.1
+	 */
+	void vUndxAbc();
+	
+	/**
+	 * <PRE>
+	 * 　人工蜂コロニー最適化法（交叉を導入した手法）を実行します。
+	 *   完全自作アレンジ
+	 *   2011の高性能化を導入
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/8/19
+	 * @version 0.1
+	 */
+	void vUndxEnhancedAbc( int iUpdateCount );
+
+	/**
+	 * <PRE>
+	 * 　人工蜂コロニー最適化法（交叉を導入した手法）を実行します。
+	 *   完全自作アレンジ（Emsanble Real Coded CrossOverを用います。）
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/8/26
+	 * @version 0.1
+	 */
+	void vRexAbc();
+
+	/**
+	 * <PRE>
+	 * 　人工蜂コロニー最適化法（交叉を導入した手法）を実行します。
+	 *   完全自作アレンジ（Adaptation Emsanble Real Coded CrossOverを用います。）
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/8/27
+	 * @version 0.1
+	 */
+	void vARexAbc();
+
+	/**
 	  *<PRE>
 	  * コールバック関数の定義です。
 	  *</PRE>
@@ -326,11 +442,75 @@ private:
 	 * 　Employ Beeを実行します。
 	 * </PRE>
 	 * @author kobayashi
-	 * @since 2016/8/10
+	 * @since 2016/8/18
 	 * @version 0.1
 	 */
-	void vEmployBee();
+	void vEmployBeeOrigin();
 	
+	/**
+	 * <PRE>
+	 * 　Employ Beeを実行します。(高精度化バージョン)
+	 *   2011の電子情報通信学会の論文より
+	 *   ver 0.1 
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/8/18
+	 * @version 0.1
+	 */
+	double lfEmployBeeEnhanced( int iUpdateCount );
+
+	/**
+	 * <PRE>
+	 * 　Employ Beeを実行します。(高精度化バージョン)
+	 *   2011の電子情報通信学会の論文より
+	 *   ver 0.1 
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/8/18
+	 * @version 0.1
+	 */
+	double lfEmployBeeBestEnhanced( int iUpdateCount );
+
+	/**
+	 * <PRE>
+	 * 　Employ Beeを実行します。
+	 *   ver 0.1 
+	 *   ver 0.2 NBest版に修正
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/8/10
+	 * @version 0.2
+	 */
+	void vEmployBeeBest();
+	
+	/**
+	 * <PRE>
+	 * 　Employ Beeを実行します。(GBest版)
+	 *   ver 0.1 
+	 *   ver 0.2 GBest版に修正
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/8/10
+	 * @version 0.2
+	 */
+	void vEmployBeeGBest();
+
+	/**
+	 * <PRE>
+	 * 　Employ Beeを実行します。
+	 *   ver 0.1 
+	 *   ver 0.2 2016/08/18 IWCFA(粒子群最適化法の一手法を適用)
+	 * </PRE>
+	 * @param lfK
+	 * @param lfCoe1
+	 * @param lfCoe2
+	 * @param iUpdateCount
+	 * @author kobayashi
+	 * @since 2016/8/10
+	 * @version 0.2
+	 */
+	void vEmployBeeIWCFA( double lfK, double lfCoe1, double lfCoe2, int iUpdateCount );
+
 	/**
 	 * <PRE>
 	 * 　Onlooker Beeを実行します。
@@ -339,17 +519,127 @@ private:
 	 * @since 2016/8/10
 	 * @version 0.1
 	 */
-	void vOnlookerBee();
+	void vOnlookerBeeOrigin();
 	
 	/**
 	 * <PRE>
-	 * 　Scout Beeを実行します。
+	 * 　Onlooker Beeを実行します。(高精度化バージョン)
+	 *   2011の電子情報通信学会の論文より
+	 *   ver 0.1 
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/8/18
+	 * @version 0.1
+	 */
+	void vOnlookerBeeEnhanced( int iUpdateCount, double lfFitJudge );
+
+	/**
+	 * <PRE>
+	 * 　Onlooker Beeを実行します。(高精度化バージョン)
+	 *   2011の電子情報通信学会の論文より
+	 *   ver 0.1 
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/8/18
+	 * @version 0.1
+	 */
+	void vOnlookerBeeBestEnhanced( int iUpdateCount, double lfFitJudge );
+
+	/**
+	 * <PRE>
+	 * Onlooker Beeを実行します。(NBest版)
+	 * ver 0.1
+	 * ver 0.2 NBest版を追加
 	 * </PRE>
 	 * @author kobayashi
 	 * @since 2016/8/10
+	 * @version 0.2
+	 */
+	void vOnlookerBeeBest();
+	
+	/**
+	 * <PRE>
+	 * Onlooker Beeを実行します。(GBest版)
+	 * ver 0.1
+	 * ver 0.2 NBest版を追加
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/8/10
+	 * @version 0.2
+	 */
+	void vOnlookerBeeGBest();
+
+	/**
+	 * <PRE>
+	 * Onlooker Beeを実行します。(IWCFA版)
+	 * ver 0.1
+	 * ver 0.2 IWCFA版を追加
+	 * </PRE>
+	 * @param lfK
+	 * @param lfCoe1
+	 * @param lfCoe2
+	 * @param iUpdateCount
+	 * @author kobayashi
+	 * @since 2016/8/10
+	 * @version 0.2
+	 */
+	void vOnlookerBeeIWCFA( double lfK, double lfCoe1, double lfCoe2, int iUpdateCount );
+
+	/**
+	 * <PRE>
+	 * Scout Beeを実行します。(大本の手法)
+	 * ver 0.1
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/8/10
+	 * @version 0.2
+	 */
+	void vScoutBeeOrigin();
+
+	/**
+	 * <PRE>
+	 * Scout Beeを実行します。
+	 * ver 0.1
+	 * ver 0.2 手法の変更。（粒子群最適化法のような更新手法。論文より）
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/8/10
+	 * @version 0.2
+	 */
+	void vScoutBeeNormal();
+
+	/**
+	 * <PRE>
+	 * Scout Beeを実行します。（完全アレンジ版UNDXを実行する。）
+	 * ver 0.1
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/8/18
 	 * @version 0.1
 	 */
-	void vScoutBee();
+	void vScoutBeeUndx();
+	
+	/**
+	 * <PRE>
+	 * Scout Beeを実行します。（完全アレンジ版REXを実行する。）
+	 * ver 0.1
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/8/26
+	 * @version 0.1
+	 */
+	void vScoutBeeRex();
+
+	/**
+	 * <PRE>
+	 * Scout Beeを実行します。（完全アレンジ版AREXを実行する。）
+	 * ver 0.1
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/8/27
+	 * @version 0.1
+	 */
+	void vScoutBeeARex();
 
 	/**
 	 * <PRE>
@@ -359,7 +649,7 @@ private:
 	 * @since 2016/8/10
 	 * @version 0.1
 	 */
-	void GetLocalMaxMin();
+	void vGetLocalMaxMin();
 
 	/**
 	 * <PRE>
@@ -369,7 +659,7 @@ private:
 	 * @since 2016/8/10
 	 * @version 0.1
 	 */
-	void GetGlobalMaxMin();
+	void vGetGlobalMaxMin();
 
 	void swap(double *swap1,double *swap2);
 	void qsort(int start,int end, double *sort );
@@ -396,6 +686,7 @@ private:
 	double *plfLocalMaxAbcData;			// 局所最適解を表す粒子のデータ
 	double lfLocalMaxAbcData;			// 局所最適値
 	double **pplfLocalMaxAbcData;		// 局所最適解を表す粒子ごとの最大値を格納するデータ
+	double **pplfLocalMinAbcData;		// 局所最適解を表す粒子ごとの最小値を格納するデータ
 	double *plfLocalMaxObjectiveAbcData;// 局所最適解を表す粒子のデータ
 	double **pplfVelocityData;			// ABCデータ速度配列
 	double **pplfNVelocityData;			// ABC更新用データ速度配列
@@ -410,6 +701,15 @@ private:
 	double lfFitCurrentBest;			// 現在の最良値の適応度
 	double *plfXnew1;					// Memetic Algorithm用更新配列
 	double *plfXnew2;					// Memetic Algorithm用更新配列
+	CUndx *pcUndx;					// UNDX用のインスタンス
+	int iCrossOverNum;				// 交叉回数
+	double lfAlpha;					// UNDX用第一親決定用α
+	double lfBeta;					// UNDX用第二親決定用β
+	CRex *pcRex;					// REX用のインスタンス
+	int iParentNumber;				// Rex用選択する親の数
+	int iChildrenNumber;				// Rex用生成する子供の数
+	int iUpperEvalChildrenNumber;			// ARex用生成した子供の上位を選択する数
+	double lfLearningRate;				// ARex用学習率
 };
 
 class CAbcException

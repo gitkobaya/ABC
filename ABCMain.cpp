@@ -100,6 +100,10 @@ void vInitialize( CCmdCheck *pcCmd, CAbc *pcAbc )
 	int iCrossOverNum;
 	double lfAlpha;
 	double lfBeta;
+	int iParentNumber;
+	int iChildrenNumber;
+	int iUpperEvalChildrenNumber;
+	double lfLearningRate;
 	
 //	printf("start initialization\n ");
 	iGenerationNumber	= pcCmd->iGetGenerationNumber();
@@ -113,17 +117,19 @@ void vInitialize( CCmdCheck *pcCmd, CAbc *pcAbc )
 	lfFitBound			= pcCmd->lfGetFitBound();
 	lfFitAccuracy		= pcCmd->lfGetFitAccuracy();
 	lfRange			= pcCmd->lfGetRange();
-	iCorssOverNum		= pcCmd->iGetCrossOverNum();
+	iCrossOverNum		= pcCmd->iGetCrossOverNum();
 	lfAlpha			= pcCmd->lfGetAlpha();
 	lfBeta			= pcCmd->lfGetBeta();
+	iChildrenNumber		= pcCmd->iGetChildrenNum();
+	iParentNumber		= pcCmd->iGetParentNum();
+	iUpperEvalChildrenNumber= pcCmd->iGetUpperEvalChildrenNum();
+	lfLearningRate		= pcCmd->lfGetLearningRate();
 
 	// オリジナルArtificial Bee Colony Method(2005)
 	if( pcCmd->iGetAbcMethod() == 1 )
 	{
-//		printf("start initialization\n ");
 		pcAbc->vInitialize( iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount );
 		pcAbc->vSetRange( lfRange );
-//		printf("finish initialization\n ");
 	}
 	// 変形Artificial Bee Colony Method (2011)
 	else if( pcCmd->iGetAbcMethod() == 2 )
@@ -152,13 +158,32 @@ void vInitialize( CCmdCheck *pcCmd, CAbc *pcAbc )
 	//　Memetic ABC Algorithm(2013)
 	else if( pcCmd->iGetAbcMethod() == 6 )
 	{
-		pcAbc->vInitialize( iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount );
+//		pcAbc->vInitialize( iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount );
+		pcAbc->vInitialize( iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iCrossOverNum, lfAlpha, lfBeta );
 		pcAbc->vSetRange( lfRange );
 	}
 	// UNDXを混ぜたハイブリッドABC法(提案手法)
 	else if( pcCmd->iGetAbcMethod() == 7 )
 	{
 		pcAbc->vInitialize( iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iCrossOverNum, lfAlpha, lfBeta );
+		pcAbc->vSetRange( lfRange );
+	}
+	// UNDXを混ぜたハイブリッドABC法(提案手法2)
+	else if( pcCmd->iGetAbcMethod() == 8 )
+	{
+		pcAbc->vInitialize( iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iIntervalMinNum, iAbcUpperSearchNum, lfConvergenceParam, lfFitBound, lfFitAccuracy, iCrossOverNum, lfAlpha, lfBeta );
+		pcAbc->vSetRange( lfRange );
+	}
+	// REXを混ぜたハイブリッドABC法(提案手法3)
+	else if( pcCmd->iGetAbcMethod() == 9 )
+	{
+		pcAbc->vInitialize( iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iIntervalMinNum, iAbcUpperSearchNum, lfConvergenceParam, lfFitBound, lfFitAccuracy, iParentNumber, iChildrenNumber, iUpperEvalChildrenNumber, lfLearningRate );
+		pcAbc->vSetRange( lfRange );
+	}
+	// AREXを混ぜたハイブリッドABC法(提案手法4)
+	else if( pcCmd->iGetAbcMethod() == 10 )
+	{
+		pcAbc->vInitialize( iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iIntervalMinNum, iAbcUpperSearchNum, lfConvergenceParam, lfFitBound, lfFitAccuracy, iParentNumber, iChildrenNumber, iUpperEvalChildrenNumber, lfLearningRate );
 		pcAbc->vSetRange( lfRange );
 	}
 }
@@ -325,6 +350,18 @@ void vStartAbc( CCmdCheck *pcCmd, CAbc *pcAbc, int iLoc )
 	{
 		pcAbc->vUndxAbc();
 	}
+	else if( pcCmd->iGetAbcMethod() == 8 )
+	{
+		pcAbc->vUndxEnhancedAbc( iLoc );
+	}
+	else if( pcCmd->iGetAbcMethod() == 9 )
+	{
+		pcAbc->vRexAbc();
+	}
+	else if( pcCmd->iGetAbcMethod() == 10 )
+	{
+		pcAbc->vARexAbc();
+	}
 	else
 	{
 	}
@@ -404,5 +441,12 @@ void vOutputData( CCmdCheck *pcCmd, CAbc *pcAbc )
  */
 void vSetRandom( CCmdCheck *pcCmd, CAbc *pcAbc )
 {
-	pcAbc->vSetRandom( pcCmd->lfGetRange() );
+	if( pcCmd->iGetAbcMethod() == 2 || pcCmd->iGetAbcMethod() == 8 )
+	{
+		pcAbc->vSetModifiedRandom( pcCmd->lfGetRange() );
+	}
+	else
+	{
+		pcAbc->vSetRandom( pcCmd->lfGetRange() );
+	}
 }

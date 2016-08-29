@@ -35,6 +35,7 @@ CCmdCheck::~CCmdCheck()
  *  ver 0.1 初版
  *  ver 0.2 オプション等の追加、およびそのほかの修正。
  *  ver 0.3 人工知能用グラフ生成ツール作成のため新たに修正。
+ *  ver 0.4 
  *</PRE>
  * @param argc	コマンドの入力項目数
  * @param argv	入力したコマンドの詳細
@@ -201,6 +202,38 @@ long CCmdCheck::lCommandCheck( int argc, char* argv[] )
 			lfBeta = atof( argv[i+1] );
 			i++;
 		}
+		/* Rexの選択する親の数 */
+		else if( strcmp( argv[i], "-pn" ) == 0 )
+		{
+			lRet = lCommandErrorCheck( argv[i] );
+			if( lRet != 0 ) return lRet;
+			iParentNum = atoi( argv[i+1] );
+			i++;
+		}
+		/* Rexの生成する子供の数 */
+		else if( strcmp( argv[i], "-cn" ) == 0 )
+		{
+			lRet = lCommandErrorCheck( argv[i] );
+			if( lRet != 0 ) return lRet;
+			iChildrenNum = atoi( argv[i+1] );
+			i++;
+		}
+		/* ARexの生成した子供から上位選択する数 */
+		else if( strcmp( argv[i], "-cl" ) == 0 )
+		{
+			lRet = lCommandErrorCheck( argv[i] );
+			if( lRet != 0 ) return lRet;
+			iUpperEvalChildrenNum = atoi( argv[i+1] );
+			i++;
+		}
+		/* ARexのパラメータ学習率 */
+		else if( strcmp( argv[i], "-lr" ) == 0 )
+		{
+			lRet = lCommandErrorCheck( argv[i] );
+			if( lRet != 0 ) return lRet;
+			lfLearningRate = atof( argv[i+1] );
+			i++;
+		}
 		else
 		{
 			lRet = CCMD_ERROR_INVALID_DATA;
@@ -228,22 +261,27 @@ long CCmdCheck::lCommandCheck( int argc, char* argv[] )
 long CCmdCheck::lCommandErrorCheck( char *argv )
 {
 	long lRet = 0L;
-	if( ( strcmp( argv, "-gn" ) == 0 ) ||
-		( strcmp( argv, "-an" ) == 0 ) ||
-		( strcmp( argv, "-vn" ) == 0 ) ||
-		( strcmp( argv, "-sn" ) == 0 )  ||
-		( strcmp( argv, "-cl" ) == 0 )  ||
-		( strcmp( argv, "-usn" ) == 0 )  ||
-		( strcmp( argv, "-fa" ) == 0 )  ||
-		( strcmp( argv, "-fb" ) == 0 )  ||
-		( strcmp( argv, "-imn" ) == 0 ) ||
-		( strcmp( argv, "-cp" ) == 0 ) ||
-		( strcmp( argv, "-abcm" ) == 0 ) ||
-		( strcmp( argv, "-f" ) == 0 ) ||
-		( strcmp( argv, "-out" ) == 0 ) ||
-		( strcmp( argv, "-cr" ) == 0 ) ||
-		( strcmp( argv, "-alpha" ) == 0 ) ||
-		( strcmp( argv, "-beta" ) == 0 ))
+	if( ( strcmp( argv, "-gn" ) == 0 ) 	||
+		( strcmp( argv, "-an" ) == 0 )		||
+		( strcmp( argv, "-vn" ) == 0 )		||
+		( strcmp( argv, "-sn" ) == 0 )  	||
+		( strcmp( argv, "-cl" ) == 0 )  	||
+		( strcmp( argv, "-usn" ) == 0 )		||
+		( strcmp( argv, "-fa" ) == 0 )		||
+		( strcmp( argv, "-fb" ) == 0 )		||
+		( strcmp( argv, "-imn" ) == 0 )		||
+		( strcmp( argv, "-cp" ) == 0 )		||	
+		( strcmp( argv, "-abcm" ) == 0 )	||
+		( strcmp( argv, "-f" ) == 0 )		||
+		( strcmp( argv, "-r" ) == 0 )		||
+		( strcmp( argv, "-out" ) == 0 ) 	||
+		( strcmp( argv, "-cr" ) == 0 )		||
+		( strcmp( argv, "-alpha" ) == 0 )	||
+		( strcmp( argv, "-beta" ) == 0 )	||
+		( strcmp( argv, "-pn" ) == 0 )		||
+		( strcmp( argv, "-cn" ) == 0 )		||
+		( strcmp( argv, "-cl" ) == 0 )		||
+		( strcmp( argv, "-lr" ) == 0 ))
 	{
 		lRet = 0;
 	}
@@ -257,6 +295,8 @@ long CCmdCheck::lCommandErrorCheck( char *argv )
 /**
  *<PRE>
  * 使用方法を表示する。
+ * ver 0.1
+ * ver 0.2 Rexを使用するためのパラメータの追加
  *</PRE>
  * @author kobayashi
  * @since 2015/8/3
@@ -283,6 +323,10 @@ void CCmdCheck::vHelp()
 	printf("-cr 交叉回数\n");
 	printf("-alpha Undxのα\n");
 	printf("-beta Undxのβ\n");
+	printf("-pn Rexの選択する親の数\n");
+	printf("-cn Rexの生成する子供の数\n");
+	printf("-cl ARexの生成した子供のうち上位選択する数\n");
+	printf("-lr ARexの学習率\n");
 	printf("-out 結果出力\n");
 }
 
@@ -369,6 +413,26 @@ double CCmdCheck::lfGetAlpha()
 double CCmdCheck::lfGetBeta()
 {
 	return lfBeta;
+}
+
+double CCmdCheck::lfGetLearningRate()
+{
+	return lfLearningRate;
+}
+
+int CCmdCheck::iGetParentNum()
+{
+	return iParentNum;
+}
+
+int CCmdCheck::iGetChildrenNum()
+{
+	return iChildrenNum;
+}
+
+int CCmdCheck::iGetUpperEvalChildrenNum()
+{
+	return iUpperEvalChildrenNum;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -67,6 +67,10 @@ public:
 	int iGetCrossOverNum();
 	double lfGetAlpha();
 	double lfGetBeta();
+	double lfGetLearningRate();
+	int iGetParentNum();
+	int iGetChildrenNum();
+	int iGetUpperEvalChildrenNum();
 
 private:
 	int iGenerationNumber;		// 計算回数
@@ -86,6 +90,10 @@ private:
 	int iCrossOverNum;		// 交叉回数
 	double lfAlpha;			// UNDXパラメータのα
 	double lfBeta;			// UNDXパラメータのβ
+	double lfLearningRate;
+	int iParentNum;
+	int iChildrenNum;
+	int iUpperEvalChildrenNum;
 };
 
 class CCmdCheckException

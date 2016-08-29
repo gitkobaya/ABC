@@ -555,7 +555,7 @@ double lfSixHumpCamelBack( double *plfX, int iVectorLen )
 	double lfRes = 0.0;
 	if( iVectorLen == 2 )
 		lfRes = ( 4.0-2.1*plfX[0]*plfX[0]+1.0/3.0*plfX[0]*plfX[0]*plfX[0]*plfX[0] )*plfX[0]*plfX[0] + plfX[0]*plfX[1] + 4.0*(plfX[1]*plfX[1]-1.0)*plfX[1]*plfX[1];
-	return -lfRes;
+	return lfRes;
 }
 
 /**
