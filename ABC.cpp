@@ -950,6 +950,10 @@ void CAbc::vSetConstraintFunction( double (*pflfFunction)( double *plfData, int 
 	{
 		pcUndx->vSetConstraintFunction( pflfObjectiveFunction );
 	}
+	if( pcRex != NULL )
+	{
+		pcRex->vSetConstraintFunction( pflfObjectiveFunction );
+	}
 }
 
 /**
@@ -967,6 +971,10 @@ void CAbc::vReleaseCallConstraintFunction()
 	if( pcUndx != NULL )
 	{
 		pcUndx->vReleaseCallbackConstraintFunction();
+	}
+	if( pcRex != NULL )
+	{
+		pcRex->vReleaseCallbackConstraintFunction();
 	}
 }
 
@@ -2460,6 +2468,7 @@ void CAbc::vScoutBeeRex()
 			pcRex->vSetGenData(pplfAbcData );
 			pcRex->vRex();
 			pcRex->vGetGenData(pplfAbcData );
+			piNonUpdateCount[i] = 0;
 		}
 		else
 		{
@@ -2490,6 +2499,7 @@ void CAbc::vScoutBeeARex()
 		if( piNonUpdateCount[i] > iAbcLimitCount )
 		{
 			// 交叉を実行します。ここでUNDXを実行します。（１回分のみ。）
+			printf("AREX開始\n");
 			pcRex->vSetGenData(pplfAbcData );
 			pcRex->vARex();
 			pcRex->vGetGenData(pplfAbcData );
