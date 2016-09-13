@@ -54,6 +54,7 @@ public:
 	 * @version 0.1
 	 */
 	void vOutputCurrentChildren( double **pplfChildrenData );
+
 	/**
 	 * <PRE>
 	 * 　遺伝子に値を設定します。
@@ -77,7 +78,6 @@ public:
 	 * @version 0.1
 	 */
 	void vGetGenData( double** pplfGenData );
-
 
 private:
 	/**
@@ -122,6 +122,7 @@ private:
 	double lfLavg;
 	double lfLearningRate;
 	double lfAlpha;
+	int	   *piParentLoc;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

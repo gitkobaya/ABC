@@ -7,7 +7,7 @@
 
 #include"mseq.h"
 #include"ABC.h"
-#include"constdata.h"
+//#include"constdata.h"
 #include"cdfrand.h"
 
 /**
@@ -2499,7 +2499,7 @@ void CAbc::vScoutBeeARex()
 		if( piNonUpdateCount[i] > iAbcLimitCount )
 		{
 			// 交叉を実行します。ここでUNDXを実行します。（１回分のみ。）
-			printf("AREX開始\n");
+//			printf("AREX開始\n");
 			pcRex->vSetGenData(pplfAbcData );
 			pcRex->vARex();
 			pcRex->vGetGenData(pplfAbcData );

@@ -1,6 +1,8 @@
 #ifndef _CDFRAND_H_
 #define _CDFRAND_H_
 
+const double pi = 3.1415926535897932846264;
+
 ///////////////////////////////////////////////////////////////////////////
 /////³‹K—”
 extern double grand(double sigma,double mean);

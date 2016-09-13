@@ -1,6 +1,6 @@
 #include<cmath>
 #include<ctime>
-#include"constdata.h"
+//#include"constdata.h"
 #include"mseq.h"
 #include"cdfrand.h"
 

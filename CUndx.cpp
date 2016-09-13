@@ -186,10 +186,10 @@ void CUndx::vImplement()
 			pplfGens[i2][j] = pplfChildren[i2ndGenLoc][j];
 		}
 		// 一時的に保持していた子の集合を削除します。
-		for(i = 0;i < iChildrenNumber; i++ )
-		{
-			memset( pplfChildren[i], 0, iGenVector*sizeof(double) );
-		}
+//		for(i = 0;i < iChildrenNumber; i++ )
+//		{
+//			memset( pplfChildren[i], 0, iGenVector*sizeof(double) );
+//		}
 	}
 	catch( ... )
 	{
@@ -273,79 +273,56 @@ void CUndx::vUndx( double *plfParent1, double *plfParent2, double *plfParent3, d
 	double lfDist1 = 0.0;
 	double lfDist2 = 0.0;
 	double lfDist3 = 0.0;
-	double lfSub = 0.0;
+	double lfSub1 = 0.0;
+	double lfSub2 = 0.0;
 	double lfSigma1 = 0.0;
 	double lfSigma2 = 0.0;
 	double lfS = 0.0;
-	// 2つの親の中点を算出します。
-	for( i = 0;i < iGenVector; i++ )
+	double lfTemp1 = 0.0;
+	double lfTemp2 = 0.0;
+
+	lfDist1 = lfDist2 = lfDistTemp = lfDistTemp3 = 0.0;
+	for( i = 0; i < iGenVector; i++ )
 	{
+		// 2つの親の中点を算出します。
 		stlMedian.push_back( ( plfParent1[i]+plfParent2[i] )/2.0 );
 		stlUnityVector1.push_back( plfParent1[i]-plfParent2[i] );
-	}
-
-	// 2つの親の距離を求めます。
-	lfDist1 = 0.0;
-	for( i = 0; i < iGenVector; i++ )
-	{
-		lfSub = stlUnityVector1.at(i);
-		lfDist1 += lfSub*lfSub;
-	}
-	lfDist1 = sqrt( lfDist1 );
-	lfSigma1 = lfDist1*lfAlpha;
-	// 単位ベクトルを作成します。
-	for( i = 0; i < iGenVector; i++ )
-	{
-		stlUnityVector1[i] /= lfDist1;
-	}
-
-	// 第3の親と2つの親との距離を求めます。
-	lfDist2 = 0.0;
-	for( i = 0; i < iGenVector; i++ )
-	{
-		lfSub = (plfParent3[i]-plfParent1[i]);
-		lfDist2 += lfSub*lfSub;
-	}
-	lfDist2 = sqrt( lfDist2 );
-	lfDistTemp3 = 0.0;
-	for( i = 0; i < iGenVector; i++ )
-	{
-		lfProduct = (plfParent3[i]-plfParent1[i])*(plfParent2[i]-plfParent1[i]);
-		lfDistTemp3 += lfProduct;
-	}
-	lfDistTemp = lfDistTemp3/(lfDist1*lfDist2);
-	lfDist3 = lfDist2*sqrt(1.0-lfDistTemp*lfDistTemp);
-	
-	lfSigma2 = lfDist3*lfBeta/sqrt((double)iGenVector);
-
-	// ここで、z1,z2を生成します。z1=N(0,σ_{1}^2), z2=N(0,σ_{2}^2)なので、これに従って生成します。
-	for( i = 0;i < iGenVector; i++ )
-	{
-		stlTempT1.push_back(grand(lfSigma1, 0.0));
+		// 2つの親の距離を求めます。
+		lfSub1 = (plfParent2[i]-plfParent1[i]);
+		lfSub2 = (plfParent3[i]-plfParent1[i]);
+		lfDist1 += lfSub1*lfSub1;
+		lfDist2 += lfSub2*lfSub2;
+		// 第3の親と2つの親との距離を求めます。
+		lfDistTemp3 += lfSub1*lfSub2;
+		// ここで、z1,z2を生成します。z1=N(0,σ_{1}^2), z2=N(0,σ_{2}^2)なので、これに従って生成します。
+//		stlTempT1.push_back(grand(lfSigma1, 0.0));
 		stlTempT2.push_back(grand(lfSigma2, 0.0));
 	}
-	//まずz2に直行するベクトルを算出します。
-	// 内積を求めます。
+	lfDist2 = sqrt( lfDist2 );
+	lfDist1 = sqrt( lfDist1 );
+	lfSigma1 = lfDist1*lfAlpha;
+	lfDistTemp = lfDistTemp3/(lfDist1*lfDist2);
+	lfDist3 = lfDist2*sqrt(1.0-lfDistTemp*lfDistTemp);
+	lfSigma2 = lfDist3*lfBeta/sqrt((double)iGenVector);
+
 	lfProduct = 0.0;
-	for( i = 0;i < iGenVector; i++ )
+	for( i = 0; i < iGenVector; i++ )
 	{
+		// 単位ベクトルを作成します。
+		stlUnityVector1[i] /= lfDist1;
+	//まずz2に直行するベクトルを算出します。
+		// 内積を求めます。
 		lfProduct += stlTempT2[i]*stlUnityVector1[i];
 	}
 	// z2に直行するベクトルを生成します。
-	for( i = 0;i < iGenVector; i++ )
-	{
-		stlTempT2[i] = stlTempT2[i] - lfProduct*stlUnityVector1[i];
-	}
 	lfS = grand(lfSigma1,0.0);
-	for( i = 0;i < iGenVector; i++ )
-	{
-		stlTempT2[i] = stlTempT2[i] + lfS*stlUnityVector1[i];
-	}
 	// 2子供を生成します。
 	for( i = 0;i < iGenVector; i++ )
 	{
-		plfChild1[i] = stlMedian[i]+stlTempT2[i];
-		plfChild2[i] = stlMedian[i]-stlTempT2[i];
+		lfTemp1 = lfProduct*stlUnityVector1[i];
+		lfTemp2 = lfS*stlUnityVector1[i];
+		plfChild1[i] = stlTempT2[i] + lfTemp1 + lfTemp2;
+		plfChild2[i] = stlTempT2[i] - lfTemp1 + lfTemp2;
 	}
 }
 
