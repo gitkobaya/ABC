@@ -32,6 +32,31 @@ double lfSphere( double *plfX, int iVectorLen )
 
 /**
  * <PRE>
+ * 　目的関数のEllipsoid関数の計算を実行します。
+ * 　-5.12 <= x_i <= 5.12 f_i(x_i)=0,  x_i=0, i = 1,2,･･･,n
+ * 　f(x) = sum(1000^{i-1/n-1}x_{i})^{2}
+ * </PRE>
+ * @param plfX			引数
+ * @param iVectorLen	引数の次元数
+ * @author kobayashi
+ * @since 2016/8/24
+ * @version 0.1
+ */
+double lfEllipsoid( double *plfX, int iVectorLen )
+{
+	int i;
+	double lfRes = 0.0;
+	double lfX = 0.0;
+	for( i = 0;i < iVectorLen; i++ )
+	{
+		lfX = pow(1000.0, (double)(i-1)/(double)(iVectorLen-1))*plfX[i];
+		lfRes += lfX*lfX;
+	}
+	return lfRes;
+}
+
+/**
+ * <PRE>
  * 　目的関数のHyper-Ellipsoid関数の計算を実行します。
  * 　-1 <= x_i <= 1 f_i(x_i)=0,  x_i=0, i = 1,2,･･･,n
  * 　f(x) = sum(i^{2}*x_{i}^{2})
@@ -177,6 +202,33 @@ double lfRosenbrock( double *plfX, int iVectorLen )
 
 /**
  * <PRE>
+ * 　目的関数のRosenbrockStar型関数の計算を実行します。
+ * </PRE>
+ * @param plfX			引数
+ * @param iVectorLen	引数の次元数
+ * @author kobayashi
+ * @since 2016/8/24
+ * @version 0.1
+ */
+double lfRosenbrockStar( double *plfX, int iVectorLen )
+{
+	int i;
+	double lfRes = 0.0;
+	double lfTempX1 = 0.0;
+	double lfTempX2 = 0.0;
+	double lfXX = 0.0;
+	for( i = 1;i < iVectorLen; i++ )
+	{
+		lfXX = plfX[i]*plfX[i];
+		lfTempX1 = 1.0-plfX[i];
+		lfTempX2 = plfX[0]-lfXX;
+		lfRes += (100*lfTempX2*lfTempX2+lfTempX1*lfTempX1);
+	}
+	return lfRes;
+}
+
+/**
+ * <PRE>
  * 　目的関数の3rd De Jong's関数の計算を実行します。
  *   大域的最適解 Xi = 1 のときf(Xi) = 0
  * </PRE>
@@ -308,7 +360,7 @@ double lfAckley( double *plfX, int iVectorLen )
 	double lfRes = 0.0;
 	double lfCos = 0.0;
 	double lfX2 = 0.0;
-	double lfE = 0.0;
+	double lfE = exp(1.0);
 
 	for( i = 0;i < iVectorLen; i++ )
 	{
@@ -318,7 +370,7 @@ double lfAckley( double *plfX, int iVectorLen )
 	lfX2 = lfX2 / (double)iVectorLen;
 	lfCos = lfCos / (double)iVectorLen;
 
-	lfRes = -20.0*exp(-0.2*sqrt(lfX2) - exp( lfCos )) + 20.0 + lfE;
+	lfRes = 20.0-20.0*exp(-0.2*sqrt(lfX2)) + lfE - exp( lfCos );
 	return lfRes;
 }
 
@@ -517,6 +569,30 @@ double lfRastrigin( double *plfX, int iVectorLen )
 
 /**
  * <PRE>
+ * 　目的関数のRastriginShift関数の計算を実行します。
+ * 　大域的最適解 Xi = 1 f(Xi) = 0 (-5.12 <= Xi <= 5.12)
+ * </PRE>
+ * @param plfX			引数
+ * @param iVectorLen	引数の次元数
+ * @author kobayashi
+ * @since 2016/8/24
+ * @version 0.1
+ */
+double lfRastriginShift( double *plfX, int iVectorLen )
+{
+	int i;
+	double lfXX;
+	double lfRes = 0.0;
+	for( i = 0;i < iVectorLen; i++ )
+	{
+		lfXX = 1.0-plfX[i];
+		lfRes += ( lfXX*lfXX-10*cos(2.0*pi*lfXX)+10.0 );
+	}
+	return lfRes;
+}
+
+/**
+ * <PRE>
  * 　目的関数のSchwefel's 関数の計算を実行します。
  * 　大域的最適解 x_{i}=420.09687 f(x_{i})=-418.9829n (-512<=x_{i}<=512)
  *   \sum^{n}_{i=1}(x_{i}\sin\sqr(|x_{i}|))
@@ -535,7 +611,7 @@ double lfSchwefel( double *plfX, int iVectorLen )
 	{
 		lfRes += ( plfX[i]*sin(sqrt(fabs(plfX[i]))) );
 	}
-	return -lfRes;
+	return 418.9829*iVectorLen-lfRes;
 }
 
 /**
@@ -553,9 +629,8 @@ double lfSchwefel( double *plfX, int iVectorLen )
 double lfSixHumpCamelBack( double *plfX, int iVectorLen )
 {
 	double lfRes = 0.0;
-	if( iVectorLen == 2 )
-		lfRes = ( 4.0-2.1*plfX[0]*plfX[0]+1.0/3.0*plfX[0]*plfX[0]*plfX[0]*plfX[0] )*plfX[0]*plfX[0] + plfX[0]*plfX[1] + 4.0*(plfX[1]*plfX[1]-1.0)*plfX[1]*plfX[1];
-	return lfRes;
+	lfRes = ( 4.0-2.1*plfX[0]*plfX[0]+1.0/3.0*plfX[0]*plfX[0]*plfX[0]*plfX[0] )*plfX[0]*plfX[0] + plfX[0]*plfX[1] + 4.0*(plfX[1]*plfX[1]-1.0)*plfX[1]*plfX[1];
+	return -lfRes;
 }
 
 /**
@@ -576,7 +651,7 @@ double lfShubert( double *plfX, int iVectorLen )
 	int n;
 	double lfResX = 0.0;
 	double lfResY = 0.0;
-	n = (int)plfX[2];
+	n = 5;
 
 	for( i = 0;i < n; i++ )
 	{
@@ -669,10 +744,9 @@ double lfLangermann( double *plfX, int iVectorLen )
 	double pplfA[2][5] = {{3,5,2,1,7},{5,2,1,4,9}};
 	double plfC[5] = {1,2,5,2,3};
 
-	if( iVectorLen > 2 ) return lfRes;
 	for( i = 0;i < M; i++ )
 	{
-		for( j = 0;j < 2; j++ )
+		for( j = 0;j < iVectorLen; j++ )
 		{
 			lfRes1 += (plfX[j]-pplfA[i][j])*(plfX[j]-pplfA[i][j]);
 		}
@@ -699,7 +773,15 @@ double lfLangermann( double *plfX, int iVectorLen )
 double lfDropWave( double *plfX, int iVectorLen )
 {
 	double lfRes = 0.0;
-	lfRes = ( 1.0+cos(12.0*sqrt(plfX[0]*plfX[0]+plfX[1]*plfX[1]) ) )/( 0.5*( plfX[0]*plfX[0]+plfX[1]*plfX[1] )+2.0 );
+
+	if( iVectorLen == 2 )
+	{	
+		lfRes = ( 1.0+cos(12.0*sqrt(plfX[0]*plfX[0]+plfX[1]*plfX[1]) ) )/( 0.5*( plfX[0]*plfX[0]+plfX[1]*plfX[1] )+2.0 );
+	}
+	else
+	{
+		lfRes = 0.0;
+	}
 	return lfRes;
 }
 
@@ -808,9 +890,9 @@ double lfSineEnvelopeSineWave( double *plfX, int iGenVector )
 /**
  * <PRE>
  * 　目的関数のEgg Hloder 関数の計算を実行します。
- *	 -(x_{2}-47)\sin{sqrt(x_{2}+dfrac{x_{1}}{2}+47))-x_{1}\sin{\sqrt{\abs{x_{1}-(x_{2}+47)}}}
+ *	 -\sum^{m}_{i=1}( \sum^{n}_{j=1}(x_{j}-a_{ij})^{2} + c_{i} ) - 1
  * 　大域的最適解 -512 \leq X_{1}, X_{2} \leq 512
- *   f(x)=-959.6407, x= 512,404.2309
+ *   M の値は推奨値が30とされている。
  * </PRE>
  * @param plfX			引数
  * @param iVectorLen	引数の次元数
@@ -898,4 +980,102 @@ double lfTrid( double *plfX, int iGenVector )
 	return lfRes;
 }
 
+/**
+ * <PRE>
+ * 　目的関数のk-tablet関数の計算を実行します。
+ *	 -\sum^{k}_{i=1}x_{i}^2+\sum^{n}_{i=k+1}(100x_{i})^{2}
+ * 　大域的最適解 -5.12 \leq X_{1}, X_{2} \leq 5.12 x = (0,0,0,0...,0)
+ *   k=n/4
+ * </PRE>
+ * @param plfX			引数
+ * @param iVectorLen	引数の次元数
+ * @author kobayashi
+ * @since 2016/8/24
+ * @version 0.1
+ */
+double lfkTablet( double *plfX, int iGenVector )
+{
+	double lfRes = 0.0;
+	double lfXX = 0.0;
+	int i;
+	int k;
 
+	k = iGenVector/4;
+
+	for( i = 0;i < k; i++ )
+	{
+		lfRes += plfX[i]*plfX[i];
+	}
+	for( i = k;i < iGenVector; i++ )
+	{
+		lfXX = 100.0*plfX[i];
+		lfRes += lfXX*lfXX;
+	}
+	return lfRes;
+}
+
+/**
+ * <PRE>
+ * 　目的関数のSchaffer関数の計算を実行します。
+ *	 -\sum^{n-1}_{i=1}(x_{i}^2+(x_{i+1})^{2})^0.25*(\sin^{2}(50(x_{i}^{2}+x_{i+1}^{2})^{0.1})+1.0)
+ * 　大域的最適解 -100 \leq X_{1}, X_{2} \leq 100 x = (0,0,0,0...,0)
+ *   k=n/4
+ * </PRE>
+ * @param plfX			引数
+ * @param iVectorLen	引数の次元数
+ * @author kobayashi
+ * @since 2016/9/14
+ * @version 0.1
+ */
+double lfSchaffer( double *plfX, int iGenVector )
+{
+	double lfRes = 0.0;
+	double lfXX = 0.0;
+	double lfSquare = 0.0;
+	double lfSin = 0.0;
+	int i;
+	int k;
+
+	for( i = 0;i < iGenVector-1; i++ )
+	{
+		lfSquare = plfX[i]*plfX[i]+plfX[i+1]*plfX[i+1];
+		lfSin = sin(pow(50.0*lfSquare,0.1));
+		lfRes += pow(lfSquare, 0.25)*(lfSin*lfSin+1.0);
+	}
+	return lfRes;
+}
+
+/**
+ * <PRE>
+ * 　目的関数のBohachevsky関数の計算を実行します。
+ *	 -\sum^{n-1}_{i=1}(x_{i}^2+2x_{i+1}^{2}-0.3\cos(3\pi x_{i})-0.4cos(4\pi x_{i+1} + 0.7)
+ * 　大域的最適解 -5.12 \leq x_{i} \leq 5.12 x = (0,0,0,0...,0)
+ * </PRE>
+ * @param plfX			引数
+ * @param iVectorLen	引数の次元数
+ * @author kobayashi
+ * @since 2016/9/14
+ * @version 0.1
+ */
+double lfBohachevsky( double *plfX, int iGenVector )
+{
+	double lfRes = 0.0;
+	double lfXX1 = 0.0;
+	double lfXX2 = 0.0;
+	double lfCos1 = 0.0;
+	double lfCos2 = 0.0;
+	double lf3pi,lf4pi;
+	int i;
+
+	lf3pi = 3.0*pi;
+	lf4pi = 4.0*pi;
+	for( i = 0;i < iGenVector-1; i++ )
+	{
+		lfXX1 = plfX[i]*plfX[i];
+		lfXX2 = 2.0*plfX[i+1]*plfX[i+1];
+		lfCos1 = 0.3*cos(lf3pi*plfX[i]);
+		lfCos2 = 0.4*cos(lf4pi*plfX[i+1]);
+		lfRes += lfXX1+lfXX2-lfCos1-lfCos2;
+	}
+	return lfRes;
+}

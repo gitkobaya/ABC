@@ -79,6 +79,18 @@ public:
 	 */
 	void vGetGenData( double** pplfGenData );
 
+	/**
+	 * <PRE>
+	 * 　現在の遺伝子データを取得します。
+	 *   ver 0.1 初版 
+	 * </PRE>
+	 * @param pplfGenData 
+	 * @author kobayashi
+	 * @since 2016/09/14
+	 * @version 0.1
+	 */
+	void vGetBestGenData( double* plfGenData );
+
 private:
 	/**
 	 * <PRE>
@@ -122,7 +134,8 @@ private:
 	double lfLavg;
 	double lfLearningRate;
 	double lfAlpha;
-	int	   *piParentLoc;
+	int *piParentLoc;
+	int iBestLoc;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

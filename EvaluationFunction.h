@@ -21,6 +21,20 @@ extern double lfSphere( double *plfX, int iVectorLen );
 
 /**
  * <PRE>
+ * 　目的関数のEllipsoid関数の計算を実行します。
+ * 　-5.12 <= x_i <= 5.12 f_i(x_i)=0,  x_i=0, i = 1,2,･･･,n
+ * 　f(x) = sum(1000^{i-1/n-1}x_{i})^{2}
+ * </PRE>
+ * @param plfX			引数
+ * @param iVectorLen	引数の次元数
+ * @author kobayashi
+ * @since 2016/8/24
+ * @version 0.1
+ */
+extern double lfEllipsoid( double *plfX, int iVectorLen );
+
+/**
+ * <PRE>
  * 　目的関数のHyper-Ellipsoid関数の計算を実行します。
  * 　-1 <= x_i <= 1 f_i(x_i)=0,  x_i=0, i = 1,2,･･･,n
  * 　f(x) = sum(i^{2}*x_{i}^{2})
@@ -100,6 +114,18 @@ extern double lfSumOfDifferentPower( double *plfX, int iVectorLen );
  * @version 1.0
  */
 extern double lfRosenbrock( double *plfX, int iVectorLen );
+
+/**
+ * <PRE>
+ * 　目的関数のRosenbrockStar型関数の計算を実行します。
+ * </PRE>
+ * @param plfX			引数
+ * @param iVectorLen	引数の次元数
+ * @author kobayashi
+ * @since 2016/8/24
+ * @version 0.1
+ */
+extern double lfRosenbrockStar( double *plfX, int iVectorLen );
 
 /**
  * <PRE>
@@ -258,6 +284,19 @@ extern double lfRastrigin( double *plfX, int iVectorLen );
 
 /**
  * <PRE>
+ * 　目的関数のRastriginShift関数の計算を実行します。
+ * 　大域的最適解 Xi = 1 f(Xi) = 0 (-5.12 <= Xi <= 5.12)
+ * </PRE>
+ * @param plfX			引数
+ * @param iVectorLen	引数の次元数
+ * @author kobayashi
+ * @since 2016/8/24
+ * @version 0.1
+ */
+extern double lfRastriginShift( double *plfX, int iVectorLen );
+
+/**
+ * <PRE>
  * 　目的関数のSchwefel's 関数の計算を実行します。
  * 　大域的最適解 x_{i}=420.09687 f(x_{i})=-418.9829n (-512<=x_{i}<=512)
  *   \sum^{n}_{i=1}(x_{i}\sin\sqr(|x_{i}|))
@@ -365,5 +404,138 @@ extern double lfDropWave( double *plfX, int iVectorLen );
  * @version 1.0
  */
 extern double lfGoldsteinPrice( double *plfX, int iVectorLen );
+
+/**
+ * <PRE>
+ * 　目的関数のShekel's Foxholes 関数の計算を実行します。
+ *	 -\sum^{m}_{i=1}( \sum^{n}_{j=1}(x_{j}-a_{ij})^{2} + c_{i} ) - 1
+ * 　大域的最適解 -5.12 \leq X_{1}, X_{2} \leq 5.12
+ *   M の値は推奨値が30とされている。
+ * </PRE>
+ * @param plfX			引数
+ * @param iVectorLen	引数の次元数
+ * @author kobayashi
+ * @since 2015/6/17
+ * @version 1.0
+ */
+extern double lfShekelsFoxholes( double *plfX, int iVectorLen );
+
+/**
+ * <PRE>
+ * 　目的関数のPaviani's Foxholes 関数の計算を実行します。
+ *	 -\sum^{m}_{i=1}( \sum^{n}_{j=1}(x_{j}-a_{ij})^{2} + c_{i} ) - 1
+ * 　大域的最適解 -5.12 \leq X_{1}, X_{2} \leq 5.12
+ *   M の値は推奨値が30とされている。
+ * </PRE>
+ * @param plfX			引数
+ * @param iVectorLen	引数の次元数
+ * @author kobayashi
+ * @since 2015/6/17
+ * @version 1.0
+ */
+extern double lfPavianiFoxholes( double *plfX, int iGenVector );
+
+/**
+ * <PRE>
+ * 　目的関数のSine envelope sine wave 関数の計算を実行します。
+ *	 -\sum^{m}_{i=1}( \sum^{n}_{j=1}(x_{j}-a_{ij})^{2} + c_{i} ) - 1
+ * 　大域的最適解 -5.12 \leq X_{1}, X_{2} \leq 5.12
+ *   M の値は推奨値が30とされている。
+ * </PRE>
+ * @param plfX			引数
+ * @param iVectorLen	引数の次元数
+ * @author kobayashi
+ * @since 2015/6/17
+ * @version 1.0
+ */
+extern double lfSineEnvelopeSineWave( double *plfX, int iGenVector );
+
+/**
+ * <PRE>
+ * 　目的関数のEgg Hloder 関数の計算を実行します。
+ *	 -\sum^{m}_{i=1}( \sum^{n}_{j=1}(x_{j}-a_{ij})^{2} + c_{i} ) - 1
+ * 　大域的最適解 -512 \leq X_{1}, X_{2} \leq 512
+ *   M の値は推奨値が30とされている。
+ * </PRE>
+ * @param plfX			引数
+ * @param iVectorLen	引数の次元数
+ * @author kobayashi
+ * @since 2015/6/17
+ * @version 1.0
+ */
+extern double lfEggHolder( double *plfX, int iGenVector );
+
+/**
+ * <PRE>
+ * 　目的関数のRana's 関数の計算を実行します。
+ *	 -(x_{2}-47)\sin{sqrt(x_{2}+dfrac{x_{1}}{2}+47))-x_{1}\sin{\sqrt{\abs{x_{1}-(x_{2}+47)}}}
+ * 　大域的最適解 -d^2 \leq X_{1}, X_{2} \leq d^2
+ *   f(x)=-50, x= -200
+ * </PRE>
+ * @param plfX			引数
+ * @param iVectorLen	引数の次元数
+ * @author kobayashi
+ * @since 2015/6/17
+ * @version 1.0
+ */
+extern double lfRana( double *plfX, int iGenVector );
+
+/**
+ * <PRE>
+ * 　目的関数のTrid 関数の計算を実行します。
+ *	 -(x_{2}-47)\sin{sqrt(x_{2}+dfrac{x_{1}}{2}+47))-x_{1}\sin{\sqrt{\abs{x_{1}-(x_{2}+47)}}}
+ * 　大域的最適解 -d^2 \leq X_{1}, X_{2} \leq d^2
+ *   f(x)=-50, x= -200
+ * </PRE>
+ * @param plfX			引数
+ * @param iVectorLen	引数の次元数
+ * @author kobayashi
+ * @since 2015/6/17
+ * @version 1.0
+ */
+extern double lfTrid( double *plfX, int iGenVector );
+
+/**
+ * <PRE>
+ * 　目的関数のk-tablet関数の計算を実行します。
+ *	 -\sum^{k}_{i=1}x_{i}^2+\sum^{n}_{i=k+1}(100x_{i})^{2}
+ * 　大域的最適解 -5.12 \leq X_{1}, X_{2} \leq 5.12 x = (0,0,0,0...,0)
+ *   k=n/4
+ * </PRE>
+ * @param plfX			引数
+ * @param iVectorLen	引数の次元数
+ * @author kobayashi
+ * @since 2016/8/24
+ * @version 0.1
+ */
+extern double lfkTablet( double *plfX, int iGenVector );
+
+/**
+ * <PRE>
+ * 　目的関数のSchaffer関数の計算を実行します。
+ *	 -\sum^{n-1}_{i=1}(x_{i}^2+(x_{i+1})^{2})^0.25*(\sin^{2}(50(x_{i}^{2}+x_{i+1}^{2})^{0.1})+1.0)
+ * 　大域的最適解 -100 \leq X_{1}, X_{2} \leq 100 x = (0,0,0,0...,0)
+ * </PRE>
+ * @param plfX			引数
+ * @param iVectorLen	引数の次元数
+ * @author kobayashi
+ * @since 2016/9/14
+ * @version 0.1
+ */
+extern double lfSchaffer( double *plfX, int iGenVector );
+
+/**
+ * <PRE>
+ * 　目的関数のBohachevsky関数の計算を実行します。
+ *	 -\sum^{n-1}_{i=1}(x_{i}^2+2x_{i+1}^{2}-0.3\cos(3\pi x_{i})-0.4cos(4\pi x_{i+1} + 0.7)
+ * 　大域的最適解 -5.12 \leq x_{i} \leq 5.12 x = (0,0,0,0...,0)
+ * </PRE>
+ * @param plfX			引数
+ * @param iVectorLen	引数の次元数
+ * @author kobayashi
+ * @since 2016/9/14
+ * @version 0.1
+ */
+extern double lfBohachevsky( double *plfX, int iGenVector );
 
 #endif /* _EVALUATION_FUNCTION_H_ */

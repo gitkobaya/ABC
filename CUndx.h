@@ -36,6 +36,7 @@ public:
 	inline int iGetChildrenOutputFlag(){ return iChildrenOutputFlag; };
 	void vSetGenData( double **pplfGenData );
 	void vGetGenData( double **pplfGenData );
+	void vGetBestGenData( double *plfGenData );
 
 public:
 	/**
@@ -77,6 +78,7 @@ private:
 	double **pplfChildren;
 	double *plfChild1;
 	double *plfChild2;
+	int iBestLoc;
 };
 
 class CUndxException

@@ -449,6 +449,8 @@ void CRex::vRex()
 		for( i = 0; i < iParentNumber; i++ )
 			for( j = 0;j < iGenVector; j++ )
 				pplfGens[piParentLoc[i]][j] = pplfChildren[stlFitProb[i].iLoc][j];
+		// 現在の最良位置を取得します。
+		iBestLoc = piParentLoc[0];
 	}
 	catch(...)
 	{
@@ -691,6 +693,8 @@ void CRex::vARex()
 		for( i = 0; i < iParentNumber; i++ )
 			for( j = 0;j < iGenVector; j++ )
 				pplfGens[stlParentFitProb.at(i).iLoc][j] = pplfChildren[stlFitProb.at(i).iLoc][j];
+		// 現在の最良位置を取得します。
+		iBestLoc = stlParentFitProb.at(0).iLoc;
 	}
 	catch(...)
 	{
@@ -885,6 +889,24 @@ void CRex::vGetGenData( double** pplfGenData )
 	}
 }
 
+/**
+ * <PRE>
+ * 　現在の遺伝子データを取得します。
+ *   ver 0.1 初版 
+ * </PRE>
+ * @param pplfGenData 
+ * @author kobayashi
+ * @since 2016/09/14
+ * @version 0.1
+ */
+void CRex::vGetBestGenData( double* plfGenData )
+{
+	int j;
+	for( j = 0;j < iGenVector; j++ )
+	{
+		plfGenData[j] = pplfGens[iBestLoc][j];
+	}
+}
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////CRexExceptionクラス

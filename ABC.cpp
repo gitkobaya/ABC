@@ -2434,14 +2434,8 @@ void CAbc::vScoutBeeUndx()
 			// 交叉を実行します。ここでUNDXを実行します。（１回分のみ。）
 			pcUndx->vSetGenData(pplfAbcData );
 			pcUndx->vImplement();
+//			pcUndx->vGetBestGenData(pplfAbcData[i] );
 			pcUndx->vGetGenData(pplfAbcData );
-		}
-		else
-		{
-			for( k = 0;k < iAbcVectorDimNum; k++ )
-			{
-				pplfAbcData[i][k] = pplfAbcData[i][k];
-			}
 		}
 	}
 }
@@ -2464,18 +2458,11 @@ void CAbc::vScoutBeeRex()
 	{
 		if( piNonUpdateCount[i] > iAbcLimitCount )
 		{
-			// 交叉を実行します。ここでUNDXを実行します。（１回分のみ。）
+			// 交叉を実行します。ここでREXを実行します。（１回分のみ。）
 			pcRex->vSetGenData(pplfAbcData );
 			pcRex->vRex();
+//			pcRex->vGetBestGenData(pplfAbcData[i] );
 			pcRex->vGetGenData(pplfAbcData );
-			piNonUpdateCount[i] = 0;
-		}
-		else
-		{
-			for( k = 0;k < iAbcVectorDimNum; k++ )
-			{
-				pplfAbcData[i][k] = pplfAbcData[i][k];
-			}
 		}
 	}
 }
@@ -2498,18 +2485,11 @@ void CAbc::vScoutBeeARex()
 	{
 		if( piNonUpdateCount[i] > iAbcLimitCount )
 		{
-			// 交叉を実行します。ここでUNDXを実行します。（１回分のみ。）
-//			printf("AREX開始\n");
+			// 交叉を実行します。ここでAREXを実行します。（１回分のみ。）
 			pcRex->vSetGenData(pplfAbcData );
 			pcRex->vARex();
+//			pcRex->vGetBestGenData(pplfAbcData[i] );
 			pcRex->vGetGenData(pplfAbcData );
-		}
-		else
-		{
-			for( k = 0;k < iAbcVectorDimNum; k++ )
-			{
-				pplfAbcData[i][k] = pplfAbcData[i][k];
-			}
 		}
 	}
 }
@@ -2583,6 +2563,20 @@ void CAbc::vGetGlobalMaxMin()
 				plfGlobalMaxAbcData[j] = pplfAbcData[i][j];
 		}
 	}
+}
+
+/**
+ * <PRE>
+ * 　現時点での最小値の粒子の目的関数値を出力します。
+ * </PRE>
+ * @author kobayashi
+ * @since 2016/9/14
+ * @version 1.0
+ */
+double CAbc::lfGetGlobalMinAbcDataConstFuncValue()
+{
+	// 現時点での各粒子の目的関数の値を出力します。
+	return lfGlobalMinAbcData;
 }
 
 /**
@@ -2713,8 +2707,6 @@ void CAbc::vOutputGlobalMinAbcDataConstFuncValue()
 	// 現時点での各粒子の目的関数の値を出力します。
 	printf("%lf\n", lfGlobalMinAbcData );
 }
-
-
 
 /**
  * <PRE>

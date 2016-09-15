@@ -436,6 +436,7 @@ public:
 	void vOutputLocalMaxAbcData( int iOutFlag );
 
 	void vSetRange( double lfRange );
+	double lfGetGlobalMinAbcDataConstFuncValue();
 private:
 	/**
 	 * <PRE>

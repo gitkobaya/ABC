@@ -234,6 +234,14 @@ long CCmdCheck::lCommandCheck( int argc, char* argv[] )
 			lfLearningRate = atof( argv[i+1] );
 			i++;
 		}
+		/* 終了条件の指定 */
+		else if( strcmp( argv[i], "-fin" ) == 0 )
+		{
+			lRet = lCommandErrorCheck( argv[i] );
+			if( lRet != 0 ) return lRet;
+			iFinishFlag = atoi( argv[i+1] );
+			i++;
+		}
 		else
 		{
 			lRet = CCMD_ERROR_INVALID_DATA;
@@ -281,6 +289,7 @@ long CCmdCheck::lCommandErrorCheck( char *argv )
 		( strcmp( argv, "-pn" ) == 0 )		||
 		( strcmp( argv, "-cn" ) == 0 )		||
 		( strcmp( argv, "-cl" ) == 0 )		||
+		( strcmp( argv, "-fin" ) == 0 )		||
 		( strcmp( argv, "-lr" ) == 0 ))
 	{
 		lRet = 0;
@@ -327,6 +336,7 @@ void CCmdCheck::vHelp()
 	printf("-cn Rexの生成する子供の数\n");
 	printf("-cl ARexの生成した子供のうち上位選択する数\n");
 	printf("-lr ARexの学習率\n");
+	printf("-fin 終了条件の設定1:回数, 2:収束\n");
 	printf("-out 結果出力\n");
 }
 
@@ -435,6 +445,10 @@ int CCmdCheck::iGetUpperEvalChildrenNum()
 	return iUpperEvalChildrenNum;
 }
 
+int CCmdCheck::iGetFinishFlag()
+{
+	return iFinishFlag;
+}
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////CCmdCheckExceptionクラス

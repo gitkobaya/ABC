@@ -71,6 +71,7 @@ public:
 	int iGetParentNum();
 	int iGetChildrenNum();
 	int iGetUpperEvalChildrenNum();
+	int iGetFinishFlag();
 
 private:
 	int iGenerationNumber;		// ŒvZ‰ñ”
@@ -94,6 +95,7 @@ private:
 	int iParentNum;
 	int iChildrenNum;
 	int iUpperEvalChildrenNum;
+	int iFinishFlag;		// I—¹ğŒ
 };
 
 class CCmdCheckException

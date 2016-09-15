@@ -185,11 +185,13 @@ void CUndx::vImplement()
 			pplfGens[i1][j] = pplfChildren[i1stGenLoc][j];
 			pplfGens[i2][j] = pplfChildren[i2ndGenLoc][j];
 		}
+		// 現在の最良値の番号を取得します。
+		iBestLoc = i1;
 		// 一時的に保持していた子の集合を削除します。
-//		for(i = 0;i < iChildrenNumber; i++ )
-//		{
-//			memset( pplfChildren[i], 0, iGenVector*sizeof(double) );
-//		}
+		for(i = 0;i < iChildrenNumber; i++ )
+		{
+			memset( pplfChildren[i], 0, iGenVector*sizeof(double) );
+		}
 	}
 	catch( ... )
 	{
@@ -265,10 +267,6 @@ void CUndx::vUndx( double *plfParent1, double *plfParent2, double *plfParent3, d
 	std::vector<double> stlUnityVector1,stlMedian;
 	std::vector<double> stlTempT1,stlTempT2;
 	double lfDistTemp = 0.0;
-	double lfDistTemp1 = 0.0;
-	double lfDistTemp2 = 0.0;
-	double lfDistTemp3 = 0.0;
-	double lfDistTemp31 = 0.0;
 	double lfProduct = 0.0;
 	double lfDist1 = 0.0;
 	double lfDist2 = 0.0;
@@ -280,8 +278,9 @@ void CUndx::vUndx( double *plfParent1, double *plfParent2, double *plfParent3, d
 	double lfS = 0.0;
 	double lfTemp1 = 0.0;
 	double lfTemp2 = 0.0;
+	double lfTemp3 = 0.0;
 
-	lfDist1 = lfDist2 = lfDistTemp = lfDistTemp3 = 0.0;
+	lfDist1 = lfDist2 = lfDistTemp = 0.0;
 	for( i = 0; i < iGenVector; i++ )
 	{
 		// 2つの親の中点を算出します。
@@ -293,16 +292,16 @@ void CUndx::vUndx( double *plfParent1, double *plfParent2, double *plfParent3, d
 		lfDist1 += lfSub1*lfSub1;
 		lfDist2 += lfSub2*lfSub2;
 		// 第3の親と2つの親との距離を求めます。
-		lfDistTemp3 += lfSub1*lfSub2;
+		lfDistTemp += lfSub1*lfSub2;
 		// ここで、z1,z2を生成します。z1=N(0,σ_{1}^2), z2=N(0,σ_{2}^2)なので、これに従って生成します。
 //		stlTempT1.push_back(grand(lfSigma1, 0.0));
 		stlTempT2.push_back(grand(lfSigma2, 0.0));
 	}
-	lfDist2 = sqrt( lfDist2 );
 	lfDist1 = sqrt( lfDist1 );
-	lfSigma1 = lfDist1*lfAlpha;
-	lfDistTemp = lfDistTemp3/(lfDist1*lfDist2);
+	lfDist2 = sqrt( lfDist2 );
+	lfDistTemp = lfDistTemp/(lfDist1*lfDist2);
 	lfDist3 = lfDist2*sqrt(1.0-lfDistTemp*lfDistTemp);
+	lfSigma1 = lfDist1*lfAlpha;
 	lfSigma2 = lfDist3*lfBeta/sqrt((double)iGenVector);
 
 	lfProduct = 0.0;
@@ -321,8 +320,9 @@ void CUndx::vUndx( double *plfParent1, double *plfParent2, double *plfParent3, d
 	{
 		lfTemp1 = lfProduct*stlUnityVector1[i];
 		lfTemp2 = lfS*stlUnityVector1[i];
-		plfChild1[i] = stlTempT2[i] + lfTemp1 + lfTemp2;
-		plfChild2[i] = stlTempT2[i] - lfTemp1 + lfTemp2;
+		lfTemp3 = stlTempT2[i] - lfTemp1 + lfTemp2;
+		plfChild1[i] = stlMedian[i] + lfTemp3;
+		plfChild2[i] = stlMedian[i] - lfTemp3;
 	}
 }
 
@@ -486,6 +486,25 @@ void CUndx::vGetGenData( double** pplfGenData )
 		{
 			pplfGenData[i][j] = pplfGens[i][j];
 		}
+	}
+}
+
+/**
+ * <PRE>
+ * 　現在の遺伝子データの最良値を取得します。
+ *   ver 0.1 初版 
+ * </PRE>
+ * @param pplfGenData 
+ * @author kobayashi
+ * @since 2016/09/14
+ * @version 0.1
+ */
+void CUndx::vGetBestGenData( double* plfGenData )
+{
+	int j;
+	for( j = 0;j < iGenVector; j++ )
+	{
+		plfGenData[j] = pplfGens[iBestLoc][j];
 	}
 }
 
