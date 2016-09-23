@@ -252,22 +252,26 @@ public:
 	/**
 	 * <PRE>
 	 * 　人工蜂コロニー最適化法を実行します。
+	 *	 GBestを利用したABC法
+	 *   Gbest-guided artificial bee colony algorithm for numerical function optimization.
+	 *   Applied Mathematics and Computation, 217(7):3166-3173,2010.
 	 * </PRE>
 	 * @author kobayashi
 	 * @since 2016/7/10
 	 * @version 0.1
 	 */
-	void vModified2Abc();
+	void vGAbc();
 
 	/**
 	 * <PRE>
-	 * 　ABC法改善手法を実行します。
+	 * 　人工蜂コロニー最適化法を実行します。
+	 *   粒子群最適化法のIWCFAを適用
 	 * </PRE>
 	 * @author kobayashi
 	 * @since 2015/8/3
 	 * @version 0.1
 	 */
-	void vModified3Abc( int iUpdateCount );
+	void vIWCFAAbc( int iUpdateCount );
 
 	/**
 	 * <PRE>
@@ -278,6 +282,17 @@ public:
 	 * @version 0.1
 	 */
 	void vMeAbc( int iUpdateCount );
+
+	/**
+	 * <PRE>
+	 * 　2014 Randomized Memetic Artificial Bee Colony Algorthimより
+	 *   International Journal of Emerging Trends of Technology in Computer Science, vol.3(1), 2014
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2015/7/28
+	 * @version 0.1
+	 */
+	void vRMAbc( int iUpdateCount );
 
 	/**
 	 * <PRE>
@@ -588,6 +603,17 @@ private:
 
 	/**
 	 * <PRE>
+	 * Onlooker Beeを実行します。
+	 * Randomized Memtic Bee Colony Method用
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/9/22
+	 * @version 0.1
+	 */
+	void vOnlookerBeeRM();
+
+	/**
+	 * <PRE>
 	 * Scout Beeを実行します。(大本の手法)
 	 * ver 0.1
 	 * </PRE>
@@ -702,15 +728,16 @@ private:
 	double lfFitCurrentBest;			// 現在の最良値の適応度
 	double *plfXnew1;					// Memetic Algorithm用更新配列
 	double *plfXnew2;					// Memetic Algorithm用更新配列
-	CUndx *pcUndx;					// UNDX用のインスタンス
-	int iCrossOverNum;				// 交叉回数
-	double lfAlpha;					// UNDX用第一親決定用α
-	double lfBeta;					// UNDX用第二親決定用β
-	CRex *pcRex;					// REX用のインスタンス
-	int iParentNumber;				// Rex用選択する親の数
+	CUndx *pcUndx;						// UNDX用のインスタンス
+	int iCrossOverNum;					// 交叉回数
+	double lfAlpha;						// UNDX用第一親決定用α
+	double lfBeta;						// UNDX用第二親決定用β
+	CRex *pcRex;						// REX用のインスタンス
+	int iParentNumber;					// Rex用選択する親の数
 	int iChildrenNumber;				// Rex用生成する子供の数
-	int iUpperEvalChildrenNumber;			// ARex用生成した子供の上位を選択する数
+	int iUpperEvalChildrenNumber;		// ARex用生成した子供の上位を選択する数
 	double lfLearningRate;				// ARex用学習率
+	std::vector<Rank_t> stlFitProb;		
 };
 
 class CAbcException

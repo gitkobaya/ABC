@@ -11,6 +11,7 @@ extern void vStartAbc( CCmdCheck *pcCmd, CAbc *pcAbc, int iLoc );
 extern void vTerminate( CAbc *pcAbc );
 extern void vOutputData( CCmdCheck *pcCmd, CAbc *pcAbc );
 extern void vSetRandom( CCmdCheck *pcCmd, CAbc *pcAbc );
+extern int iFinisher( CCmdCheck *pcCmd, CAbc *pcAbc, int iCount ); 
 
 int main(int argc, char* argv[])
 {
@@ -26,8 +27,6 @@ int main(int argc, char* argv[])
 		{
 			// 初期化を実行します。
 			vInitialize( &cmd, &abc );
-
-			printf("通りました～\n");
 
 			// 目的関数を設定します。
 			vSetObjectiveFunction( &cmd, &abc );
@@ -45,6 +44,14 @@ int main(int argc, char* argv[])
 				
 				// 結果を出力します。
 				vOutputData( &cmd, &abc );
+
+				// 終了条件を監視します。
+				lRet = iFinisher( &cmd, &abc, i );
+				if( lRet == 1) break;
+			}
+			if( cmd.iGetFinishFlag() == 2 )
+			{
+				printf("繰り返し回数,%d\n",i);
 			}
 			// 終了処理を実行します。
 			vTerminate( &abc );
@@ -105,7 +112,6 @@ void vInitialize( CCmdCheck *pcCmd, CAbc *pcAbc )
 	int iUpperEvalChildrenNumber;
 	double lfLearningRate;
 	
-//	printf("start initialization\n ");
 	iGenerationNumber	= pcCmd->iGetGenerationNumber();
 	iIntervalMinNum		= pcCmd->iGetIntervalMinNum();
 	iAbcDataNum			= pcCmd->iGetAbcDataNum();
@@ -213,19 +219,24 @@ void vTerminate( CAbc *pcAbc )
  *  目的関数を設定します。
  *  ver 0.1 初版
  *  ver 0.2 2016/08/10 ベンチマーク関数追加
+ *  ver 0.3 2016/09/14 ベンチマーク関数追加
  *</PRE>
  * @param pcCmd	コマンドチェッククラス
  * @param pcAbc	ABCアルゴリズムを実行するクラスインスタンス
  * @throw CAbcException
  * @author kobayashr
  * @since 0.1 2015/07/27
- * @version 0.2
+ * @version 0.3
  */
 void vSetObjectiveFunction( CCmdCheck *pcCmd, CAbc *pcAbc )
 {
 	if( strcmp(pcCmd->pcGetFuncName(), "sphere" ) == 0 )
 	{
 		pcAbc->vSetConstraintFunction( lfSphere );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "ellipsoid" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfEllipsoid );
 	}
 	else if( strcmp(pcCmd->pcGetFuncName(), "hyper-ellipsoid" ) == 0 )
 	{
@@ -251,9 +262,17 @@ void vSetObjectiveFunction( CCmdCheck *pcCmd, CAbc *pcAbc )
 	{
 		pcAbc->vSetConstraintFunction( lfRosenbrock );
 	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "rosenbrockstar" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfRosenbrockStar );
+	}
 	else if( strcmp(pcCmd->pcGetFuncName(), "rastrigin" ) == 0 )
 	{
 		pcAbc->vSetConstraintFunction( lfRastrigin );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "rastriginshift" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfRastriginShift );
 	}
 	else if( strcmp(pcCmd->pcGetFuncName(), "griewank" ) == 0 )
 	{
@@ -303,6 +322,18 @@ void vSetObjectiveFunction( CCmdCheck *pcCmd, CAbc *pcAbc )
 	{
 		pcAbc->vSetConstraintFunction( lfShubert );
 	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "ktablet" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfkTablet );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "Schaffer" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfSchaffer );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "Bohachevsky" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfBohachevsky );
+	}
 	else
 	{
 	}
@@ -336,15 +367,15 @@ void vStartAbc( CCmdCheck *pcCmd, CAbc *pcAbc, int iLoc )
 	}
 	else if( pcCmd->iGetAbcMethod() == 4 )
 	{
-		pcAbc->vModified2Abc();
+		pcAbc->vGAbc();
 	}
 	else if( pcCmd->iGetAbcMethod() == 5 )
 	{
-		pcAbc->vModified3Abc( iLoc );
+		pcAbc->vMeAbc( iLoc );
 	}
 	else if( pcCmd->iGetAbcMethod() == 6 )
 	{
-		pcAbc->vMeAbc( iLoc );
+		pcAbc->vRMAbc( iLoc );
 	}
 	else if( pcCmd->iGetAbcMethod() == 7 )
 	{
@@ -362,6 +393,10 @@ void vStartAbc( CCmdCheck *pcCmd, CAbc *pcAbc, int iLoc )
 	{
 		pcAbc->vARexAbc();
 	}
+	else if( pcCmd->iGetAbcMethod() == 11 )
+	{
+//		pcAbc->vHJAbc();
+	}
 	else
 	{
 	}
@@ -370,6 +405,7 @@ void vStartAbc( CCmdCheck *pcCmd, CAbc *pcAbc, int iLoc )
 /**
  *<PRE>
  *  Artificial Bee Colony法を実行した結果を出力します。
+ *  0を指定すると何も出力しません。
  *  ver 0.1 初版
  *</PRE>
  * @param pcCmd	コマンドチェッククラス
@@ -449,4 +485,42 @@ void vSetRandom( CCmdCheck *pcCmd, CAbc *pcAbc )
 	{
 		pcAbc->vSetRandom( pcCmd->lfGetRange() );
 	}
+}
+
+/**
+ *<PRE>
+ *  終了条件を設定します。
+ *  ver 0.1 初版
+ *</PRE>
+ * @param pcCmd	コマンドチェッククラス
+ * @param pcAbc	ABCアルゴリズムを実行するクラスインスタンス
+ * @param iCount 繰り返し回数
+ * @throw CAbcException
+ * @author kobayashi
+ * @since 0.1 2016/09/14
+ * @version 0.1
+ */
+int iFinisher( CCmdCheck *pcCmd, CAbc *pcAbc, int iCount )
+{
+	int iRet = 0;
+	// 回数による終了を指定した場合
+	if( pcCmd->iGetFinishFlag() == 1 )
+	{
+		if( iCount == pcCmd->iGetGenerationNumber() )
+		{
+			iRet = 1;
+		}
+	}
+	// 最適解に収束した場合に終了する場合
+	else if( pcCmd->iGetFinishFlag() == 2 )
+	{
+		if( pcAbc->lfGetGlobalMinAbcDataConstFuncValue() <= 0.0000001 )
+		{
+			iRet = 1;
+		}
+	}
+	else
+	{
+	}
+	return iRet;
 }

@@ -112,8 +112,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
-				EnableIntrinsicFunctions="true"
+				Optimization="1"
+				EnableIntrinsicFunctions="false"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -191,7 +191,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CRealCodedGa.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\CRex.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\csv.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\CUndx.cpp"
 				>
 			</File>
 			<File
@@ -229,7 +241,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CRealCodedGa.h"
+				>
+			</File>
+			<File
+				RelativePath=".\CRex.h"
+				>
+			</File>
+			<File
 				RelativePath=".\csv.h"
+				>
+			</File>
+			<File
+				RelativePath=".\CUndx.h"
 				>
 			</File>
 			<File

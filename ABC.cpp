@@ -43,6 +43,7 @@ CAbc::CAbc()
 	plfXnew2 = NULL;
 
 	pcUndx = NULL;
+	pcRex = NULL;
 }
 
 /**
@@ -123,16 +124,17 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 	CAbcException cae;
 
 	int i,j;
+	Rank_t tTempRankData;
 
 	iGenerationNumber	= iGenCount;
 	iAbcIntervalMinNum	= iIntervalMinNumData;
-	iAbcDataNum		= iGenNum;
+	iAbcDataNum			= iGenNum;
 	iAbcVectorDimNum	= iGenVectorDim;
 	iAbcSearchNum		= iSearchNum;
 	iAbcLimitCount		= iLimitCountData;
 	iAbcUpperSearchNum	= iAlphaData;
 	lfConvergenceParam	= lfDrData;
-	lfFitBound		= lfBoundData;
+	lfFitBound			= lfBoundData;
 	lfFitAccuracy		= lfAccuracyData;
 
 	initrand(time(NULL));
@@ -206,6 +208,8 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			plfXnew1[i] = 0.0;
 			plfXnew2[i] = 0.0;
 		}
+		// ソート用適応度を格納するベクターです。
+		stlFitProb.assign( iAbcSearchNum, Rank_t() );
 	}
 	catch( std::bad_alloc ba )
 	{
@@ -315,6 +319,8 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			plfXnew1[i] = 0.0;
 			plfXnew2[i] = 0.0;
 		}
+		// ソート用適応度を格納するベクターです。
+		stlFitProb.assign( iAbcSearchNum, Rank_t() );
 	}
 	catch( std::bad_alloc ba )
 	{
@@ -436,6 +442,8 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 		pcUndx->vInitialize( iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iCrossOverNum );
 		pcUndx->vSetAlpha( lfAlpha );
 		pcUndx->vSetBeta( lfBeta );
+		// ソート用適応度を格納するベクターです。
+		stlFitProb.assign( iAbcSearchNum, Rank_t() );
 	}
 	catch( std::bad_alloc ba )
 	{
@@ -567,6 +575,8 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 		pcUndx->vInitialize( iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iCrossOverNum );
 		pcUndx->vSetAlpha( lfAlpha );
 		pcUndx->vSetBeta( lfBeta );
+		// ソート用適応度を格納するベクターです。
+		stlFitProb.assign( iAbcSearchNum, Rank_t() );
 	}
 	catch( std::bad_alloc ba )
 	{
@@ -698,6 +708,8 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 		pcRex = new CRex();
 		// UNDXの初期化を実行します。
 		pcRex->vInitialize( iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iParentNumber, iChildrenNumber, lfLearningRate, iUpperEvalChildrenNumber );
+		// ソート用適応度を格納するベクターです。
+		stlFitProb.assign( iAbcSearchNum, Rank_t() );
 	}
 	catch( std::bad_alloc ba )
 	{
@@ -925,6 +937,7 @@ void CAbc::vTerminate()
 			delete pcUndx;
 			pcUndx = NULL;
 		}
+		stlFitProb.clear();
 	}
 	catch(...)
 	{
@@ -1006,12 +1019,15 @@ void CAbc::vAbc()
 /**
  * <PRE>
  * 　人工蜂コロニー最適化法を実行します。
+ *	 GBestを利用したABC法
+ *   Gbest-guided artificial bee colony algorithm for numerical function optimization.
+ *   Applied Mathematics and Computation, 217(7):3166-3173,2010.
  * </PRE>
  * @author kobayashi
  * @since 2015/7/28
  * @version 0.1
  */
-void CAbc::vModified2Abc()
+void CAbc::vGAbc()
 {
 	// employee bee の動作
 	vEmployBeeGBest();
@@ -1056,12 +1072,13 @@ void CAbc::vModifiedAbc( int iUpdateCount )
 /**
  * <PRE>
  * 　人工蜂コロニー最適化法を実行します。
+ *   粒子群最適化法のIWCFAを適用
  * </PRE>
  * @author kobayashi
  * @since 2015/7/28
  * @version 0.1
  */
-void CAbc::vModified3Abc( int iUpdateCount )
+void CAbc::vIWCFAAbc( int iUpdateCount )
 {
 	double lfFai = 0.0;
 	double lfK = 0.0;
@@ -1089,7 +1106,6 @@ void CAbc::vModified3Abc( int iUpdateCount )
 	vGetGlobalMaxMin();
 }
 
-
 /**
  * <PRE>
  * 　2013 Memetic search in artificial bee colony algorthimより
@@ -1107,7 +1123,7 @@ void CAbc::vMeAbc( int iUpdateCount )
 	double lfA    = -1.2;
 	double lfB    = 1.2;
 	double lfK = 0.0;
-	double lfPr = 0.3;
+	double lfPr = 0.4;
 	double lfF1 = 0.0;
 	double lfF2 = 0.0;
 
@@ -1122,10 +1138,95 @@ void CAbc::vMeAbc( int iUpdateCount )
 //	vScoutBeeUndx();
 
 	// Memetic artificial bee colony Algorithm(Prに関しては0～1の間の適当な値を設定。)
-	while( fabs(lfA-lfB) < 0.00000001 )
+	while( fabs(lfA-lfB) < 0.01 )
+	{
+		lfF1 = ( lfB-(lfB-lfA)*lfFai );
+		lfF2 = ( lfA+(lfB-lfA)*lfFai );
+
+		j = mrand() % ( iAbcSearchNum - 1 );
+		for( k = 0;k < iAbcVectorDimNum; k++ )
+		{
+			if( rnd() > lfPr )
+			{
+				plfXnew1[k] = plfGlobalMinAbcData[k] + lfF1*(plfGlobalMinAbcData[k]-pplfAbcData[j][k]);
+				plfXnew2[k] = plfGlobalMinAbcData[k] + lfF2*(plfGlobalMinAbcData[k]-pplfAbcData[j][k]);
+			}
+			else
+			{
+				plfXnew1[k] = plfGlobalMinAbcData[k];
+				plfXnew2[k] = plfGlobalMinAbcData[k];
+			}
+		}
+		lfFunc1 = pflfObjectiveFunction( plfXnew1, iAbcVectorDimNum );
+		lfFunc2 = pflfObjectiveFunction( plfXnew2, iAbcVectorDimNum );
+		if( lfFunc1 < lfFunc2 )
+		{
+			lfB = lfF2;
+			if( lfFunc1 < lfGlobalMinAbcData )
+			{
+				for( k = 0;k < iAbcVectorDimNum; k++ )
+				{
+					plfGlobalMinAbcData[k] = plfXnew1[k];
+				}
+			}
+		}
+		else
+		{
+			lfA = lfF1;
+			if( lfFunc2 < lfGlobalMinAbcData )
+			{
+				for( k = 0;k < iAbcVectorDimNum; k++ )
+				{
+					plfGlobalMinAbcData[k] = plfXnew2[k];
+				}
+			}
+		}
+	}
+	
+	// 局所最大値、最小値を取得します。
+	vGetLocalMaxMin();
+
+	// 大域的最大値、最小値を取得します。
+	vGetGlobalMaxMin();
+}
+
+/**
+ * <PRE>
+ * 　Randomized Memetic Artificial Bee Colony Algorthimより
+ *   International Journal of Emerging Trends of Technology in Computer Science, vol.3(1), 2014
+ * </PRE>
+ * @author kobayashi
+ * @since 2016/9/23
+ * @version 0.1
+ */
+void CAbc::vRMAbc( int iUpdateCount )
+{
+	int j, k;
+	double lfFunc1 = 0.0;
+	double lfFunc2 = 0.0;
+	double lfFai = 0.618;
+	double lfA    = -1.2;
+	double lfB    = 1.2;
+	double lfK = 0.0;
+	double lfPr = 0.4;
+	double lfF1 = 0.0;
+	double lfF2 = 0.0;
+
+	// employee bee の動作
+	vEmployBeeOrigin();
+
+	// onlookers beeの動作
+	vOnlookerBeeRM();
+
+	// scout bee の実行
+	vScoutBeeNormal();
+//	vScoutBeeUndx();
+
+	// Randomized Memetic artificial bee colony Algorithm(Prに関しては0～1の間の適当な値を設定。)前回論文では0.3が推奨値。
+	while( fabs(lfA-lfB) < 0.01 )
 	{
 		lfF1 = rnd()*( lfB-(lfB-lfA)*lfFai );
-		lfF2 = (1.0-rnd())*( lfA+(lfB-lfA)*lfFai );
+		lfF2 = (rnd()-1.0)*( lfA+(lfB-lfA)*lfFai );
 
 		j = mrand() % ( iAbcSearchNum - 1 );
 		for( k = 0;k < iAbcVectorDimNum; k++ )
@@ -1440,9 +1541,15 @@ double CAbc::lfEmployBeeEnhanced( int iUpdateCount )
 		if( lfObjFunc-lfFitBound >= lfFitAccuracy )	lfFitProb = 1.0/( lfObjFunc-lfFitBound );
 		else										lfFitProb = 1.0/lfFitAccuracy;
 		plfFit[i] = lfFitProb;
+
+		// 評価値をNp個算出します。
+		stlFitProb[i].iLoc = i;
+		stlFitProb[i].lfFitProb = lfFitProb;
 	}
-	// 適応度のソートを実行します。
-	qsort( 0, iAbcSearchNum, plfFit );
+//	// 適応度のソートを実行します。
+//	qsort( 0, iAbcSearchNum, plfFit );
+	// 目的関数値によるソートを実施します。
+	std::sort( stlFitProb.begin(), stlFitProb.end(), CCompareToRank() );
 
 	// 
 	if( iUpdateCount >= iAbcIntervalMinNum )
@@ -1455,47 +1562,45 @@ double CAbc::lfEmployBeeEnhanced( int iUpdateCount )
 			{
 				// 各探索点の相対評価確率を算出します。
 				lfRes = 0.0;
-				for( i = 0;i < iAbcSearchNum; i++ )	lfRes += plfFit[i]; 
-				for( i = 0;i < iAbcSearchNum; i++ )	plfFitProb[i] = plfFit[i]/lfRes;
+				for( i = 0;i < iAbcSearchNum; i++ )	lfRes += stlFitProb[i].lfFitProb; 
+				for( i = 0;i < iAbcSearchNum; i++ )	plfFitProb[i] = stlFitProb[i].lfFitProb/lfRes;
+			}
+			// 更新点候補を算出します。
+			if( iUpdateCount >= iAbcIntervalMinNum && lfFitJudge >= lfConvergenceParam )
+			{
+				// ルーレット戦略により、mの値を決定します。
+				lfProb = lfPrevProb = 0.0;
+				lfRand = rnd();
+				for( j = 0;j < iAbcSearchNum; j++ )
+				{
+					lfProb += plfFitProb[j];
+					if( lfPrevProb <= lfRand && lfRand <= lfProb ) m = j;
+					lfPrevProb = lfProb;
+				}
 			}
 			else
 			{
-				// 更新点候補を算出します。
-				if( iUpdateCount >= iAbcIntervalMinNum && lfFitJudge >= lfConvergenceParam )
-				{
-					// ルーレット戦略により、mの値を決定します。
-					lfProb = lfPrevProb = 0.0;
-					lfRand = rnd();
-					for( j = 0;j < iAbcSearchNum; j++ )
-					{
-						lfProb += plfFitProb[j];
-						if( lfPrevProb <= lfRand && lfRand <= lfProb ) m = j;
-						lfPrevProb = lfProb;
-					}
-				}
-				else
-				{
-					// 適応度上位αからランダムに決定します。
-					m = mrand() % ( iAbcSearchNum - 1 - iAbcUpperSearchNum ) + iAbcUpperSearchNum;
-				}
-				// ランダムに決定します。
-				h = mrand() % ( iAbcVectorDimNum - 1);
+				// 適応度上位αからランダムに決定します。
+//				m = mrand() % ( iAbcSearchNum - 1 - iAbcUpperSearchNum ) + iAbcUpperSearchNum;
+				m = mrand() % iAbcUpperSearchNum;
+			}
+			// ランダムに決定します。
+			h = mrand() % ( iAbcVectorDimNum - 1);
 	
-				for( i = 0;i < iAbcSearchNum; i++ )
-				{
-					lfRand = 2*rnd()-1;
-					for( j = 0; j < iAbcVectorDimNum; j++ )
-						pplfVelocityData[i][j] = pplfAbcData[i][j];
-					pplfVelocityData[i][h] = pplfAbcData[i][h] + lfRand*( pplfAbcData[i][h] - pplfAbcData[m][h] );
-				}
+			for( i = 0;i < iAbcSearchNum; i++ )
+			{
+				lfRand = 2*rnd()-1;
+				for( j = 0; j < iAbcVectorDimNum; j++ )
+					pplfVelocityData[i][j] = pplfAbcData[i][j];
+				pplfVelocityData[i][h] = pplfAbcData[i][h] + lfRand*( pplfAbcData[i][h] - pplfAbcData[stlFitProb[m].iLoc][h] );
 			}
 		}
 		else
 		{
 			// 各探索点の相対評価確率を算出します。
 			lfRes = 0.0;
-			for( i = 0;i < iAbcSearchNum; i++ )	lfRes += plfFit[i]; 
-			for( i = 0;i < iAbcSearchNum; i++ )	plfFitProb[i] = plfFit[i]/lfRes;
+			for( i = 0;i < iAbcSearchNum; i++ )	lfRes += stlFitProb[i].lfFitProb; 
+			for( i = 0;i < iAbcSearchNum; i++ )	plfFitProb[i] = stlFitProb[i].lfFitProb/lfRes;
 
 			// 更新点候補を算出します。
 			if( iUpdateCount >= iAbcIntervalMinNum && lfFitJudge >= lfConvergenceParam )
@@ -1513,7 +1618,8 @@ double CAbc::lfEmployBeeEnhanced( int iUpdateCount )
 			else
 			{
 				// その他の場合はランダムに決定します。
-				m = mrand() % ( iAbcSearchNum - 1 - iAbcUpperSearchNum ) + iAbcUpperSearchNum;
+//				m = mrand() % ( iAbcSearchNum - 1 - iAbcUpperSearchNum ) + iAbcUpperSearchNum;
+				m = mrand() % iAbcUpperSearchNum;
 			}
 			// ランダムに決定します。
 			h = mrand() % ( iAbcVectorDimNum - 1);
@@ -1523,7 +1629,7 @@ double CAbc::lfEmployBeeEnhanced( int iUpdateCount )
 				lfRand = 2*rnd()-1;
 				for( j = 0; j < iAbcVectorDimNum; j++ )
 					pplfVelocityData[i][j] = pplfAbcData[i][j];
-				pplfVelocityData[i][h] = pplfAbcData[i][h] + lfRand*( pplfAbcData[i][h] - pplfAbcData[m][h] );
+				pplfVelocityData[i][h] = pplfAbcData[i][h] + lfRand*( pplfAbcData[i][h] - pplfAbcData[stlFitProb[m].iLoc][h] );
 			}
 		}
 	}
@@ -1545,7 +1651,8 @@ double CAbc::lfEmployBeeEnhanced( int iUpdateCount )
 		else
 		{
 			// その他の場合はランダムに決定します。
-			m = mrand() % ( iAbcSearchNum - 1 - iAbcUpperSearchNum ) + iAbcUpperSearchNum;
+//			m = mrand() % ( iAbcSearchNum - 1 - iAbcUpperSearchNum ) + iAbcUpperSearchNum;
+			m = mrand() % iAbcUpperSearchNum;
 		}
 		// ランダムに決定します。
 		h = mrand() % ( iAbcVectorDimNum - 1);
@@ -1555,7 +1662,7 @@ double CAbc::lfEmployBeeEnhanced( int iUpdateCount )
 			lfRand = 2.0*rnd()-1.0;
 			for( j = 0; j < iAbcVectorDimNum; j++ )
 				pplfVelocityData[i][j] = pplfAbcData[i][j];
-			pplfVelocityData[i][h] = pplfAbcData[i][h] + lfRand*( pplfAbcData[i][h] - pplfAbcData[m][h] );
+			pplfVelocityData[i][h] = pplfAbcData[i][h] + lfRand*( pplfAbcData[i][h] - pplfAbcData[stlFitProb[m].iLoc][h] );
 		}
 	}
 
@@ -1817,7 +1924,7 @@ void CAbc::vEmployBeeGBest()
 	for( i = 0;i < iAbcSearchNum; i++ )
 	{
 		lfRand = rnd();
-		lfRand2 = rnd();
+		lfRand2 = 1.5*rnd();
 		for( j = 0; j < iAbcVectorDimNum; j++ )
 			pplfVelocityData[i][j] = pplfAbcData[i][j];
 		pplfVelocityData[i][h] = pplfAbcData[i][h] + lfRand*( pplfAbcData[i][h] - pplfAbcData[m][h] ) + lfRand2*( pplfAbcData[i][h] - pplfLocalMinAbcData[m][h] );
@@ -1988,7 +2095,7 @@ void CAbc::vOnlookerBeeOrigin()
  */
 void CAbc::vOnlookerBeeEnhanced( int iUpdateCount, double lfFitJudge )
 {
-	int i,j;
+	int i,j,l;
 	int c,m,h;
 	double lfRes = 0.0;
 	double lfRand = 0.0;
@@ -1999,43 +2106,45 @@ void CAbc::vOnlookerBeeEnhanced( int iUpdateCount, double lfFitJudge )
 	double lfFunc2 = 0.0;
 	double lfObjFunc = 0.0;
 
-	// 更新点候補を算出します。
-	if( iUpdateCount >= iAbcIntervalMinNum && lfFitJudge >= lfConvergenceParam )
+	for( l = 0;l < iAbcSearchNum; l++ )
 	{
-		// ルーレット戦略により、mの値を決定します。
-		lfProb = lfPrevProb = 0.0;
-		lfRand = rnd();
-		c = 0;
-		for( j = 0;j < iAbcSearchNum; j++ )
+		// 更新点候補を算出します。
+		if( iUpdateCount >= iAbcIntervalMinNum && lfFitJudge >= lfConvergenceParam )
 		{
-			lfProb += plfFitProb[j];
-			if( lfPrevProb <= lfRand && lfRand <= lfProb )	c = j;
-			lfPrevProb = lfProb;
+			// ルーレット戦略により、mの値を決定します。
+			lfProb = lfPrevProb = 0.0;
+			lfRand = rnd();
+			c = 0;
+			for( j = 0;j < iAbcSearchNum; j++ )
+			{
+				lfProb += plfFitProb[j];
+				if( lfPrevProb <= lfRand &&	lfRand <= lfProb )	c = j;
+				lfPrevProb = lfProb;
+			}
 		}
-	}
-	else
-	{
-		// その他の場合はランダムに決定します。
-		c = mrand() % ( iAbcSearchNum - 1 - iAbcUpperSearchNum ) + iAbcUpperSearchNum;
-	}
-	// ランダムに決定します。
-	h = mrand() % ( iAbcVectorDimNum - 1);
-
-	// 更新点候補を生成します。
-	for( i = 0;i < iAbcSearchNum; i++ )
-	{
+		else
+		{
+			// その他の場合は適応度上位αからランダムに決定します。
+//			c = mrand() % ( iAbcSearchNum - 1 - iAbcUpperSearchNum ) + iAbcUpperSearchNum;
+			c = mrand() % iAbcUpperSearchNum;
+		}
+		// ランダムに決定します。
+		h = mrand() % ( iAbcVectorDimNum - 1);
+	
+		// 更新点候補を生成します。
 		lfRand = 2*rnd()-1;
 		for( j = 0; j < iAbcVectorDimNum; j++ )
-			pplfVelocityData[i][j] = pplfAbcData[i][j];
-		pplfVelocityData[i][h] = pplfAbcData[i][h] + lfRand*( pplfAbcData[i][h] - pplfAbcData[c][h] );
-	}
-	// 各探索点を更新します。
-	lfFunc1 = pflfObjectiveFunction( pplfVelocityData[c], iAbcVectorDimNum );
-	lfFunc2 = pflfObjectiveFunction( pplfAbcData[c], iAbcVectorDimNum );
-	if( lfFunc1 < lfFunc2 )
-	{
-		for( j = 0;j < iAbcVectorDimNum; j++ )
-			pplfAbcData[c][j] = pplfVelocityData[c][j];
+			pplfVelocityData[stlFitProb[c].iLoc][j] = pplfAbcData[stlFitProb[c].iLoc][j];
+		pplfVelocityData[stlFitProb[c].iLoc][h] = pplfAbcData[stlFitProb[c].iLoc][h] + lfRand*( pplfAbcData[stlFitProb[c].iLoc][h] - pplfAbcData[stlFitProb[c].iLoc][h] );
+
+		// 各探索点を更新します。
+		lfFunc1 = pflfObjectiveFunction( pplfVelocityData[stlFitProb[c].iLoc], iAbcVectorDimNum );
+		lfFunc2 = pflfObjectiveFunction( pplfAbcData[stlFitProb[c].iLoc], iAbcVectorDimNum );
+		if( lfFunc1 < lfFunc2 )
+		{
+			for( j = 0;j < iAbcVectorDimNum; j++ )
+				pplfAbcData[stlFitProb[c].iLoc][j] = pplfVelocityData[stlFitProb[c].iLoc][j];
+		}
 	}
 }
 
@@ -2093,15 +2202,15 @@ void CAbc::vOnlookerBeeBestEnhanced( int iUpdateCount, double lfFitJudge )
 		pplfVelocityData[i][h] = pplfAbcData[i][h] + lfRand*( pplfAbcData[i][h] - plfGlobalMinAbcData[h] );
 	}
 	// 各探索点を更新します。
-	lfFunc1 = pflfObjectiveFunction( pplfVelocityData[c], iAbcVectorDimNum );
-	lfFunc2 = pflfObjectiveFunction( pplfAbcData[c], iAbcVectorDimNum );
+	lfFunc1 = pflfObjectiveFunction( pplfVelocityData[stlFitProb[c].iLoc], iAbcVectorDimNum );
+	lfFunc2 = pflfObjectiveFunction( pplfAbcData[stlFitProb[c].iLoc], iAbcVectorDimNum );
 	if( lfFunc1 < lfFunc2 )
 	{
 		for( j = 0;j < iAbcVectorDimNum; j++ )
-			pplfAbcData[c][j] = pplfVelocityData[c][j];
+			pplfAbcData[c][j] = pplfVelocityData[stlFitProb[c].iLoc][j];
 		piNonUpdateCount[c] = 0;
 	}
-	else	piNonUpdateCount[c] = piNonUpdateCount[c] + 1;
+	else	piNonUpdateCount[stlFitProb[c].iLoc] = piNonUpdateCount[stlFitProb[c].iLoc] + 1;
 }
 
 /**
@@ -2235,10 +2344,10 @@ void CAbc::vOnlookerBeeGBest()
 		h = mrand() % ( iAbcVectorDimNum - 1);
 
 		lfRand = rnd();
-		lfRand2 = rnd();
+		lfRand2 = 1.5*rnd();
 		for( j = 0; j < iAbcVectorDimNum; j++ )
 			pplfVelocityData[c][j] = pplfAbcData[c][j];
-		pplfVelocityData[c][h] = pplfAbcData[c][h] + lfRand*( pplfAbcData[c][h] - pplfAbcData[m][h] ) + lfRand2*( pplfAbcData[c][h] - plfGlobalMinAbcData[h] );
+		pplfVelocityData[c][h] = pplfAbcData[c][h] + lfRand*( pplfAbcData[c][h] - pplfAbcData[m][h] ) + lfRand2*( plfGlobalMinAbcData[h] - pplfAbcData[c][h] );
 		// 更新点候補を次のように更新します。
 		lfFunc1 = pflfObjectiveFunction( pplfVelocityData[c], iAbcVectorDimNum );
 		lfFunc2 = pflfObjectiveFunction( pplfAbcData[c], iAbcVectorDimNum );
@@ -2341,6 +2450,81 @@ void CAbc::vOnlookerBeeIWCFA( double lfK, double lfCoe1, double lfCoe2, int iUpd
 			piNonUpdateCount[c] = piNonUpdateCount[c] + 1;
 			piTotalNonUpdateCount[c] = piTotalNonUpdateCount[c] + 1;
 		}
+	}
+}
+
+/**
+ * <PRE>
+ * Onlooker Beeを実行します。
+ * Randomized Memtic Bee Colony Method用
+ * </PRE>
+ * @author kobayashi
+ * @since 2016/9/22
+ * @version 0.1
+ */
+void CAbc::vOnlookerBeeRM()
+{
+	int i,j;
+	int c,m,h;
+	double lfRes = 0.0;
+	double lfRand = 0.0;
+	double lfRand2 = 0.0;
+	double lfFitProb = 0.0;
+	double lfProb = 0.0;
+	double lfPrevProb = 0.0;
+	double lfFunc1 = 0.0;
+	double lfFunc2 = 0.0;
+	double lfObjFunc = 0.0;
+
+	for( i = 0;i < iAbcDataNum-iAbcSearchNum;  i++ )
+	{
+		lfRes = 0.0;
+		for(j = 0;j < iAbcSearchNum; j++ )
+		{
+			// 適応度の算出
+			lfObjFunc = pflfObjectiveFunction( pplfAbcData[j], iAbcVectorDimNum );
+			if( lfObjFunc >= 0.0 )	lfFitProb = 1.0/( 2.0*lfObjFunc+1.0 );
+			else			lfFitProb = 1.0+fabs( 1.0/lfObjFunc );
+			lfRes += lfFitProb;
+			plfFit[j] = lfFitProb;
+		}
+		// 適応度の正規化
+		for( j = 0;j < iAbcSearchNum; j++ )	plfFitProb[j] = plfFit[j]/lfRes;
+		// ルーレット戦略を実行
+		lfProb = lfPrevProb = 0.0;
+		lfRand = rnd();
+		c = 0;
+		for( j = 0;j < iAbcSearchNum; j++ )
+		{
+			lfProb += plfFitProb[j];
+			if( lfPrevProb <= lfRand && lfRand <= lfProb )	c = j;
+			lfPrevProb = lfProb;
+		}
+
+		// ルーレット選択した探索点に対して更新候補を求めます。
+
+		// 更新点候補を算出します。
+		// 更新点候補を乱数により決定します。
+		m = mrand() % ( iAbcSearchNum-1 );
+		h = mrand() % ( iAbcVectorDimNum - 1);
+
+		lfRand = rnd();
+		lfRand2 = 1.5*rnd();
+		for( j = 0; j < iAbcVectorDimNum; j++ )
+			pplfVelocityData[c][j] = pplfAbcData[c][j];
+		pplfVelocityData[c][h] = pplfAbcData[c][h] + lfRand*( pplfAbcData[c][h] - pplfAbcData[m][h] ) + lfRand2*( plfGlobalMinAbcData[h] - pplfAbcData[c][h] );
+		
+		// 更新点候補を次のように更新します。
+		lfFunc1 = pflfObjectiveFunction( pplfVelocityData[c], iAbcVectorDimNum );
+		lfFunc2 = pflfObjectiveFunction( pplfAbcData[c], iAbcVectorDimNum );
+
+		if( lfFunc1 < lfFunc2 )
+		{
+			for( j = 0;j < iAbcVectorDimNum; j++ )
+				pplfAbcData[c][j] = pplfVelocityData[c][j];
+			piNonUpdateCount[c] = 0;
+		}
+		else	piNonUpdateCount[c] = piNonUpdateCount[c] + 1;
 	}
 }
 
