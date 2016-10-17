@@ -351,6 +351,18 @@ public:
 	void vARexAbc();
 
 	/**
+	 * <PRE>
+	 * 　人工蜂コロニー最適化法を実行します。
+	 *   HJABC法を適用します。
+	 *   ver 0.1 初版
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/10/3
+	 * @version 0.1
+	 */
+	void vHJAbc();
+
+	/**
 	  *<PRE>
 	  * コールバック関数の定義です。
 	  *</PRE>
@@ -614,6 +626,17 @@ private:
 
 	/**
 	 * <PRE>
+	 * Onlooker Beeを実行します。(Hooke-Jeeves法用)
+	 * ver 0.1 初版
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/10/3
+	 * @version 0.1
+	 */
+	void vOnlookerBeeHJ();
+
+	/**
+	 * <PRE>
 	 * Scout Beeを実行します。(大本の手法)
 	 * ver 0.1
 	 * </PRE>
@@ -668,6 +691,17 @@ private:
 	 */
 	void vScoutBeeARex();
 
+	/**
+	* <PRE>
+	* Onlooker Beeを実行します。(AC-ABC用算術交叉を利用したABC法。)
+	* ver 0.1 初版
+	* </PRE>
+	* @author kobayashi
+	* @since 2016/10/13
+	* @version 0.1
+	*/
+	void vOnlookerBeeAC();
+		
 	/**
 	 * <PRE>
 	 * 　局所最大値、最小値を取得します。

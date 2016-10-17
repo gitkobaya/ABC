@@ -10,12 +10,14 @@
  * 　目的関数のSphere(1st De Jong's function)関数の計算を実行します。
  * 　-5.12 <= x_i <= 5.12 f_i(x_i)=0,  x_i=0, i = 1,2,･･･,n
  * 　f(x) = sum(x_{i}^{2})
+ *   ver 0.1 初期バージョン
+ *   ver 0.2 2016/9/27 関数計算の最適化
  * </PRE>
  * @param plfX			引数
  * @param iVectorLen	引数の次元数
  * @author kobayashi
  * @since 2015/6/6
- * @version 1.0
+ * @version 0.2
  */
 extern double lfSphere( double *plfX, int iVectorLen );
 
@@ -232,6 +234,21 @@ extern double lfExtendEasoms( double *plfX, int iVectorLen );
 
 /**
  * <PRE>
+ * 　目的関数のEquality-Constrained 関数の計算を実行します。
+ *   大域的最適解 Xi = 1.0/\sqrt(n) のときf(Xi) = -1 (0 <= Xi <= 1.0)
+ *   ver 0.1 初期バージョン
+ *   ver 0.2 2016/9/27 関数に誤りがあり修正
+ * </PRE>
+ * @param plfX			引数
+ * @param iVectorLen	引数の次元数
+ * @author kobayashi
+ * @since 2015/6/6
+ * @version 0.1
+ */
+extern double lfEqualityConstrained( double *plfX, int iVectorLen );
+
+/**
+ * <PRE>
  * 　目的関数のGriewank関数の計算を実行します。
  *   大域的最適解 Xi = 0 のときf(Xi) = 0 (-600 <= Xi <= 600)
  * </PRE>
@@ -322,19 +339,6 @@ extern double lfSchwefel( double *plfX, int iVectorLen );
  * @version 1.0
  */
 extern double lfSixHumpCamelBack( double *plfX, int iVectorLen );
-
-/**
- * <PRE>
- * 　目的関数のKatsuura's関数の計算を実行します。
- *   大域的最適解 Xi = 0 のときf(Xi) = 1 (-1000 <= Xi <= 1000)
- * </PRE>
- * @param plfX			引数
- * @param iVectorLen	引数の次元数
- * @author kobayashi
- * @since 2015/6/6
- * @version 1.0
- */
-extern double lfKatsuura( double *plfX, int iVectorLen );
 
 /**
  * <PRE>
@@ -479,6 +483,52 @@ extern double lfEggHolder( double *plfX, int iGenVector );
  * @version 1.0
  */
 extern double lfRana( double *plfX, int iGenVector );
+
+/**
+ * <PRE>
+ * 　目的関数のPathological test 関数の計算を実行します。
+ *	 -\sum^{n-1}_{i=1}( \dfrac{\sin^{2}(\sqrt(x^{2}_{i+1}+100x^{2}_{i})-0.5)}{(0.001(x^{2}_{i+1}-2x_{i+1}x_{i}+x^{2}_{i} + 1))} + 0.5)
+ * 　大域的最適解 -100 \leq X_{i} \leq 100
+ * </PRE>
+ * @param plfX			引数
+ * @param iVectorLen	引数の次元数
+ * @author kobayashi
+ * @since 2015/9/29
+ * @version 0.1
+ */
+extern double lfPathologicalTest( double *plfX, int iGenVector );
+
+/**
+ * <PRE>
+ * 　目的関数のMaster's cosine wave 関数の計算を実行します。
+ *	 \sum_{i=1}^{n-1}\exp(\dfrac{1}{8}(x_{i+1}^{2}+0.5x_{i}x_{i+1}+x_{I}^{2})\cos(4\sqrt(x_{i+1}^{2}+0.5x_{i}x_{i+1}+x_{I}^{2}))
+ * 　大域的最適解 -5 \leq X_{1}, X_{2} \leq 5
+ *   f(x)=-50, x= -200
+ *   ver 0.1 初期バージョン
+ * </PRE>
+ * @param plfX			引数
+ * @param iVectorLen	引数の次元数
+ * @author kobayashi
+ * @since 2016/9/28
+ * @version 0.1
+ */
+extern double lfMasterCosineWave( double *plfX, int iGenVector );
+
+/**
+ * <PRE>
+ * 　目的関数のKeane's 関数の計算を実行します。
+ *	 -(x_{2}-47)\sin{sqrt(x_{2}+dfrac{x_{1}}{2}+47))-x_{1}\sin{\sqrt{\abs{x_{1}-(x_{2}+47)}}}
+ * 　大域的最適解 0 \leq X_{1}, X_{2} 10
+ *   f(x)=-50, x= -200
+ *   ver 0.1 初期バージョン
+ * </PRE>
+ * @param plfX			引数
+ * @param iVectorLen	引数の次元数
+ * @author kobayashi
+ * @since 2016/9/28
+ * @version 0.1
+ */
+extern double lfKeane( double *plfX, int iGenVector );
 
 /**
  * <PRE>

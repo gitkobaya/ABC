@@ -31,6 +31,7 @@ int main(int argc, char* argv[])
 			// 目的関数を設定します。
 			vSetObjectiveFunction( &cmd, &abc );
 
+
 			// 初期値を設定します。
 			vSetRandom( &cmd, &abc );
 						
@@ -266,18 +267,6 @@ void vSetObjectiveFunction( CCmdCheck *pcCmd, CAbc *pcAbc )
 	{
 		pcAbc->vSetConstraintFunction( lfRosenbrockStar );
 	}
-	else if( strcmp(pcCmd->pcGetFuncName(), "rastrigin" ) == 0 )
-	{
-		pcAbc->vSetConstraintFunction( lfRastrigin );
-	}
-	else if( strcmp(pcCmd->pcGetFuncName(), "rastriginshift" ) == 0 )
-	{
-		pcAbc->vSetConstraintFunction( lfRastriginShift );
-	}
-	else if( strcmp(pcCmd->pcGetFuncName(), "griewank" ) == 0 )
-	{
-		pcAbc->vSetConstraintFunction( lfGriewank );
-	}
 	else if( strcmp(pcCmd->pcGetFuncName(), "3rd-de-jongs" ) == 0 )
 	{
 		pcAbc->vSetConstraintFunction( lf3rdDeJongsFunc );
@@ -302,25 +291,101 @@ void vSetObjectiveFunction( CCmdCheck *pcCmd, CAbc *pcAbc )
 	{
 		pcAbc->vSetConstraintFunction( lfAckley );
 	}
-	else if( strcmp(pcCmd->pcGetFuncName(), "Branins" ) == 0 )
+	else if( strcmp(pcCmd->pcGetFuncName(), "Easoms" ) == 0 )
 	{
-		pcAbc->vSetConstraintFunction( lfBraninsRCos );
+		pcAbc->vSetConstraintFunction( lfEasoms );
 	}
-	else if( strcmp(pcCmd->pcGetFuncName(), "Schwefel" ) == 0 )
+	else if( strcmp(pcCmd->pcGetFuncName(), "ExtendEasoms" ) == 0 )
 	{
-		pcAbc->vSetConstraintFunction( lfSchwefel );
+		pcAbc->vSetConstraintFunction( lfExtendEasoms );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "EqualityConstrained" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfEqualityConstrained );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "griewank" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfGriewank );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "michaelwicz" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfMichaelwicz );
 	}
 	else if( strcmp(pcCmd->pcGetFuncName(), "katsuura" ) == 0 )
 	{
 		pcAbc->vSetConstraintFunction( lfKatsuura );
 	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "rastrigin" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfRastrigin );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "rastriginshift" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfRastriginShift );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "Schwefel" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfSchwefel );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "Sixhumpcamelback" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfSixHumpCamelBack );
+	}
 	else if( strcmp(pcCmd->pcGetFuncName(), "langermann" ) == 0 )
 	{
 		pcAbc->vSetConstraintFunction( lfLangermann );
 	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "Braninsrcos" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfBraninsRCos );
+	}
 	else if( strcmp(pcCmd->pcGetFuncName(), "Shubert" ) == 0 )
 	{
 		pcAbc->vSetConstraintFunction( lfShubert );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "dropwave" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfDropWave );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "goldsteinprice" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfGoldsteinPrice );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "Shekelsfoxholes" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfShekelsFoxholes );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "Pavianifoxholes" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfPavianiFoxholes );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "Sineenvelopesinewave" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfSineEnvelopeSineWave );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "Eggholder" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfEggHolder );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "rana" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfRana );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "pathologicaltest" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfPathologicalTest );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "Mastercosniewave" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfMasterCosineWave );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "keane" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfKeane );
+	}
+	else if( strcmp(pcCmd->pcGetFuncName(), "trid" ) == 0 )
+	{
+		pcAbc->vSetConstraintFunction( lfTrid );
 	}
 	else if( strcmp(pcCmd->pcGetFuncName(), "ktablet" ) == 0 )
 	{
