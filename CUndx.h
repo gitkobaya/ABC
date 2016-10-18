@@ -78,6 +78,7 @@ private:
 	double **pplfChildren;
 	double *plfChild1;
 	double *plfChild2;
+	int *piParentLoc;
 	int iBestLoc;
 };
 

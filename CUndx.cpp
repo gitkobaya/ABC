@@ -23,6 +23,7 @@ CUndx::CUndx()
 	pplfChildren = NULL;
 	plfChild1 = NULL;
 	plfChild2 = NULL;
+	piParentLoc = NULL;
 }
 
 CUndx::~CUndx()
@@ -73,6 +74,11 @@ void CUndx::vInitialize( int iGenerationNum, int iGenNum, int iGenVectorData, in
 			plfChild1[i] = 0.0;
 			plfChild2[i] = 0.0;
 		}
+		piParentLoc = new int[iGenNumber];
+		for (i = 0; i < iGenNum; i++)
+		{
+			piParentLoc[i] = i;
+		}
 		initrand( (unsigned long)time(NULL) );
 		initrnd();
 	}
@@ -99,11 +105,11 @@ void CUndx::vTerminate()
 		CRealCodedGa::vTerminate();
 
 		// 終了処理を実行します。
-		if( pplfChildren != NULL )
+		if (pplfChildren != NULL)
 		{
-			for( i = 0;i < iChildrenNumber; i++ )
+			for (i = 0; i < iChildrenNumber; i++)
 			{
-				if( pplfChildren[i] != NULL )
+				if (pplfChildren[i] != NULL)
 				{
 					delete[] pplfChildren[i];
 					pplfChildren[i] = NULL;
@@ -112,15 +118,20 @@ void CUndx::vTerminate()
 			delete[] pplfChildren;
 			pplfChildren = NULL;
 		}
-		if( plfChild1 != NULL )
+		if (plfChild1 != NULL)
 		{
 			delete[] plfChild1;
 			plfChild1 = NULL;
 		}
-		if( plfChild2 != NULL )
-		{	
+		if (plfChild2 != NULL)
+		{
 			delete[] plfChild2;
 			plfChild2 = NULL;
+		}
+		if (piParentLoc != NULL)
+		{
+			delete[] piParentLoc;
+			piParentLoc = NULL;
 		}
 	}
 	catch( ... )
@@ -208,7 +219,10 @@ void CUndx::vSelectParent( double **pplfParent1, double **pplfParent2, double **
 	int i3 = 0;
 	double lfSumAbs1 = 0.0;
 	double lfSumAbs2 = 0.0;
+	int iLoc;
+	int iTemp;
 	// UNDXを行う親を2つ決定します。
+#if 0
 	i1 = mrand() % iGenNumber;
 	for(;;)
 	{
@@ -253,12 +267,23 @@ void CUndx::vSelectParent( double **pplfParent1, double **pplfParent2, double **
 			}
 		}
 	}
-	*pplfParent1 = pplfGens[i1];
-	*pplfParent2 = pplfGens[i2];
-	*pplfParent3 = pplfGens[i3];
-	*piLoc1 = i1;
-	*piLoc2 = i2;
-	*piLoc3 = i3;
+#else
+	// 親をランダムにNp個選択します。
+	for (i = iGenNumber - 1; i > 0; i--)
+	{
+		iLoc = (int)((i + 1)*rnd());
+		iTemp = piParentLoc[i];
+		piParentLoc[i] = piParentLoc[iLoc];
+		piParentLoc[iLoc] = iTemp;
+	}
+
+#endif
+	*pplfParent1 = pplfGens[piParentLoc[0]];
+	*pplfParent2 = pplfGens[piParentLoc[1]];
+	*pplfParent3 = pplfGens[piParentLoc[2]];
+	*piLoc1 = piParentLoc[0];
+	*piLoc2 = piParentLoc[1];
+	*piLoc3 = piParentLoc[2];
 }
 
 void CUndx::vUndx( double *plfParent1, double *plfParent2, double *plfParent3, double lfAlpha, double lfBeta, double *plfChild1, double *plfChild2 )
