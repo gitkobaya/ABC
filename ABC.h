@@ -351,16 +351,43 @@ public:
 	void vARexAbc();
 
 	/**
-	 * <PRE>
-	 * 　人工蜂コロニー最適化法を実行します。
-	 *   HJABC法を適用します。
-	 *   ver 0.1 初版
-	 * </PRE>
-	 * @author kobayashi
-	 * @since 2016/10/3
-	 * @version 0.1
-	 */
-	void vHJAbc();
+	* <PRE>
+	* 　人工蜂コロニー最適化法を実行します。
+	*   HJABC法を適用します。
+	*   ver 0.1 初版
+	*   ver 0.2 アルゴリズムが実現できていなかったので実現中。
+	* </PRE>
+	* @param iUpdateCount
+	* @author kobayashi
+	* @since 2016/10/3
+	* @version 0.1
+	*/
+	void vHJAbc(int iUpdateCount);
+
+	/**
+	* <PRE>
+	* 　人工蜂コロニー最適化法を実行します。
+	*   ACABC法を適用します。
+	*   ver 0.1 初版
+	* </PRE>
+	* @author kobayashi
+	* @since 2016/10/3
+	* @version 0.1
+	*/
+	void vACAbc();
+
+	/**
+	* <PRE>
+	* 　交叉手法を導入した人工蜂コロニー最適化法を実行します。
+	*   Ivona Brajevic, Crossover-based artificial bee colony algorithm for constrained optimization problems, Neural Computing & Application (2015) 26:1587-1601.
+	*   ver 0.1 初版
+	* </PRE>
+	* @param iCount 現在の計算回数
+	* @author kobayashi
+	* @since 2016/10/19
+	* @version 0.1
+	*/
+	void vCBAbc(int iUpdateCount );
 
 	/**
 	  *<PRE>
@@ -540,6 +567,18 @@ private:
 	void vEmployBeeIWCFA( double lfK, double lfCoe1, double lfCoe2, int iUpdateCount );
 
 	/**
+	* <PRE>
+	*   Ivona Brajevic, Crossover-based artificial bee colony algorithm for constrained optimization problems, Neural Computing & Application (2015) 26:1587-1601.
+	*   ver 0.1
+	* </PRE>
+	* @param lfMr 更新用パラメーター
+	* @author kobayashi
+	* @since 2016/10/19
+	* @version 0.1
+	*/
+	void vEmployBeeCB(double lfMr);
+
+	/**
 	 * <PRE>
 	 * 　Onlooker Beeを実行します。
 	 * </PRE>
@@ -647,6 +686,17 @@ private:
 	void vScoutBeeOrigin();
 
 	/**
+	* <PRE>
+	*   Ivona Brajevic, Crossover-based artificial bee colony algorithm for constrained optimization problems, Neural Computing & Application (2015) 26:1587-1601.
+	*   ver 0.1
+	* </PRE>
+	* @author kobayashi
+	* @since 2016/10/19
+	* @version 0.1
+	*/
+	void vOnlookerBeeCB(double lfMr);
+		
+	/**
 	 * <PRE>
 	 * Scout Beeを実行します。
 	 * ver 0.1
@@ -701,6 +751,17 @@ private:
 	* @version 0.1
 	*/
 	void vOnlookerBeeAC();
+		
+	/**
+	* <PRE>
+	*   Ivona Brajevic, Crossover-based artificial bee colony algorithm for constrained optimization problems, Neural Computing & Application (2015) 26:1587-1601.
+	*   ver 0.1
+	* </PRE>
+	* @author kobayashi
+	* @since 2016/10/19
+	* @version 0.1
+	*/
+	void vScoutBeeCB(int iCount);
 		
 	/**
 	 * <PRE>

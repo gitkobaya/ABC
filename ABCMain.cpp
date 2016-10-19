@@ -150,13 +150,13 @@ void vInitialize( CCmdCheck *pcCmd, CAbc *pcAbc )
 		pcAbc->vInitialize( iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount );
 		pcAbc->vSetRange( lfRange );
 	}
-	//　新バージョン
+	//　GbestABC法
 	else if( pcCmd->iGetAbcMethod() == 4 )
 	{
 		pcAbc->vInitialize( iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount );
 		pcAbc->vSetRange( lfRange );
 	}
-	//　新バージョンその２
+	//　Memetic ABC法
 	else if( pcCmd->iGetAbcMethod() == 5 )
 	{
 		pcAbc->vInitialize( iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount );
@@ -175,23 +175,29 @@ void vInitialize( CCmdCheck *pcCmd, CAbc *pcAbc )
 		pcAbc->vInitialize( iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iCrossOverNum, lfAlpha, lfBeta );
 		pcAbc->vSetRange( lfRange );
 	}
-	// UNDXを混ぜたハイブリッドABC法(提案手法2)
-	else if( pcCmd->iGetAbcMethod() == 8 )
-	{
-		pcAbc->vInitialize( iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iIntervalMinNum, iAbcUpperSearchNum, lfConvergenceParam, lfFitBound, lfFitAccuracy, iCrossOverNum, lfAlpha, lfBeta );
-		pcAbc->vSetRange( lfRange );
-	}
 	// REXを混ぜたハイブリッドABC法(提案手法3)
-	else if( pcCmd->iGetAbcMethod() == 9 )
+	else if( pcCmd->iGetAbcMethod() == 8 )
 	{
 		pcAbc->vInitialize( iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iIntervalMinNum, iAbcUpperSearchNum, lfConvergenceParam, lfFitBound, lfFitAccuracy, iParentNumber, iChildrenNumber, iUpperEvalChildrenNumber, lfLearningRate );
 		pcAbc->vSetRange( lfRange );
 	}
 	// AREXを混ぜたハイブリッドABC法(提案手法4)
-	else if( pcCmd->iGetAbcMethod() == 10 )
+	else if( pcCmd->iGetAbcMethod() == 9 )
 	{
 		pcAbc->vInitialize( iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iIntervalMinNum, iAbcUpperSearchNum, lfConvergenceParam, lfFitBound, lfFitAccuracy, iParentNumber, iChildrenNumber, iUpperEvalChildrenNumber, lfLearningRate );
 		pcAbc->vSetRange( lfRange );
+	}
+	// HJABC法
+	else if (pcCmd->iGetAbcMethod() == 10)
+	{
+		pcAbc->vInitialize(iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iIntervalMinNum, iAbcUpperSearchNum, lfConvergenceParam, lfFitBound, lfFitAccuracy, iParentNumber, iChildrenNumber, iUpperEvalChildrenNumber, lfLearningRate);
+		pcAbc->vSetRange(lfRange);
+	}
+	// ACABC法
+	else if (pcCmd->iGetAbcMethod() == 11 )
+	{
+		pcAbc->vInitialize(iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iIntervalMinNum, iAbcUpperSearchNum, lfConvergenceParam, lfFitBound, lfFitAccuracy, iParentNumber, iChildrenNumber, iUpperEvalChildrenNumber, lfLearningRate);
+		pcAbc->vSetRange(lfRange);
 	}
 }
 
@@ -448,19 +454,19 @@ void vStartAbc( CCmdCheck *pcCmd, CAbc *pcAbc, int iLoc )
 	}
 	else if( pcCmd->iGetAbcMethod() == 8 )
 	{
-		pcAbc->vUndxEnhancedAbc( iLoc );
+		pcAbc->vRexAbc();
 	}
 	else if( pcCmd->iGetAbcMethod() == 9 )
 	{
-		pcAbc->vRexAbc();
+		pcAbc->vARexAbc();
 	}
 	else if( pcCmd->iGetAbcMethod() == 10 )
 	{
-		pcAbc->vARexAbc();
+		pcAbc->vHJAbc( iLoc );
 	}
-	else if( pcCmd->iGetAbcMethod() == 11 )
+	else if (pcCmd->iGetAbcMethod() == 11 )
 	{
-//		pcAbc->vHJAbc();
+		pcAbc->vACAbc();
 	}
 	else
 	{

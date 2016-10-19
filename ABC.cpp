@@ -1518,18 +1518,33 @@ void CAbc::vARexAbc()
  * 　人工蜂コロニー最適化法を実行します。
  *   HJABC法を適用します。
  *   ver 0.1 初版
+ *   ver 0.2 アルゴリズムが実現できていなかったので実現中。
  * </PRE>
+ * @param iUpdateCount
  * @author kobayashi
  * @since 2016/10/3
  * @version 0.1
  */
-void CAbc::vHJAbc()
+void CAbc::vHJAbc( int iUpdateCount )
 {
 	int i,j,k;
 	int iCounter = 1000;
 	double lfX11;
 	double lfX12;
 	double lfRes = 0.0;
+	std::vector<double> stlStepSize;
+	double lfStepSize = 1.0;
+	double *plfX1;
+	double *plfX2;
+	double lfObjFunc = 0.0;
+	double lfObjFunc1 = 0.0;
+	double lfObjFunc2 = 0.0;
+	double lfFuncMin = DBL_MAX;
+
+	plfX1 = new double[iAbcVectorDimNum];
+	memset(plfX1, 0, sizeof(double)*iAbcVectorDimNum);
+	plfX2 = new double[iAbcVectorDimNum];
+	memset(plfX2, 0, sizeof(double)*iAbcVectorDimNum);
 
 	// employee bee の動作
 	vEmployBeeOrigin();
@@ -1546,23 +1561,93 @@ void CAbc::vHJAbc()
 	// 大域的最大値、最小値を取得します。
 	vGetGlobalMaxMin();
 
+	// ステップサイズの計算を実行します。
+	if (iUpdateCount % iInterval == 0)
+	{
+		for (j = 0; j < iAbcVectorDimNum; j++)
+		{
+			lfRes = 0.0;
+			for (i = 0; i < iAbcSearchNum; i++)
+				lfRes += pplfAbcData[i][j] - plfGlobalMinAbcData[j];
+			stlStepSize.push_back(0.1*lfRes / (double)iAbcSearchNum);
+		}
+	}
 	// Hooke-Jeeves法を適用します。
 	for( k = 0;k < iCounter; k++ )
 	{
 		// 各ベクトルのステップサイズの計算をします。
-		for( j = 0;j < iAbcVectorDimNum; j++ )
+		// Exploratory Move(EM Step)
+		for (j = 0; j < iAbcVectorDimNum; j++)
 		{
-			lfRes = 0.0;
-			for( i = 0;i < iAbcSearchNum; i++ )
+			plfX1[j] = plfGlobalMinAbcData[j] + stlStepSize[j];
+			lfObjFunc = pflfObjectiveFunction(plfX1, iAbcVectorDimNum);
+			if (lfObjFunc < lfFuncMin)
 			{
-				lfRes += pplfAbcData[i][j] - plfGlobalMinAbcData[j];
+				lfFuncMin = lfObjFunc;
 			}
-//			stlStepSize.push_back( 0.1*lfRes/(double)iAbcSearchNum );
+			else
+			{
+				plfX1[j] = plfGlobalMinAbcData[j] - stlStepSize[j];
+				lfObjFunc = pflfObjectiveFunction(plfX1, iAbcVectorDimNum);
+				if (lfObjFunc < lfFuncMin)
+				{
+					lfFuncMin = lfObjFunc;
+				}
+				else
+				{
+					plfX1[j] = plfGlobalMinAbcData[j];
+				}
+			}
 		}
-		for( j = 0;j < iAbcVectorDimNum; j++ )
+		if (lfObjFunc < lfFuncMin)
 		{
-//			lfX11 = plfGlobaMinAbcData[j] + stlStepSize[j];
-//			lfX12 = plfGlobaMinAbcData[j] - stlStepSize[j];
+			// Pattern Move(PM step)
+			for (i = 0; i < iAbcVectorDimNum; i++)
+			{
+				if (plfX1[i] < plfGlobalMinAbcData[i]) stlStepSize[i] = -fabs(stlStepSize[i]);
+				else                                   stlStepSize[i] = fabs(stlStepSize[i]);
+			}
+			for (i = 0; i < iAbcVectorDimNum; i++)
+			{
+				plfX2[i] = plfX1[i] + (plfX1[i] - plfGlobalMinAbcData[i]);
+				plfGlobalMinAbcData[i] = plfX1[i];
+			}
+			// Exploratory Move(EM Step)
+			for (j = 0; j < iAbcVectorDimNum; j++)
+			{
+				plfX1[j] = plfX2[j] + stlStepSize[j];
+				lfObjFunc = pflfObjectiveFunction(plfX1, iAbcVectorDimNum);
+				if (lfObjFunc < lfFuncMin)
+				{
+					lfFuncMin = lfObjFunc;
+				}
+				else
+				{
+					plfX1[j] = plfGlobalMinAbcData[j] - stlStepSize[j];
+					lfObjFunc = pflfObjectiveFunction(plfX1, iAbcVectorDimNum);
+					if (lfObjFunc < lfFuncMin)
+					{
+						lfFuncMin = lfObjFunc;
+					}
+					else
+					{
+						plfX2[j] = plfGlobalMinAbcData[j];
+					}
+				}
+				lfObjFunc1 = pflfObjectiveFunction(plfGlobalMinAbcData, iAbcVectorDimNum);
+				lfObjFunc2 = pflfObjectiveFunction(plfX1, iAbcVectorDimNum);
+				if (lfObjFunc2 < lfObjFunc1) break;
+				else
+				{
+					if (lfStepSize < 0.0000001) break;
+					else
+					{
+						lfStepSize = 0.5*lfStepSize;
+						for (j = 0; j < iAbcVectorDimNum; j++)
+							stlStepSize[j] = stlStepSize[j] * 0.5;
+					}
+				}
+			}
 		}
 	}
 }
@@ -1587,6 +1672,43 @@ void CAbc::vACAbc()
 
 	// scout bee の実行
 	vScoutBeeNormal();
+
+	// 局所最大値、最小値を取得します。
+	vGetLocalMaxMin();
+
+	// 大域的最大値、最小値を取得します。
+	vGetGlobalMaxMin();
+}
+
+/**
+* <PRE>
+* 　交叉手法を導入した人工蜂コロニー最適化法を実行します。
+*   Ivona Brajevic, Crossover-based artificial bee colony algorithm for constrained optimization problems, Neural Computing & Application (2015) 26:1587-1601.
+*   ver 0.1 初版
+* </PRE>
+* @param iCount 現在の計算回数
+* @author kobayashi
+* @since 2016/10/19
+* @version 0.1
+*/
+void CAbc::vCBAbc( int iUpdateCount )
+{
+	double lfMr = 0.1;
+	double lfMrMax = 0.9;
+	double lfMCN = iGenerationNumber;
+	double lfP = 0.3;
+
+	// employee bee の動作
+	vEmployBeeCB( lfMr );
+
+	// onlookers beeの動作
+	vOnlookerBeeCB( lfMr );
+
+	// scout bee の実行
+	vScoutBeeCB( iUpdateCount );
+
+	// 閾値判定を更新。
+	lfMr = lfMr < lfMrMax ? lfMr + (lfMrMax - 0.1) / (lfP*lfMCN) : lfMrMax;
 
 	// 局所最大値、最小値を取得します。
 	vGetLocalMaxMin();
@@ -2138,6 +2260,61 @@ void CAbc::vEmployBeeIWCFA( double lfK, double lfCoe1, double lfCoe2, int iUpdat
 			piNonUpdateCount[i] = piNonUpdateCount[i] + 1;
 			piTotalNonUpdateCount[i] = piTotalNonUpdateCount[i] + 1;
 		}
+	}
+}
+
+/**
+* <PRE>
+*   Ivona Brajevic, Crossover-based artificial bee colony algorithm for constrained optimization problems, Neural Computing & Application (2015) 26:1587-1601.
+*   ver 0.1
+* </PRE>
+* @param lfMr 更新用パラメーター
+* @author kobayashi
+* @since 2016/10/19
+* @version 0.1
+*/
+void CAbc::vEmployBeeCB( double lfMr )
+{
+	int m, h;
+	int i, j;
+	double lfRand = 0.0;
+	double lfFunc1 = 0.0;
+	double lfFunc2 = 0.0;
+	double lfMr = 0.0;
+	double lfMrMax = 0.9;
+	double lfP = 0.3;
+	double lfMCN = iGenerationNumber;
+	double lfLowerVelocity = -DBL_MAX;
+	double lfUpperVelocity = DBL_MAX;
+
+	// employee bee の動作
+	// 更新点候補を算出します。
+	m = mrand() % (iAbcSearchNum - 1);
+
+	for (i = 0; i < iAbcSearchNum; i++)
+	{
+		lfRand = 2 * rnd() - 1;
+		for (j = 0; j < iAbcVectorDimNum; j++)
+		{
+			pplfVelocityData[i][j] = rnd() < lfMr ? pplfAbcData[i][j] + lfRand*(pplfAbcData[i][j] - pplfAbcData[m][j]) : pplfAbcData[i][j];
+			if (pplfVelocityData[i][j] < lfLowerVelocity) pplfVelocityData[i][j] = 2.0*lfLowerVelocity - pplfVelocityData[i][j];
+			else if (pplfVelocityData[i][j] > lfUpperVelocity) pplfVelocityData[i][j] = 2.0*lfUpperVelocity - pplfVelocityData[i][j];
+		}
+	}
+
+	// 各探索点と更新しなかった回数を格納する変数を更新します。
+	for (i = 0; i < iAbcSearchNum; i++)
+	{
+		lfFunc1 = pflfObjectiveFunction(pplfVelocityData[i], iAbcVectorDimNum);
+		lfFunc2 = pflfObjectiveFunction(pplfAbcData[i], iAbcVectorDimNum);
+
+		if (lfFunc1 < lfFunc2)
+		{
+			for (j = 0; j < iAbcVectorDimNum; j++)
+				pplfAbcData[i][j] = pplfVelocityData[i][j];
+			piNonUpdateCount[i] = 0;
+		}
+		else	piNonUpdateCount[i] = piNonUpdateCount[i] + 1;
 	}
 }
 
@@ -2787,7 +2964,7 @@ void CAbc::vOnlookerBeeAC()
 	{
 		if (lfRand < lfCrossOverRate )
 		{
-			pplfVelocityData[m][j] = lfLabmda*pplfAbcData[c1][j] + (1.0 - lfLambda)*pplfAbcData[c2][j];
+			pplfVelocityData[m][j] = lfLambda*pplfAbcData[c1][j] + (1.0 - lfLambda)*pplfAbcData[c2][j];
 		}
 		else
 		{
@@ -2831,6 +3008,98 @@ void CAbc::vScoutBeeOrigin()
 				pplfAbcData[i][k] = lfSolveRange*(2.0*lfRand-1.0);
 			}
 		}
+	}
+}
+
+/**
+* <PRE>
+*   Ivona Brajevic, Crossover-based artificial bee colony algorithm for constrained optimization problems, Neural Computing & Application (2015) 26:1587-1601.
+*   ver 0.1
+* </PRE>
+* @author kobayashi
+* @since 2016/10/19
+* @version 0.1
+*/
+void CAbc::vOnlookerBeeCB( double lfMr )
+{
+	int i, j;
+	int c, m, h;
+	double lfRes = 0.0;
+	double lfRand = 0.0;
+	double lfFitProb = 0.0;
+	double lfProb = 0.0;
+	double lfPrevProb = 0.0;
+	double lfFunc1 = 0.0;
+	double lfFunc2 = 0.0;
+	double lfObjFunc = 0.0;
+	double lfMr = 0.0;
+	double lfMrMax = 0.9;
+	double lfP = 0.3;
+	double lfMCN = iGenerationNumber;
+	double lfLowerVelocity = -DBL_MAX;
+	double lfUpperVelocity = DBL_MAX;
+	double lfMaxFit;
+
+	lfRes = 0.0;
+	for (j = 0; j < iAbcSearchNum; j++)
+	{
+		lfObjFunc = pflfObjectiveFunction(pplfAbcData[j], iAbcVectorDimNum);
+		plfFit[j] = lfObjFunc;
+		lfMaxFit = plfFit[i] < lfMaxFit ? lfMaxFit : plfFit[i];
+	}
+	lfRes = 0.0;
+	for (j = 0; j < iAbcSearchNum; j++)
+	{
+		// 適応度の算出
+		plfFit[i] = 0.9*(plfFit[i] / lfMaxFit) + 0.1;
+		lfRes += plfFit[i];
+	}
+	// 適応度の正規化
+	for (j = 0; j < iAbcSearchNum; j++)	plfFitProb[j] = plfFit[j] / lfRes;
+	// ルーレット戦略を実行
+	lfProb = lfPrevProb = 0.0;
+	lfRand = rnd();
+	c = 0;
+	for (j = 0; j < iAbcSearchNum; j++)
+	{
+		lfProb += plfFitProb[j];
+		if (lfPrevProb <= lfRand && lfRand <= lfProb)	c = j;
+		lfPrevProb = lfProb;
+	}
+	// ルーレット選択した探索点に対して更新候補を求めます。
+
+	// 更新点候補を算出します。
+	// 更新点候補を乱数により決定します。
+	m = mrand() % (iAbcSearchNum - 1);
+	h = mrand() % (iAbcSearchNum - 1);
+
+	lfMr = lfMr < lfMrMax ? lfMr + (lfMrMax - 0.1) / (lfP*lfMCN) : lfMrMax;
+	for (i = 0; i < iAbcSearchNum; i++)
+	{
+		if (lfDelta < plfFitProb[i])
+		{
+			lfRand = 2 * rnd() - 1;
+			for (j = 0; j < iAbcVectorDimNum; j++)
+			{
+				pplfVelocityData[i][j] = rnd() < lfMr ? pplfAbcData[i][j] + lfRand*(pplfAbcData[m][j] - pplfAbcData[h][j]) : pplfAbcData[i][j];
+				if (pplfVelocityData[i][j] < lfLowerVelocity) pplfVelocityData[i][j] = 2.0*lfLowerVelocity - pplfVelocityData[i][j];
+				else if (pplfVelocityData[i][j] > lfUpperVelocity) pplfVelocityData[i][j] = 2.0*lfUpperVelocity - pplfVelocityData[i][j];
+			}
+		}
+	}
+	// 各探索点と更新しなかった回数を格納する変数を更新します。
+	for (i = 0; i < iAbcSearchNum; i++)
+	{
+		lfFunc1 = pflfObjectiveFunction(pplfVelocityData[i], iAbcVectorDimNum);
+		lfFunc2 = pflfObjectiveFunction(pplfAbcData[i], iAbcVectorDimNum);
+
+		if (lfFunc1 < lfFunc2)
+		{
+			for (j = 0; j < iAbcVectorDimNum; j++)
+				pplfAbcData[i][j] = pplfVelocityData[i][j];
+			piNonUpdateCount[i] = 0;
+		}
+		else	piNonUpdateCount[i] = piNonUpdateCount[i] + 1;
 	}
 }
 
@@ -2950,6 +3219,32 @@ void CAbc::vScoutBeeARex()
 			for (j = 0; j < iAbcSearchNum; j++)
 				piNonUpdateCount[j] = 0;
 			break;
+		}
+	}
+}
+
+/**
+* <PRE>
+*   Ivona Brajevic, Crossover-based artificial bee colony algorithm for constrained optimization problems, Neural Computing & Application (2015) 26:1587-1601.
+*   ver 0.1
+* </PRE>
+* @author kobayashi
+* @since 2016/10/19
+* @version 0.1
+*/
+void CAbc::vScoutBeeCB( int iCount )
+{
+	int i, j, k;
+	double lfRand = 0.0;
+	// 新たな探索点を求めて探索を実行します。
+	if (iCount % iAbcLimitCount == 0)
+	{
+		for (i = 0; i < iAbcSearchNum; i++)
+		{
+			for (k = 0; k < iAbcVectorDimNum; k++)
+			{
+				pplfVelocityData[i][j] = rnd() < 0.5 ? plfGlobalMaxAbcData[j] : pplfAbcData[i][j];
+			}
 		}
 	}
 }
