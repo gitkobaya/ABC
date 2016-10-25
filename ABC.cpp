@@ -180,6 +180,9 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 		plfCrossOverData = new double[iAbcVectorDimNum];
 		plfXnew1 = new double[iAbcVectorDimNum];
 		plfXnew2 = new double[iAbcVectorDimNum];
+		plfX0 = new double[iAbcVectorDimNum];
+		plfX1 = new double[iAbcVectorDimNum];
+		plfX2 = new double[iAbcVectorDimNum];
 
 		for( i= 0;i < iAbcDataNum; i++ )
 		{
@@ -208,6 +211,9 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			plfCrossOverData[i] = 0.0;
 			plfXnew1[i] = 0.0;
 			plfXnew2[i] = 0.0;
+			plfX0[i] = 0.0;
+			plfX1[i] = 0.0;
+			plfX2[i] = 0.0;
 		}
 		// ソート用適応度を格納するベクターです。
 		stlFitProb.assign( iAbcSearchNum, Rank_t() );
@@ -291,6 +297,9 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 		plfCrossOverData = new double[iAbcVectorDimNum];
 		plfXnew1 = new double[iAbcVectorDimNum];
 		plfXnew2 = new double[iAbcVectorDimNum];
+		plfX0 = new double[iAbcVectorDimNum];
+		plfX1 = new double[iAbcVectorDimNum];
+		plfX2 = new double[iAbcVectorDimNum];
 
 		for( i= 0;i < iAbcDataNum; i++ )
 		{
@@ -319,6 +328,9 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			plfCrossOverData[i] = 0.0;
 			plfXnew1[i] = 0.0;
 			plfXnew2[i] = 0.0;
+			plfX0[i] = 0.0;
+			plfX1[i] = 0.0;
+			plfX2[i] = 0.0;
 		}
 		// ソート用適応度を格納するベクターです。
 		stlFitProb.assign( iAbcSearchNum, Rank_t() );
@@ -406,6 +418,9 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 		plfCrossOverData = new double[iAbcVectorDimNum];
 		plfXnew1 = new double[iAbcVectorDimNum];
 		plfXnew2 = new double[iAbcVectorDimNum];
+		plfX0 = new double[iAbcVectorDimNum];
+		plfX1 = new double[iAbcVectorDimNum];
+		plfX2 = new double[iAbcVectorDimNum];
 
 		for( i= 0;i < iAbcDataNum; i++ )
 		{
@@ -434,6 +449,9 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			plfCrossOverData[i] = 0.0;
 			plfXnew1[i] = 0.0;
 			plfXnew2[i] = 0.0;
+			plfX0[i] = 0.0;
+			plfX1[i] = 0.0;
+			plfX2[i] = 0.0;
 		}
 		pcUndx = new CUndx();
 		iCrossOverNum = iCrossOverNumData;
@@ -539,6 +557,9 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 		plfCrossOverData = new double[iAbcVectorDimNum];
 		plfXnew1 = new double[iAbcVectorDimNum];
 		plfXnew2 = new double[iAbcVectorDimNum];
+		plfX0 = new double[iAbcVectorDimNum];
+		plfX1 = new double[iAbcVectorDimNum];
+		plfX2 = new double[iAbcVectorDimNum];
 
 		for( i= 0;i < iAbcDataNum; i++ )
 		{
@@ -705,6 +726,9 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			plfCrossOverData[i] = 0.0;
 			plfXnew1[i] = 0.0;
 			plfXnew2[i] = 0.0;
+			plfX0[i] = 0.0;
+			plfX1[i] = 0.0;
+			plfX2[i] = 0.0;
 		}
 		pcRex = new CRex();
 		// UNDXの初期化を実行します。
@@ -1110,10 +1134,12 @@ void CAbc::vIWCFAAbc( int iUpdateCount )
 /**
  * <PRE>
  * 　2013 Memetic search in artificial bee colony algorthimより
+ *   ver 0.1 2016/07/28 初版
+ *   ver 0.2 2016/10/25 更新候補点の算出に誤りを発見し修正。
  * </PRE>
  * @author kobayashi
- * @since 2015/7/28
- * @version 0.1
+ * @since 2016/7/28
+ * @version 0.2
  */
 void CAbc::vMeAbc( int iUpdateCount )
 {
@@ -1144,7 +1170,7 @@ void CAbc::vMeAbc( int iUpdateCount )
 		lfF1 = ( lfB-(lfB-lfA)*lfFai );
 		lfF2 = ( lfA+(lfB-lfA)*lfFai );
 
-		j = mrand() % ( iAbcSearchNum - 1 );
+		j = mrand() % iAbcSearchNum;
 		for( k = 0;k < iAbcVectorDimNum; k++ )
 		{
 			if( rnd() > lfPr )
@@ -1195,10 +1221,12 @@ void CAbc::vMeAbc( int iUpdateCount )
  * <PRE>
  * 　Randomized Memetic Artificial Bee Colony Algorthimより
  *   International Journal of Emerging Trends of Technology in Computer Science, vol.3(1), 2014
+ *   ver 0.1 2016/09/23 初版
+ *   ver 0.2 2016/10/25 更新候補点の算出に誤りを発見し修正。
  * </PRE>
  * @author kobayashi
  * @since 2016/9/23
- * @version 0.1
+ * @version 0.2
  */
 void CAbc::vRMAbc( int iUpdateCount )
 {
@@ -1229,7 +1257,7 @@ void CAbc::vRMAbc( int iUpdateCount )
 		lfF1 = rnd()*( lfB-(lfB-lfA)*lfFai );
 		lfF2 = (rnd()-1.0)*( lfA+(lfB-lfA)*lfFai );
 
-		j = mrand() % ( iAbcSearchNum );
+		j = mrand() % iAbcSearchNum;
 		for( k = 0;k < iAbcVectorDimNum; k++ )
 		{
 			if( rnd() > lfPr )
@@ -1280,6 +1308,8 @@ void CAbc::vRMAbc( int iUpdateCount )
  * <PRE>
  * 　人工蜂コロニー最適化法（交叉を導入した手法）を実行します。
  *   A Novel Hybrid Crossover based Artificial Bee Colony Algorithm for Optimization Problem International Journal of Computer Applications 2013より
+ *   ver 0.1 2016/04/11 初版
+ *   ver 0.2 2016/10/25 更新候補点の算出に誤りを発見し修正。
  * </PRE>
  * @author kobayashi
  * @since 2016/4/11
@@ -1547,13 +1577,8 @@ void CAbc::vHJAbc( int iUpdateCount )
 	double rho = 0.5;
 	bool bRet;
 
-	plfX0 = new double[iAbcVectorDimNum];
-	plfX1 = new double[iAbcVectorDimNum];
-	memset(plfX1, 0, sizeof(double)*iAbcVectorDimNum);
-	plfX2 = new double[iAbcVectorDimNum];
-	memset(plfX2, 0, sizeof(double)*iAbcVectorDimNum);
-	iCounter = 50 * iAbcSearchNum;
-	iInterval = 3 * iAbcSearchNum;
+	iHJCounter = 50 * iAbcSearchNum;
+	iHJInterval = 3 * iAbcSearchNum;
 	rho = 0.5;
 
 	// employee bee の動作
@@ -1636,8 +1661,8 @@ Step3:
 			}
 			for (i = 0; i < iAbcVectorDimNum; i++)
 			{
-				plfX2[i] = plfX1[i] + (plfX1[i] - plfGlobalMinAbcData[i]);
-				plfGlobalMinAbcData[i] = plfX1[i];
+				plfX2[i] = plfX1[i] + (plfX1[i] - plfX0[i]);
+				plfX0[i] = plfX1[i];
 			}
 			// EM(Expolration Move) Phase
 			bRet = bHJEmStep(plfX1, plfX2, stlStepSize);
@@ -1755,10 +1780,11 @@ void CAbc::vCBAbc( int iUpdateCount )
  * <PRE>
  * 　Employ Beeを実行します。(大本のバージョンと同じ手法)
  *   ver 0.1 
+ *   ver 0.2 2016/10/25 更新候補点の算出に誤りを発見し修正。
  * </PRE>
  * @author kobayashi
  * @since 2016/8/18
- * @version 0.1
+ * @version 0.2
  */
 void CAbc::vEmployBeeOrigin()
 {
@@ -1801,10 +1827,11 @@ void CAbc::vEmployBeeOrigin()
  * 　Employ Beeを実行します。(高精度化バージョン)
  *   2011の電子情報通信学会の論文より
  *   ver 0.1 
+ *   ver 0.2 2016/10/25 更新候補点の算出に誤りを発見し修正。
  * </PRE>
  * @author kobayashi
  * @since 2016/8/18
- * @version 0.1
+ * @version 0.2
  */
 double CAbc::lfEmployBeeEnhanced( int iUpdateCount )
 {
@@ -1870,11 +1897,10 @@ double CAbc::lfEmployBeeEnhanced( int iUpdateCount )
 			else
 			{
 				// 適応度上位αからランダムに決定します。
-//				m = mrand() % ( iAbcSearchNum - 1 - iAbcUpperSearchNum ) + iAbcUpperSearchNum;
 				m = mrand() % iAbcUpperSearchNum;
 			}
 			// ランダムに決定します。
-			h = mrand() % ( iAbcVectorDimNum - 1);
+			h = mrand() % iAbcVectorDimNum;
 	
 			for( i = 0;i < iAbcSearchNum; i++ )
 			{
@@ -1907,11 +1933,10 @@ double CAbc::lfEmployBeeEnhanced( int iUpdateCount )
 			else
 			{
 				// その他の場合はランダムに決定します。
-//				m = mrand() % ( iAbcSearchNum - 1 - iAbcUpperSearchNum ) + iAbcUpperSearchNum;
 				m = mrand() % iAbcUpperSearchNum;
 			}
 			// ランダムに決定します。
-			h = mrand() % ( iAbcVectorDimNum - 1);
+			h = mrand() % iAbcVectorDimNum;
 	
 			for( i = 0;i < iAbcSearchNum; i++ )
 			{
@@ -1940,11 +1965,10 @@ double CAbc::lfEmployBeeEnhanced( int iUpdateCount )
 		else
 		{
 			// その他の場合はランダムに決定します。
-//			m = mrand() % ( iAbcSearchNum - 1 - iAbcUpperSearchNum ) + iAbcUpperSearchNum;
 			m = mrand() % iAbcUpperSearchNum;
 		}
 		// ランダムに決定します。
-		h = mrand() % ( iAbcVectorDimNum - 1);
+		h = mrand() % iAbcVectorDimNum;
 
 		for( i = 0;i < iAbcSearchNum; i++ )
 		{
@@ -1974,10 +1998,11 @@ double CAbc::lfEmployBeeEnhanced( int iUpdateCount )
  * 　Employ Beeを実行します。(高精度化バージョン)
  *   2011の電子情報通信学会の論文より
  *   ver 0.1 
+ *   ver 0.2 2016/10/25 更新候補点の算出に誤りを発見し修正。
  * </PRE>
  * @author kobayashi
  * @since 2016/8/18
- * @version 0.1
+ * @version 0.2
  */
 double CAbc::lfEmployBeeBestEnhanced( int iUpdateCount )
 {
@@ -2039,10 +2064,10 @@ double CAbc::lfEmployBeeBestEnhanced( int iUpdateCount )
 				else
 				{
 					// 適応度上位αからランダムに決定します。
-					m = mrand() % ( iAbcSearchNum - 1 - iAbcUpperSearchNum ) + iAbcUpperSearchNum;
+					m = mrand() % iAbcUpperSearchNum;
 				}
 				// ランダムに決定します。
-				h = mrand() % ( iAbcVectorDimNum - 1);
+				h = mrand() % iAbcVectorDimNum;
 	
 				for( i = 0;i < iAbcSearchNum; i++ )
 				{
@@ -2077,10 +2102,10 @@ double CAbc::lfEmployBeeBestEnhanced( int iUpdateCount )
 			else
 			{
 				// その他の場合はランダムに決定します。
-				m = mrand() % ( iAbcSearchNum - 1 - iAbcUpperSearchNum ) + iAbcUpperSearchNum;
+				m = mrand() % iAbcUpperSearchNum;
 			}
 			// ランダムに決定します。
-			h = mrand() % ( iAbcVectorDimNum - 1);
+			h = mrand() % iAbcVectorDimNum;
 	
 			for( i = 0;i < iAbcSearchNum; i++ )
 			{
@@ -2110,10 +2135,10 @@ double CAbc::lfEmployBeeBestEnhanced( int iUpdateCount )
 		else
 		{
 			// その他の場合はランダムに決定します。
-			m = mrand() % ( iAbcSearchNum - 1 - iAbcUpperSearchNum ) + iAbcUpperSearchNum;
+			m = mrand() % iAbcUpperSearchNum;
 		}
 		// ランダムに決定します。
-		h = mrand() % ( iAbcVectorDimNum - 1);
+		h = mrand() % iAbcVectorDimNum;
 
 		for( i = 0;i < iAbcSearchNum; i++ )
 		{
@@ -2146,10 +2171,11 @@ double CAbc::lfEmployBeeBestEnhanced( int iUpdateCount )
  * 　Employ Beeを実行します。
  *   ver 0.1 
  *   ver 0.2 NBest版に修正
+ *   ver 0.3 2016/10/25 更新候補点の算出に誤りを発見し修正。
  * </PRE>
  * @author kobayashi
  * @since 2016/8/10
- * @version 0.2
+ * @version 0.3
  */
 void CAbc::vEmployBeeBest()
 {
@@ -2160,8 +2186,8 @@ void CAbc::vEmployBeeBest()
 	double lfFunc2 = 0.0;
 	// employee bee の動作
 	// 更新点候補を算出します。
-	m = mrand() % ( iAbcSearchNum - 1 );
-	h = mrand() % ( iAbcVectorDimNum - 1);
+	m = mrand() % iAbcSearchNum;
+	h = mrand() % iAbcVectorDimNum;
 	
 	for( i = 0;i < iAbcSearchNum; i++ )
 	{
@@ -2193,10 +2219,11 @@ void CAbc::vEmployBeeBest()
  *   ver 0.1 
  *   ver 0.2 NBest版に修正
  *   ver 0.3 2016/10/24 論文を基に修正
+ *   ver 0.4 2016/10/25 更新候補点の算出に誤りを発見し修正。
  * </PRE>
  * @author kobayashi
  * @since 2016/8/10
- * @version 0.2
+ * @version 0.4
  */
 void CAbc::vEmployBeeGBest()
 {
@@ -2208,8 +2235,8 @@ void CAbc::vEmployBeeGBest()
 	double lfFunc2 = 0.0;
 	// employee bee の動作
 	// 更新点候補を算出します。
-	m = mrand() % ( iAbcSearchNum - 1 );
-	h = mrand() % ( iAbcVectorDimNum - 1);
+	m = mrand() % iAbcSearchNum;
+	h = mrand() % iAbcVectorDimNum;
 	
 	for( i = 0;i < iAbcSearchNum; i++ )
 	{
@@ -2264,8 +2291,8 @@ void CAbc::vEmployBeeIWCFA( double lfK, double lfCoe1, double lfCoe2, int iUpdat
 	double lfMinWeight = 0.3;
 
 	// 更新点候補を算出します。
-	m = mrand() % ( iAbcSearchNum - 1 );
-	h = mrand() % ( iAbcVectorDimNum - 1);
+	m = mrand() % iAbcSearchNum;
+	h = mrand() % iAbcVectorDimNum;
 	
 	for( i = 0;i < iAbcSearchNum; i++ )
 	{
@@ -2324,7 +2351,7 @@ void CAbc::vEmployBeeCB( double lfMr )
 
 	// employee bee の動作
 	// 更新点候補を算出します。
-	m = mrand() % (iAbcSearchNum - 1);
+	m = mrand() % iAbcSearchNum;
 
 	for (i = 0; i < iAbcSearchNum; i++)
 	{
@@ -2355,11 +2382,13 @@ void CAbc::vEmployBeeCB( double lfMr )
 
 /**
  * <PRE>
- * Onlooker Beeを実行します。(大本のバージョン)
+ *   Onlooker Beeを実行します。(大本のバージョン)
+ *   ver 0.1 2016/08/10 初版
+ *   ver 0.2 2016/10/25 更新候補点の算出に誤りを発見し修正。
  * </PRE>
  * @author kobayashi
  * @since 2016/8/10
- * @version 0.1
+ * @version 0.2
  */
 void CAbc::vOnlookerBeeOrigin()
 {
@@ -2400,8 +2429,8 @@ void CAbc::vOnlookerBeeOrigin()
 
 	// 更新点候補を算出します。
 	// 更新点候補を乱数により決定します。
-	m = mrand() % ( iAbcSearchNum-1 );
-	h = mrand() % ( iAbcVectorDimNum - 1);
+	m = mrand() % iAbcSearchNum;
+	h = mrand() % iAbcVectorDimNum;
 
 	lfRand = 2*rnd()-1;
 	for( j = 0; j < iAbcVectorDimNum; j++ )
@@ -2424,7 +2453,8 @@ void CAbc::vOnlookerBeeOrigin()
  * <PRE>
  * 　Onlooker Beeを実行します。(高精度化バージョン)
  *   2011の電子情報通信学会の論文より
- *   ver 0.1 
+ *   ver 0.1 2016/08/18 初版
+ *   ver 0.2 2016/10/25 更新候補点の算出に誤りを発見し修正。
  * </PRE>
  * @author kobayashi
  * @since 2016/8/18
@@ -2460,11 +2490,10 @@ void CAbc::vOnlookerBeeEnhanced( int iUpdateCount, double lfFitJudge )
 	else
 	{
 		// その他の場合は適応度上位αからランダムに決定します。
-//		c = mrand() % ( iAbcSearchNum - 1 - iAbcUpperSearchNum ) + iAbcUpperSearchNum;
 		c = mrand() % iAbcUpperSearchNum;
 	}
 	// ランダムに決定します。
-	h = mrand() % ( iAbcVectorDimNum - 1);
+	h = mrand() % iAbcVectorDimNum;
 	
 	// 更新点候補を生成します。
 	lfRand = 2*rnd()-1;
@@ -2486,7 +2515,8 @@ void CAbc::vOnlookerBeeEnhanced( int iUpdateCount, double lfFitJudge )
  * <PRE>
  * 　Onlooker Beeを実行します。(高精度化バージョン)
  *   2011の電子情報通信学会の論文より
- *   ver 0.1 
+ *   ver 0.1 2016/08/18 初版 
+ *   ver 0.2 2016/10/25 更新候補点の算出に誤りを発見し修正。
  * </PRE>
  * @author kobayashi
  * @since 2016/8/18
@@ -2522,10 +2552,10 @@ void CAbc::vOnlookerBeeBestEnhanced( int iUpdateCount, double lfFitJudge )
 	else
 	{
 		// その他の場合はランダムに決定します。
-		c = mrand() % ( iAbcSearchNum - 1 - iAbcUpperSearchNum ) + iAbcUpperSearchNum;
+		c = mrand() % iAbcUpperSearchNum;
 	}
 	// ランダムに決定します。
-	h = mrand() % ( iAbcVectorDimNum - 1);
+	h = mrand() % iAbcVectorDimNum;
 
 	// 更新点候補を生成します。
 	for( i = 0;i < iAbcSearchNum; i++ )
@@ -2549,13 +2579,14 @@ void CAbc::vOnlookerBeeBestEnhanced( int iUpdateCount, double lfFitJudge )
 
 /**
  * <PRE>
- * Onlooker Beeを実行します。(NBest版)
- * ver 0.1
- * ver 0.2 NBest版を追加
+ *   Onlooker Beeを実行します。(NBest版)
+ *   ver 0.1 2016/08/10 初版
+ *   ver 0.2 2016/09/13 NBest版を追加
+ *   ver 0.3 2016/10/25 更新候補点の算出に誤りを発見し修正。
  * </PRE>
  * @author kobayashi
  * @since 2016/8/10
- * @version 0.2
+ * @version 0.3
  */
 void CAbc::vOnlookerBeeBest()
 {
@@ -2597,8 +2628,8 @@ void CAbc::vOnlookerBeeBest()
 
 	// 更新点候補を算出します。
 	// 更新点候補を乱数により決定します。
-	m = mrand() % ( iAbcSearchNum-1 );
-	h = mrand() % ( iAbcVectorDimNum - 1);
+	m = mrand() % iAbcSearchNum;
+	h = mrand() % iAbcVectorDimNum;
 
 	lfRand = 2*rnd()-1;
 	for( j = 0; j < iAbcVectorDimNum; j++ )
@@ -2620,13 +2651,14 @@ void CAbc::vOnlookerBeeBest()
 
 /**
  * <PRE>
- * Onlooker Beeを実行します。(GBest版)
- * ver 0.1
- * ver 0.2 NBest版を追加
+ *   Onlooker Beeを実行します。(GBest版)
+ *   ver 0.1 2016/08/10 初版
+ *   ver 0.2 2016/09/13 NBest版を追加
+ *   ver 0.3 2016/10/25 更新候補点の算出に誤りを発見し修正。
  * </PRE>
  * @author kobayashi
  * @since 2016/8/10
- * @version 0.2
+ * @version 0.3
  */
 void CAbc::vOnlookerBeeGBest()
 {
@@ -2647,8 +2679,9 @@ void CAbc::vOnlookerBeeGBest()
 	{
 		// 適応度の算出
 		lfObjFunc = pflfObjectiveFunction( pplfAbcData[j], iAbcVectorDimNum );
-		if( lfObjFunc >= 0.0 )	lfFitProb = 1.0/( 1.0+lfObjFunc );
-		else					lfFitProb = 1.0+fabs( lfObjFunc );
+//		if( lfObjFunc >= 0.0 )	lfFitProb = 1.0/( 1.0+lfObjFunc );
+//		else					lfFitProb = 1.0+fabs( lfObjFunc );
+		lfFitProb = lfObjFunc;
 		lfRes += lfFitProb;
 		plfFit[j] = lfFitProb;
 	}
@@ -2669,8 +2702,8 @@ void CAbc::vOnlookerBeeGBest()
 
 	// 更新点候補を算出する。
 	// 更新点候補を乱数により決定する。
-	m = mrand() % ( iAbcSearchNum-1 );
-	h = mrand() % ( iAbcVectorDimNum - 1);
+	m = mrand() % iAbcSearchNum;
+	h = mrand() % iAbcVectorDimNum;
 
 	lfRand = 2.0*rnd()-1.0;
 	lfRand2 = 1.5*rnd();
@@ -2697,9 +2730,10 @@ void CAbc::vOnlookerBeeGBest()
 
 /**
  * <PRE>
- * Onlooker Beeを実行します。(IWCFA版)
- * ver 0.1
- * ver 0.2 IWCFA版を追加
+ *   Onlooker Beeを実行します。(IWCFA版)
+ *   ver 0.1 2016/08/10 初版
+ *   ver 0.2 2016/09/13 IWCFA版を追加
+ *   ver 0.3 2016/10/25 更新候補点の算出に誤りを発見し修正。
  * </PRE>
  * @param lfK
  * @param lfCoe1
@@ -2707,7 +2741,7 @@ void CAbc::vOnlookerBeeGBest()
  * @param iUpdateCount
  * @author kobayashi
  * @since 2016/8/10
- * @version 0.2
+ * @version 0.3
  */
 void CAbc::vOnlookerBeeIWCFA( double lfK, double lfCoe1, double lfCoe2, int iUpdateCount )
 {
@@ -2753,8 +2787,8 @@ void CAbc::vOnlookerBeeIWCFA( double lfK, double lfCoe1, double lfCoe2, int iUpd
 
 	// 更新点候補を算出する。
 	// 更新点候補を乱数により決定する。
-	m = mrand() % ( iAbcSearchNum-1 );
-	h = mrand() % ( iAbcVectorDimNum - 1);
+	m = mrand() % iAbcSearchNum;
+	h = mrand() % iAbcVectorDimNum;
 
 	lfRand = 2.0*rnd()-1.0;
 	lfRand2 = 2.0*rnd()-1.0;
@@ -2781,12 +2815,14 @@ void CAbc::vOnlookerBeeIWCFA( double lfK, double lfCoe1, double lfCoe2, int iUpd
 
 /**
  * <PRE>
- * Onlooker Beeを実行します。
- * Randomized Memtic Bee Colony Method用
+ *   Onlooker Beeを実行します。
+ *   Randomized Memtic Bee Colony Method用
+ *   ver 0.1 2016/09/22 初版
+ *   ver 0.2 2016/10/25 更新候補点の算出に誤りを発見し修正。
  * </PRE>
  * @author kobayashi
  * @since 2016/9/22
- * @version 0.1
+ * @version 0.2
  */
 void CAbc::vOnlookerBeeRM()
 {
@@ -2829,8 +2865,8 @@ void CAbc::vOnlookerBeeRM()
 
 	// 更新点候補を算出します。
 	// 更新点候補を乱数により決定します。
-	m = mrand() % ( iAbcSearchNum-1 );
-	h = mrand() % ( iAbcVectorDimNum - 1);
+	m = mrand() % iAbcSearchNum;
+	h = mrand() % iAbcVectorDimNum;
 
 	lfRand = rnd();
 	lfRand2 = 1.5*rnd();
@@ -2853,12 +2889,13 @@ void CAbc::vOnlookerBeeRM()
 
 /**
  * <PRE>
- * Onlooker Beeを実行します。(Hooke-Jeeves法用)
- * ver 0.1 初版
+ *   Onlooker Beeを実行します。(Hooke-Jeeves法用)
+ *   ver 0.1 2016/10/03 初版
+ *   ver 0.2 2016/10/25 更新候補点の算出に誤りを発見し修正。
  * </PRE>
  * @author kobayashi
  * @since 2016/10/3
- * @version 0.1
+ * @version 0.2
  */
 void CAbc::vOnlookerBeeHJ()
 {
@@ -2912,8 +2949,8 @@ void CAbc::vOnlookerBeeHJ()
 
 	// 更新点候補を算出します。
 	// 更新点候補を乱数により決定します。
-	m = mrand() % ( iAbcSearchNum-1 );
-	h = mrand() % ( iAbcVectorDimNum - 1);
+	m = mrand() % iAbcSearchNum;
+	h = mrand() % iAbcVectorDimNum;
 	lfRand = 2*rnd()-1;
 	lfRand = 2*rnd()-1;
 	for( j = 0; j < iAbcVectorDimNum; j++ )
@@ -2934,13 +2971,13 @@ void CAbc::vOnlookerBeeHJ()
 
 /**
 * <PRE>
-* Onlooker Beeを実行します。(AC-ABC用算術交叉を利用したABC法。)
-*
-* ver 0.1 初版
+*   Onlooker Beeを実行します。(AC-ABC用算術交叉を利用したABC法。)
+*   ver 0.1 2016/10/13 初版
+*   ver 0.2 2016/10/25 更新候補点の算出に誤りを発見し修正。
 * </PRE>
 * @author kobayashi
 * @since 2016/10/13
-* @version 0.1
+* @version 0.2
 */
 void CAbc::vOnlookerBeeAC()
 {
@@ -2992,8 +3029,8 @@ void CAbc::vOnlookerBeeAC()
 
 	// 更新点候補を算出します。
 	// 更新点候補を乱数により決定します。
-	m = mrand() % (iAbcSearchNum - 1);
-	h = mrand() % (iAbcVectorDimNum - 1);
+	m = mrand() % iAbcSearchNum;
+	h = mrand() % iAbcVectorDimNum;
 
 	lfRand = 2 * rnd() - 1;
 	for (j = 0; j < iAbcVectorDimNum; j++)
@@ -3021,42 +3058,16 @@ void CAbc::vOnlookerBeeAC()
 }
 
 /**
- * <PRE>
- * Scout Beeを実行します。(大本の手法)
- * ver 0.1
- * </PRE>
- * @author kobayashi
- * @since 2016/8/10
- * @version 0.2
- */
-void CAbc::vScoutBeeOrigin()
-{
-	int i,j,k;
-	double lfRand = 0.0;
-	// 新たな探索点を求めて探索を実行します。
-	for( i = 0;i < iAbcSearchNum; i++ )
-	{
-		if( piNonUpdateCount[i] > iAbcLimitCount )
-		{
-			for( k = 0;k < iAbcVectorDimNum; k++ )
-			{
-				lfRand = rnd();
-				pplfAbcData[i][k] = lfSolveRange*(2.0*lfRand-1.0);
-			}
-		}
-	}
-}
-
-/**
 * <PRE>
 *   Ivona Brajevic, Crossover-based artificial bee colony algorithm for constrained optimization problems, Neural Computing & Application (2015) 26:1587-1601.
-*   ver 0.1
+*   ver 0.1 2016/10/19 初版
+*   ver 0.2 2016/10/25 更新候補点の算出に誤りを発見し修正。
 * </PRE>
 * @author kobayashi
 * @since 2016/10/19
-* @version 0.1
+* @version 0.2
 */
-void CAbc::vOnlookerBeeCB( double lfMr )
+void CAbc::vOnlookerBeeCB(double lfMr)
 {
 	int i, j;
 	int c, m, h;
@@ -3106,8 +3117,8 @@ void CAbc::vOnlookerBeeCB( double lfMr )
 
 	// 更新点候補を算出します。
 	// 更新点候補を乱数により決定します。
-	m = mrand() % (iAbcSearchNum - 1);
-	h = mrand() % (iAbcSearchNum - 1);
+	m = mrand() % iAbcSearchNum;
+	h = mrand() % iAbcSearchNum;
 
 	lfMr = lfMr < lfMrMax ? lfMr + (lfMrMax - 0.1) / (lfP*lfMCN) : lfMrMax;
 	for (i = 0; i < iAbcSearchNum; i++)
@@ -3136,6 +3147,33 @@ void CAbc::vOnlookerBeeCB( double lfMr )
 			piNonUpdateCount[i] = 0;
 		}
 		else	piNonUpdateCount[i] = piNonUpdateCount[i] + 1;
+	}
+}
+
+/**
+ * <PRE>
+ * Scout Beeを実行します。(大本の手法)
+ * ver 0.1
+ * </PRE>
+ * @author kobayashi
+ * @since 2016/8/10
+ * @version 0.2
+ */
+void CAbc::vScoutBeeOrigin()
+{
+	int i,j,k;
+	double lfRand = 0.0;
+	// 新たな探索点を求めて探索を実行します。
+	for( i = 0;i < iAbcSearchNum; i++ )
+	{
+		if( piNonUpdateCount[i] > iAbcLimitCount )
+		{
+			for( k = 0;k < iAbcVectorDimNum; k++ )
+			{
+				lfRand = rnd();
+				pplfAbcData[i][k] = lfSolveRange*(2.0*lfRand-1.0);
+			}
+		}
 	}
 }
 

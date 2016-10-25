@@ -836,7 +836,12 @@ private:
 	int iUpperEvalChildrenNumber;		// ARex用生成した子供の上位を選択する数
 	double lfLearningRate;				// ARex用学習率
 	std::vector<Rank_t> stlFitProb;
-	int iReCounter;
+	int iReCounter;						// HJABC用カウンター
+	int iHJInterval;					// HJABC用HookeJeeves法適用間隔
+	int iHJCounter;						// HJABC用HookeJeeves法繰り返し回数
+	double *plfX0;						// HJABC用更新用一時格納配列
+	double *plfX1;						// HJABC用更新用一時格納配列
+	double *plfX2;						// HJABC用更新用一時格納配列
 };
 
 class CAbcException
