@@ -20,7 +20,7 @@ void initrand(unsigned long seed)
 	unsigned long u;
 	using namespace std;
 
-	next = seed;
+	lNext = seed;
 
 	//Å‰‚Ì16ŒÂ‚ğüŒ`‡“¯–@‚É‚æ‚èì¬‚·‚é.
 	u = 0;

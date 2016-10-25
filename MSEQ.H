@@ -3,7 +3,7 @@
 
 #undef RAND_MAX
 
-static unsigned long next = 1;
+static unsigned long lNext = 1;
 static unsigned long reg_loc = 0;
 static unsigned long x[521];  
 
