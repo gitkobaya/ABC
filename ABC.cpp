@@ -38,6 +38,7 @@ CAbc::CAbc()
 	lfSolveRange = 0.0;
 	lfGlobalMinAbcData = DBL_MAX;
 	lfGlobalMaxAbcData = -DBL_MAX;
+	iReCounter = 0;
 
 	plfXnew1 = NULL;
 	plfXnew2 = NULL;
@@ -1228,7 +1229,7 @@ void CAbc::vRMAbc( int iUpdateCount )
 		lfF1 = rnd()*( lfB-(lfB-lfA)*lfFai );
 		lfF2 = (rnd()-1.0)*( lfA+(lfB-lfA)*lfFai );
 
-		j = mrand() % ( iAbcSearchNum - 1 );
+		j = mrand() % ( iAbcSearchNum );
 		for( k = 0;k < iAbcVectorDimNum; k++ )
 		{
 			if( rnd() > lfPr )
@@ -1313,8 +1314,8 @@ void CAbc::vCbAbc()
 	vEmployBeeOrigin();
 
 	// crossoverを実行します。(もっとも旧式の実数値ＧＡの交叉)
-	iParentLoc1 = mrand() % (iAbcSearchNum-1);
-	iParentLoc2 = mrand() % (iAbcSearchNum-1);
+	iParentLoc1 = mrand() % iAbcSearchNum;
+	iParentLoc2 = mrand() % iAbcSearchNum;
 
 // 実数値ＧＡの平均交叉を実行します。中点、内分点、外分点の３点を算出します。
 	for( i = 0;i < iAbcVectorDimNum; i++ )
@@ -1527,24 +1528,33 @@ void CAbc::vARexAbc()
  */
 void CAbc::vHJAbc( int iUpdateCount )
 {
-	int i,j,k;
+	int i, j;
+	int k;
 	int iCounter = 1000;
 	double lfX11;
 	double lfX12;
 	double lfRes = 0.0;
 	std::vector<double> stlStepSize;
 	double lfStepSize = 1.0;
+	double *plfX0;
 	double *plfX1;
 	double *plfX2;
-	double lfObjFunc = 0.0;
+	double lfObjFunc0 = 0.0;
 	double lfObjFunc1 = 0.0;
 	double lfObjFunc2 = 0.0;
 	double lfFuncMin = DBL_MAX;
+	int iInterval;
+	double rho = 0.5;
+	bool bRet;
 
+	plfX0 = new double[iAbcVectorDimNum];
 	plfX1 = new double[iAbcVectorDimNum];
 	memset(plfX1, 0, sizeof(double)*iAbcVectorDimNum);
 	plfX2 = new double[iAbcVectorDimNum];
 	memset(plfX2, 0, sizeof(double)*iAbcVectorDimNum);
+	iCounter = 50 * iAbcSearchNum;
+	iInterval = 3 * iAbcSearchNum;
+	rho = 0.5;
 
 	// employee bee の動作
 	vEmployBeeOrigin();
@@ -1562,94 +1572,118 @@ void CAbc::vHJAbc( int iUpdateCount )
 	vGetGlobalMaxMin();
 
 	// ステップサイズの計算を実行します。
+	memcpy(plfX0, plfGlobalMinAbcData, sizeof(double)*iAbcVectorDimNum);
 	if (iUpdateCount % iInterval == 0)
 	{
 		for (j = 0; j < iAbcVectorDimNum; j++)
 		{
 			lfRes = 0.0;
 			for (i = 0; i < iAbcSearchNum; i++)
-				lfRes += pplfAbcData[i][j] - plfGlobalMinAbcData[j];
+				lfRes += (pplfAbcData[i][j] - plfGlobalMinAbcData[j]);
 			stlStepSize.push_back(0.1*lfRes / (double)iAbcSearchNum);
 		}
 	}
 	// Hooke-Jeeves法を適用します。
-	for( k = 0;k < iCounter; k++ )
+	vModifiedHookeJeevesMethod(stlStepSize, plfX1, plfX2, plfX0);
+
+	lfObjFunc0 = pflfObjectiveFunction(plfX0, iAbcVectorDimNum);
+	lfObjFunc1 = pflfObjectiveFunction(plfX1, iAbcVectorDimNum);
+	lfObjFunc2 = pflfObjectiveFunction(plfX2, iAbcVectorDimNum);
+
+	if (lfObjFunc2 <= lfObjFunc0)
+	{
+		plfX0[i] = plfX2[i];
+	}
+	if (lfObjFunc0 <= lfObjFunc1)
+	{
+		plfX1[i] = plfX0[i];
+		iReCounter = 0;
+	}
+	else iReCounter++;
+	if (iReCounter > iCounter)
+	{
+		// Hooke-Jeeves法を適用します。
+		vModifiedHookeJeevesMethod(stlStepSize, plfX1, plfX2, plfX0);
+	}
+}
+
+void CAbc::vModifiedHookeJeevesMethod( std::vector<double> stlStepSize, double *plfX1, double *plfX2, double *plfX0 )
+{
+	int i, j, k;
+	int iCounter = 1000;
+	double lfRes = 0.0;
+	double lfStepSize = 1.0;
+	double lfObjFunc = 0.0;
+	double lfObjFunc1 = 0.0;
+	double lfObjFunc2 = 0.0;
+	double lfFuncMin = DBL_MAX;
+	double rho = 0.5;
+	bool bRet;
+
+	// Hooke-Jeeves法を適用します。
+	for (k = 0; k < iCounter; k++)
 	{
 		// 各ベクトルのステップサイズの計算をします。
-		// Exploratory Move(EM Step)
-		for (j = 0; j < iAbcVectorDimNum; j++)
+		bRet = bHJEmStep(plfX1, plfGlobalMinAbcData, stlStepSize);
+		if (bRet == true)
 		{
-			plfX1[j] = plfGlobalMinAbcData[j] + stlStepSize[j];
-			lfObjFunc = pflfObjectiveFunction(plfX1, iAbcVectorDimNum);
-			if (lfObjFunc < lfFuncMin)
-			{
-				lfFuncMin = lfObjFunc;
-			}
-			else
-			{
-				plfX1[j] = plfGlobalMinAbcData[j] - stlStepSize[j];
-				lfObjFunc = pflfObjectiveFunction(plfX1, iAbcVectorDimNum);
-				if (lfObjFunc < lfFuncMin)
-				{
-					lfFuncMin = lfObjFunc;
-				}
-				else
-				{
-					plfX1[j] = plfGlobalMinAbcData[j];
-				}
-			}
-		}
-		if (lfObjFunc < lfFuncMin)
-		{
+Step3:
 			// Pattern Move(PM step)
 			for (i = 0; i < iAbcVectorDimNum; i++)
 			{
-				if (plfX1[i] < plfGlobalMinAbcData[i]) stlStepSize[i] = -fabs(stlStepSize[i]);
-				else                                   stlStepSize[i] = fabs(stlStepSize[i]);
+				if (plfX1[i] < plfX0[i]) stlStepSize[i] = -fabs(stlStepSize[i]);
+				else                     stlStepSize[i] = fabs(stlStepSize[i]);
 			}
 			for (i = 0; i < iAbcVectorDimNum; i++)
 			{
 				plfX2[i] = plfX1[i] + (plfX1[i] - plfGlobalMinAbcData[i]);
 				plfGlobalMinAbcData[i] = plfX1[i];
 			}
-			// Exploratory Move(EM Step)
+			// EM(Expolration Move) Phase
+			bRet = bHJEmStep(plfX1, plfX2, stlStepSize);
+			lfObjFunc1 = pflfObjectiveFunction(plfX0, iAbcVectorDimNum);
+			lfObjFunc2 = pflfObjectiveFunction(plfX1, iAbcVectorDimNum);
+			if (lfObjFunc2 < lfObjFunc1) goto Step3;
+		}
+		else
+		{
+			lfObjFunc1 = pflfObjectiveFunction(plfX0, iAbcVectorDimNum);
+			lfObjFunc2 = pflfObjectiveFunction(plfX1, iAbcVectorDimNum);
+			if (lfObjFunc < lfFuncMin) goto Step3;
+		}
+		if (lfStepSize < 0.001) break;
+		else
+		{
+			lfStepSize = rho*lfStepSize;
 			for (j = 0; j < iAbcVectorDimNum; j++)
-			{
-				plfX1[j] = plfX2[j] + stlStepSize[j];
-				lfObjFunc = pflfObjectiveFunction(plfX1, iAbcVectorDimNum);
-				if (lfObjFunc < lfFuncMin)
-				{
-					lfFuncMin = lfObjFunc;
-				}
-				else
-				{
-					plfX1[j] = plfGlobalMinAbcData[j] - stlStepSize[j];
-					lfObjFunc = pflfObjectiveFunction(plfX1, iAbcVectorDimNum);
-					if (lfObjFunc < lfFuncMin)
-					{
-						lfFuncMin = lfObjFunc;
-					}
-					else
-					{
-						plfX2[j] = plfGlobalMinAbcData[j];
-					}
-				}
-				lfObjFunc1 = pflfObjectiveFunction(plfGlobalMinAbcData, iAbcVectorDimNum);
-				lfObjFunc2 = pflfObjectiveFunction(plfX1, iAbcVectorDimNum);
-				if (lfObjFunc2 < lfObjFunc1) break;
-				else
-				{
-					if (lfStepSize < 0.0000001) break;
-					else
-					{
-						lfStepSize = 0.5*lfStepSize;
-						for (j = 0; j < iAbcVectorDimNum; j++)
-							stlStepSize[j] = stlStepSize[j] * 0.5;
-					}
-				}
-			}
+				stlStepSize[j] = stlStepSize[j] * rho;
 		}
 	}
+}
+
+bool CAbc::bHJEmStep( double *plfX1, double *plfX0, std::vector<double> stlStepSize )
+{
+	double lfObjFunc = 0.0;
+	double lfFuncMin = DBL_MAX;
+	double lfX1i;
+	int i;
+
+	for (i = 0; i < iAbcVectorDimNum; i++)
+	{
+		plfX1[i] = plfX0[i]+stlStepSize[i];
+		lfObjFunc = pflfObjectiveFunction(plfX0, iAbcVectorDimNum);
+		if (lfObjFunc < lfFuncMin)	lfFuncMin = lfObjFunc;
+		else
+		{
+			plfX1[i] = plfX0[i] - stlStepSize[i];
+			lfObjFunc = pflfObjectiveFunction(plfX0, iAbcVectorDimNum);
+			if (lfObjFunc < lfFuncMin)	lfFuncMin = lfObjFunc;
+			else				        plfX1[i] = plfX0[i];
+		}
+	}
+
+	if (lfObjFunc >= lfFuncMin) return false;
+	return true;
 }
 
 /**
@@ -1735,8 +1769,8 @@ void CAbc::vEmployBeeOrigin()
 	double lfFunc2 = 0.0;
 	// employee bee の動作
 	// 更新点候補を算出します。
-	m = mrand() % ( iAbcSearchNum - 1 );
-	h = mrand() % ( iAbcVectorDimNum - 1);
+	m = mrand() % iAbcSearchNum;
+	h = mrand() % iAbcVectorDimNum;
 	
 	for( i = 0;i < iAbcSearchNum; i++ )
 	{
@@ -2158,6 +2192,7 @@ void CAbc::vEmployBeeBest()
  * 　Employ Beeを実行します。(GBest版)
  *   ver 0.1 
  *   ver 0.2 NBest版に修正
+ *   ver 0.3 2016/10/24 論文を基に修正
  * </PRE>
  * @author kobayashi
  * @since 2016/8/10
@@ -2178,11 +2213,12 @@ void CAbc::vEmployBeeGBest()
 	
 	for( i = 0;i < iAbcSearchNum; i++ )
 	{
-		lfRand = rnd();
+		lfRand = 2.0*rnd()-1.0;
 		lfRand2 = 1.5*rnd();
 		for( j = 0; j < iAbcVectorDimNum; j++ )
 			pplfVelocityData[i][j] = pplfAbcData[i][j];
-		pplfVelocityData[i][h] = pplfAbcData[i][h] + lfRand*( pplfAbcData[i][h] - pplfAbcData[m][h] ) + lfRand2*( pplfAbcData[i][h] - pplfLocalMinAbcData[m][h] );
+//			pplfVelocityData[i][j] = pplfAbcData[i][j] + lfRand*(pplfAbcData[i][j] - pplfAbcData[m][j]) + lfRand2*(plfGlobalMinAbcData[j] - pplfAbcData[i][j]);
+		pplfVelocityData[i][h] = pplfAbcData[i][h] + lfRand*( pplfAbcData[i][h] - pplfAbcData[m][h] ) + lfRand2*(plfGlobalMinAbcData[h] - pplfAbcData[i][h] );
 	}
 
 	// 各探索点と更新しなかった回数を格納する変数を更新します。
@@ -2280,7 +2316,6 @@ void CAbc::vEmployBeeCB( double lfMr )
 	double lfRand = 0.0;
 	double lfFunc1 = 0.0;
 	double lfFunc2 = 0.0;
-	double lfMr = 0.0;
 	double lfMrMax = 0.9;
 	double lfP = 0.3;
 	double lfMCN = iGenerationNumber;
@@ -2637,9 +2672,10 @@ void CAbc::vOnlookerBeeGBest()
 	m = mrand() % ( iAbcSearchNum-1 );
 	h = mrand() % ( iAbcVectorDimNum - 1);
 
-	lfRand = rnd();
+	lfRand = 2.0*rnd()-1.0;
 	lfRand2 = 1.5*rnd();
 	for( j = 0; j < iAbcVectorDimNum; j++ )
+//		pplfVelocityData[c][j] = pplfAbcData[c][j] + lfRand*(pplfAbcData[c][j] - pplfAbcData[m][j]) + lfRand2*(plfGlobalMinAbcData[j] - pplfAbcData[c][j]);
 		pplfVelocityData[c][j] = pplfAbcData[c][j];
 	pplfVelocityData[c][h] = pplfAbcData[c][h] + lfRand*( pplfAbcData[c][h] - pplfAbcData[m][h] ) + lfRand2*( plfGlobalMinAbcData[h] - pplfAbcData[c][h] );
 	// 更新点候補を次のように更新します。
@@ -2843,7 +2879,7 @@ void CAbc::vOnlookerBeeHJ()
 	// 適応度でソートする。
 	for( i = 0;i < iAbcSearchNum; i++ )
 	{
-		lfObjFunc = pflfObjectiveFunction( pplfAbcData[j], iAbcVectorDimNum );
+		lfObjFunc = pflfObjectiveFunction( pplfAbcData[i], iAbcVectorDimNum );
 		tempRank.iLoc = i;
 		tempRank.lfFitProb = lfObjFunc;
 		stlRank.push_back( tempRank );
@@ -2921,8 +2957,8 @@ void CAbc::vOnlookerBeeAC()
 	double lfRand1 = 0.0;
 	double lfRand2 = 0.0;
 
-	double lfLambda = 0.3;
-	double lfCrossOverRate = 0.2;
+	double lfLambda = 0.1;
+	double lfCrossOverRate = 0.1;
 
 	lfRes = 0.0;
 	for (j = 0; j < iAbcSearchNum; j++)
@@ -3032,13 +3068,13 @@ void CAbc::vOnlookerBeeCB( double lfMr )
 	double lfFunc1 = 0.0;
 	double lfFunc2 = 0.0;
 	double lfObjFunc = 0.0;
-	double lfMr = 0.0;
 	double lfMrMax = 0.9;
 	double lfP = 0.3;
 	double lfMCN = iGenerationNumber;
 	double lfLowerVelocity = -DBL_MAX;
 	double lfUpperVelocity = DBL_MAX;
 	double lfMaxFit;
+	double lfDelta = 0.0;
 
 	lfRes = 0.0;
 	for (j = 0; j < iAbcSearchNum; j++)

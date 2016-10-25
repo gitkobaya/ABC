@@ -787,6 +787,9 @@ private:
 	void qsort(int start,int end, double *sort );
 	double lfNormalRand( double lfSigma, double lfMean );
 
+	bool bHJEmStep(double *plfX1, double *plfX0, std::vector<double> stlStepSize);
+	void vModifiedHookeJeevesMethod(std::vector<double> stlStepSize, double *plfX1, double *plfX2, double *plfX0);
+
 private:
 	int iGenerationNumber;				// 計算回数
 	int iAbcDataNum;					// コロニーの数
@@ -832,7 +835,8 @@ private:
 	int iChildrenNumber;				// Rex用生成する子供の数
 	int iUpperEvalChildrenNumber;		// ARex用生成した子供の上位を選択する数
 	double lfLearningRate;				// ARex用学習率
-	std::vector<Rank_t> stlFitProb;		
+	std::vector<Rank_t> stlFitProb;
+	int iReCounter;
 };
 
 class CAbcException
