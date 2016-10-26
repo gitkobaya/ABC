@@ -787,8 +787,8 @@ private:
 	void qsort(int start,int end, double *sort );
 	double lfNormalRand( double lfSigma, double lfMean );
 
-	bool bHJEmStep(double *plfX1, double *plfX0, std::vector<double> stlStepSize);
-	void vModifiedHookeJeevesMethod(std::vector<double> stlStepSize, double *plfX1, double *plfX2, double *plfX0);
+	bool bHJEmStep(double *plfX1, double *plfX0, double *plfStepSize);
+	void vModifiedHookeJeevesMethod(double *plfStepSize, double *plfX1, double *plfX2, double *plfX0);
 
 private:
 	int iGenerationNumber;				// 計算回数
@@ -842,6 +842,7 @@ private:
 	double *plfX0;						// HJABC用更新用一時格納配列
 	double *plfX1;						// HJABC用更新用一時格納配列
 	double *plfX2;						// HJABC用更新用一時格納配列
+	double *plfStepSize;				// HJABC用ステップサイズ格納配列
 };
 
 class CAbcException

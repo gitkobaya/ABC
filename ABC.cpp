@@ -43,6 +43,11 @@ CAbc::CAbc()
 	plfXnew1 = NULL;
 	plfXnew2 = NULL;
 
+	plfX0 = NULL;
+	plfX1 = NULL;
+	plfX2 = NULL;
+	plfStepSize = NULL;
+
 	pcUndx = NULL;
 	pcRex = NULL;
 }
@@ -183,6 +188,7 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 		plfX0 = new double[iAbcVectorDimNum];
 		plfX1 = new double[iAbcVectorDimNum];
 		plfX2 = new double[iAbcVectorDimNum];
+		plfStepSize = new double[iAbcVectorDimNum];
 
 		for( i= 0;i < iAbcDataNum; i++ )
 		{
@@ -214,6 +220,7 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			plfX0[i] = 0.0;
 			plfX1[i] = 0.0;
 			plfX2[i] = 0.0;
+			plfStepSize[i] = 0.0;
 		}
 		// ソート用適応度を格納するベクターです。
 		stlFitProb.assign( iAbcSearchNum, Rank_t() );
@@ -300,6 +307,7 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 		plfX0 = new double[iAbcVectorDimNum];
 		plfX1 = new double[iAbcVectorDimNum];
 		plfX2 = new double[iAbcVectorDimNum];
+		plfStepSize = new double[iAbcVectorDimNum];
 
 		for( i= 0;i < iAbcDataNum; i++ )
 		{
@@ -331,6 +339,7 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			plfX0[i] = 0.0;
 			plfX1[i] = 0.0;
 			plfX2[i] = 0.0;
+			plfStepSize[i] = 0.0;
 		}
 		// ソート用適応度を格納するベクターです。
 		stlFitProb.assign( iAbcSearchNum, Rank_t() );
@@ -421,6 +430,7 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 		plfX0 = new double[iAbcVectorDimNum];
 		plfX1 = new double[iAbcVectorDimNum];
 		plfX2 = new double[iAbcVectorDimNum];
+		plfStepSize = new double[iAbcVectorDimNum];
 
 		for( i= 0;i < iAbcDataNum; i++ )
 		{
@@ -452,6 +462,7 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			plfX0[i] = 0.0;
 			plfX1[i] = 0.0;
 			plfX2[i] = 0.0;
+			plfStepSize[i] = 0.0;
 		}
 		pcUndx = new CUndx();
 		iCrossOverNum = iCrossOverNumData;
@@ -560,6 +571,7 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 		plfX0 = new double[iAbcVectorDimNum];
 		plfX1 = new double[iAbcVectorDimNum];
 		plfX2 = new double[iAbcVectorDimNum];
+		plfStepSize = new double[iAbcVectorDimNum];
 
 		for( i= 0;i < iAbcDataNum; i++ )
 		{
@@ -588,6 +600,10 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			plfCrossOverData[i] = 0.0;
 			plfXnew1[i] = 0.0;
 			plfXnew2[i] = 0.0;
+			plfX0[i] = 0.0;
+			plfX1[i] = 0.0;
+			plfX2[i] = 0.0;
+			plfStepSize[i] = 0.0;
 		}
 		pcUndx = new CUndx();
 		iCrossOverNum = iCrossOverNumData;
@@ -698,6 +714,10 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 		plfCrossOverData = new double[iAbcVectorDimNum];
 		plfXnew1 = new double[iAbcVectorDimNum];
 		plfXnew2 = new double[iAbcVectorDimNum];
+		plfX0 = new double[iAbcVectorDimNum];
+		plfX1 = new double[iAbcVectorDimNum];
+		plfX2 = new double[iAbcVectorDimNum];
+		plfStepSize = new double[iAbcVectorDimNum];
 
 		for( i= 0;i < iAbcDataNum; i++ )
 		{
@@ -729,6 +749,7 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			plfX0[i] = 0.0;
 			plfX1[i] = 0.0;
 			plfX2[i] = 0.0;
+			plfStepSize[i] = 0.0;
 		}
 		pcRex = new CRex();
 		// UNDXの初期化を実行します。
@@ -963,6 +984,27 @@ void CAbc::vTerminate()
 			pcUndx = NULL;
 		}
 		stlFitProb.clear();
+
+		if (plfX0 != NULL)
+		{
+			delete[] plfX0;
+			plfX0 = NULL;
+		}
+		if (plfX1 != NULL)
+		{
+			delete[] plfX1;
+			plfX1 = NULL;
+		}
+		if (plfX2 != NULL)
+		{
+			delete[] plfX2;
+			plfX2 = NULL;
+		}
+		if (plfStepSize != NULL)
+		{
+			delete[] plfStepSize;
+			plfStepSize = NULL;
+		}
 	}
 	catch(...)
 	{
@@ -1560,15 +1602,10 @@ void CAbc::vHJAbc( int iUpdateCount )
 {
 	int i, j;
 	int k;
-	int iCounter = 1000;
 	double lfX11;
 	double lfX12;
 	double lfRes = 0.0;
-	std::vector<double> stlStepSize;
 	double lfStepSize = 1.0;
-	double *plfX0;
-	double *plfX1;
-	double *plfX2;
 	double lfObjFunc0 = 0.0;
 	double lfObjFunc1 = 0.0;
 	double lfObjFunc2 = 0.0;
@@ -1598,18 +1635,18 @@ void CAbc::vHJAbc( int iUpdateCount )
 
 	// ステップサイズの計算を実行します。
 	memcpy(plfX0, plfGlobalMinAbcData, sizeof(double)*iAbcVectorDimNum);
-	if (iUpdateCount % iInterval == 0)
+	if (iUpdateCount % iHJInterval == 0)
 	{
 		for (j = 0; j < iAbcVectorDimNum; j++)
 		{
 			lfRes = 0.0;
 			for (i = 0; i < iAbcSearchNum; i++)
 				lfRes += (pplfAbcData[i][j] - plfGlobalMinAbcData[j]);
-			stlStepSize.push_back(0.1*lfRes / (double)iAbcSearchNum);
+			plfStepSize[j] = (0.1*lfRes / (double)iAbcSearchNum);
 		}
 	}
 	// Hooke-Jeeves法を適用します。
-	vModifiedHookeJeevesMethod(stlStepSize, plfX1, plfX2, plfX0);
+	vModifiedHookeJeevesMethod(plfStepSize, plfX1, plfX2, plfX0);
 
 	lfObjFunc0 = pflfObjectiveFunction(plfX0, iAbcVectorDimNum);
 	lfObjFunc1 = pflfObjectiveFunction(plfX1, iAbcVectorDimNum);
@@ -1617,22 +1654,24 @@ void CAbc::vHJAbc( int iUpdateCount )
 
 	if (lfObjFunc2 <= lfObjFunc0)
 	{
-		plfX0[i] = plfX2[i];
+		memcpy(plfX0, plfX2, sizeof(double)*iAbcVectorDimNum);
+//		plfX0[i] = plfX2[i];
 	}
 	if (lfObjFunc0 <= lfObjFunc1)
 	{
-		plfX1[i] = plfX0[i];
+		memcpy(plfX1, plfX0, sizeof(double)*iAbcVectorDimNum);
+//		plfX1[i] = plfX0[i];
 		iReCounter = 0;
 	}
 	else iReCounter++;
-	if (iReCounter > iCounter)
+	if (iReCounter > iHJCounter)
 	{
 		// Hooke-Jeeves法を適用します。
-		vModifiedHookeJeevesMethod(stlStepSize, plfX1, plfX2, plfX0);
+		vModifiedHookeJeevesMethod(plfStepSize, plfX1, plfX2, plfX0);
 	}
 }
 
-void CAbc::vModifiedHookeJeevesMethod( std::vector<double> stlStepSize, double *plfX1, double *plfX2, double *plfX0 )
+void CAbc::vModifiedHookeJeevesMethod( double* plfStepSize, double *plfX1, double *plfX2, double *plfX0 )
 {
 	int i, j, k;
 	int iCounter = 1000;
@@ -1646,47 +1685,71 @@ void CAbc::vModifiedHookeJeevesMethod( std::vector<double> stlStepSize, double *
 	bool bRet;
 
 	// Hooke-Jeeves法を適用します。
-	for (k = 0; k < iCounter; k++)
+	for (k = 0; k < iHJCounter; k++)
 	{
 		// 各ベクトルのステップサイズの計算をします。
-		bRet = bHJEmStep(plfX1, plfGlobalMinAbcData, stlStepSize);
-		if (bRet == true)
+		bRet = bHJEmStep(plfX1, plfX0, plfStepSize);
+		if (bRet == false)
 		{
-Step3:
-			// Pattern Move(PM step)
-			for (i = 0; i < iAbcVectorDimNum; i++)
-			{
-				if (plfX1[i] < plfX0[i]) stlStepSize[i] = -fabs(stlStepSize[i]);
-				else                     stlStepSize[i] = fabs(stlStepSize[i]);
-			}
-			for (i = 0; i < iAbcVectorDimNum; i++)
-			{
-				plfX2[i] = plfX1[i] + (plfX1[i] - plfX0[i]);
-				plfX0[i] = plfX1[i];
-			}
-			// EM(Expolration Move) Phase
-			bRet = bHJEmStep(plfX1, plfX2, stlStepSize);
 			lfObjFunc1 = pflfObjectiveFunction(plfX0, iAbcVectorDimNum);
 			lfObjFunc2 = pflfObjectiveFunction(plfX1, iAbcVectorDimNum);
-			if (lfObjFunc2 < lfObjFunc1) goto Step3;
+			if (lfObjFunc2 < lfObjFunc1)
+			{
+				for (;;)
+				{
+					// Pattern Move(PM step)
+					for (i = 0; i < iAbcVectorDimNum; i++)
+					{
+						if (plfX1[i] < plfX0[i]) plfStepSize[i] = -fabs(plfStepSize[i]);
+						else                     plfStepSize[i] = fabs(plfStepSize[i]);
+					}
+					for (i = 0; i < iAbcVectorDimNum; i++)
+					{
+						plfX2[i] = plfX1[i] + (plfX1[i] - plfX0[i]);
+						plfX0[i] = plfX1[i];
+					}
+					// EM(Expolration Move) Phase
+					bRet = bHJEmStep(plfX1, plfX2, plfStepSize);
+					lfObjFunc1 = pflfObjectiveFunction(plfX0, iAbcVectorDimNum);
+					lfObjFunc2 = pflfObjectiveFunction(plfX1, iAbcVectorDimNum);
+					if (lfObjFunc2 >= lfObjFunc1) break;
+				}
+			}
 		}
 		else
 		{
-			lfObjFunc1 = pflfObjectiveFunction(plfX0, iAbcVectorDimNum);
-			lfObjFunc2 = pflfObjectiveFunction(plfX1, iAbcVectorDimNum);
-			if (lfObjFunc < lfFuncMin) goto Step3;
+			for (;;)
+			{
+				// Pattern Move(PM step)
+				for (i = 0; i < iAbcVectorDimNum; i++)
+				{
+					if (plfX1[i] < plfX0[i]) plfStepSize[i] = -fabs(plfStepSize[i]);
+					else                     plfStepSize[i] = fabs(plfStepSize[i]);
+				}
+				for (i = 0; i < iAbcVectorDimNum; i++)
+				{
+					plfX2[i] = plfX1[i] + (plfX1[i] - plfX0[i]);
+					plfX0[i] = plfX1[i];
+				}
+				// EM(Expolration Move) Phase
+				bRet = bHJEmStep(plfX1, plfX2, plfStepSize);
+				lfObjFunc1 = pflfObjectiveFunction(plfX0, iAbcVectorDimNum);
+				lfObjFunc2 = pflfObjectiveFunction(plfX1, iAbcVectorDimNum);
+				if (lfObjFunc2 >= lfObjFunc1) break;
+			}
 		}
+
 		if (lfStepSize < 0.001) break;
 		else
 		{
 			lfStepSize = rho*lfStepSize;
 			for (j = 0; j < iAbcVectorDimNum; j++)
-				stlStepSize[j] = stlStepSize[j] * rho;
+				plfStepSize[j] = plfStepSize[j] * rho;
 		}
 	}
 }
 
-bool CAbc::bHJEmStep( double *plfX1, double *plfX0, std::vector<double> stlStepSize )
+bool CAbc::bHJEmStep( double *plfX1, double *plfX0, double *plfStepSize )
 {
 	double lfObjFunc = 0.0;
 	double lfFuncMin = DBL_MAX;
@@ -1695,12 +1758,12 @@ bool CAbc::bHJEmStep( double *plfX1, double *plfX0, std::vector<double> stlStepS
 
 	for (i = 0; i < iAbcVectorDimNum; i++)
 	{
-		plfX1[i] = plfX0[i]+stlStepSize[i];
+		plfX1[i] = plfX0[i]+plfStepSize[i];
 		lfObjFunc = pflfObjectiveFunction(plfX0, iAbcVectorDimNum);
 		if (lfObjFunc < lfFuncMin)	lfFuncMin = lfObjFunc;
 		else
 		{
-			plfX1[i] = plfX0[i] - stlStepSize[i];
+			plfX1[i] = plfX0[i] - plfStepSize[i];
 			lfObjFunc = pflfObjectiveFunction(plfX0, iAbcVectorDimNum);
 			if (lfObjFunc < lfFuncMin)	lfFuncMin = lfObjFunc;
 			else				        plfX1[i] = plfX0[i];
