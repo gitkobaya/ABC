@@ -1590,8 +1590,10 @@ void CAbc::vARexAbc()
  * <PRE>
  * 　人工蜂コロニー最適化法を実行します。
  *   HJABC法を適用します。
- *   ver 0.1 初版
- *   ver 0.2 アルゴリズムが実現できていなかったので実現中。
+ *   Artificial Bee Colony Algorithm ith Local Search for Numerical Optimization, Jornal of Software, Vol.6, no.3, march 2011より
+ *   ver 0.1 2016/10/03 初版
+ *   ver 0.2 2016/10/25 アルゴリズムが実現できていなかったので実現中。
+ *   ver 0.3 2016/10/27 アルゴリズム実装完了。
  * </PRE>
  * @param iUpdateCount
  * @author kobayashi
@@ -1601,15 +1603,11 @@ void CAbc::vARexAbc()
 void CAbc::vHJAbc( int iUpdateCount )
 {
 	int i, j;
-	int k;
-	double lfX11;
-	double lfX12;
 	double lfRes = 0.0;
 	double lfStepSize = 1.0;
 	double lfObjFunc0 = 0.0;
 	double lfObjFunc1 = 0.0;
 	double lfObjFunc2 = 0.0;
-	double lfFuncMin = DBL_MAX;
 	int iInterval;
 	double rho = 0.5;
 	bool bRet;
@@ -1644,30 +1642,29 @@ void CAbc::vHJAbc( int iUpdateCount )
 				lfRes += (pplfAbcData[i][j] - plfGlobalMinAbcData[j]);
 			plfStepSize[j] = (0.1*lfRes / (double)iAbcSearchNum);
 		}
-	}
-	// Hooke-Jeeves法を適用します。
-	vModifiedHookeJeevesMethod(plfStepSize, plfX1, plfX2, plfX0);
-
-	lfObjFunc0 = pflfObjectiveFunction(plfX0, iAbcVectorDimNum);
-	lfObjFunc1 = pflfObjectiveFunction(plfX1, iAbcVectorDimNum);
-	lfObjFunc2 = pflfObjectiveFunction(plfX2, iAbcVectorDimNum);
-
-	if (lfObjFunc2 <= lfObjFunc0)
-	{
-		memcpy(plfX0, plfX2, sizeof(double)*iAbcVectorDimNum);
-//		plfX0[i] = plfX2[i];
-	}
-	if (lfObjFunc0 <= lfObjFunc1)
-	{
-		memcpy(plfX1, plfX0, sizeof(double)*iAbcVectorDimNum);
-//		plfX1[i] = plfX0[i];
-		iReCounter = 0;
-	}
-	else iReCounter++;
-	if (iReCounter > iHJCounter)
-	{
 		// Hooke-Jeeves法を適用します。
 		vModifiedHookeJeevesMethod(plfStepSize, plfX1, plfX2, plfX0);
+
+		lfObjFunc0 = pflfObjectiveFunction(plfX0, iAbcVectorDimNum);
+		lfObjFunc1 = pflfObjectiveFunction(plfX1, iAbcVectorDimNum);
+		lfObjFunc2 = pflfObjectiveFunction(plfX2, iAbcVectorDimNum);
+
+		// 現在の最適値を更新します。
+		if (lfObjFunc2 <= lfObjFunc0)
+		{
+			memcpy(plfGlobalMinAbcData, plfX2, sizeof(double)*iAbcVectorDimNum);
+		}
+		if (lfObjFunc0 <= lfObjFunc1)
+		{
+			memcpy(plfX1, plfX0, sizeof(double)*iAbcVectorDimNum);
+			iReCounter = 0;
+		}
+		else iReCounter++;
+		if (iReCounter > iHJCounter)
+		{
+			// Hooke-Jeeves法を適用します。
+			vModifiedHookeJeevesMethod(plfStepSize, plfX1, plfX2, plfX0);
+		}
 	}
 }
 
@@ -1753,21 +1750,25 @@ bool CAbc::bHJEmStep( double *plfX1, double *plfX0, double *plfStepSize )
 {
 	double lfObjFunc = 0.0;
 	double lfFuncMin = DBL_MAX;
-	double lfX1i;
+	double lfXi;
 	int i;
 
+	memcpy(plfX1, plfX0, sizeof(double)*iAbcVectorDimNum);
 	for (i = 0; i < iAbcVectorDimNum; i++)
 	{
-		plfX1[i] = plfX0[i]+plfStepSize[i];
-		lfObjFunc = pflfObjectiveFunction(plfX0, iAbcVectorDimNum);
+		lfXi = plfX0[i]+plfStepSize[i];
+		plfX1[i] = lfXi;
+		lfObjFunc = pflfObjectiveFunction(plfX1, iAbcVectorDimNum);
 		if (lfObjFunc < lfFuncMin)	lfFuncMin = lfObjFunc;
 		else
 		{
-			plfX1[i] = plfX0[i] - plfStepSize[i];
-			lfObjFunc = pflfObjectiveFunction(plfX0, iAbcVectorDimNum);
+			lfXi = plfX0[i] - plfStepSize[i];
+			plfX1[i] = lfXi;
+			lfObjFunc = pflfObjectiveFunction(plfX1, iAbcVectorDimNum);
 			if (lfObjFunc < lfFuncMin)	lfFuncMin = lfObjFunc;
-			else				        plfX1[i] = plfX0[i];
+			else				        lfXi = plfX0[i];
 		}
+		plfX1[i] = lfXi;
 	}
 
 	if (lfObjFunc >= lfFuncMin) return false;
@@ -2953,6 +2954,7 @@ void CAbc::vOnlookerBeeRM()
 /**
  * <PRE>
  *   Onlooker Beeを実行します。(Hooke-Jeeves法用)
+ *   Artificial Bee Colony Algorithm ith Local Search for Numerical Optimization, Jornal of Software, Vol.6, no.3, march 2011より
  *   ver 0.1 2016/10/03 初版
  *   ver 0.2 2016/10/25 更新候補点の算出に誤りを発見し修正。
  * </PRE>
@@ -3035,6 +3037,7 @@ void CAbc::vOnlookerBeeHJ()
 /**
 * <PRE>
 *   Onlooker Beeを実行します。(AC-ABC用算術交叉を利用したABC法。)
+*   算術交叉を用いた改良型Artificial Bee Colony アルゴリズム 第28回ファジーシンポジウム, 2012.9.12～14
 *   ver 0.1 2016/10/13 初版
 *   ver 0.2 2016/10/25 更新候補点の算出に誤りを発見し修正。
 * </PRE>
@@ -3057,6 +3060,7 @@ void CAbc::vOnlookerBeeAC()
 	double lfRand1 = 0.0;
 	double lfRand2 = 0.0;
 
+	// 論文記載の内容より。
 	double lfLambda = 0.1;
 	double lfCrossOverRate = 0.1;
 
@@ -3065,8 +3069,9 @@ void CAbc::vOnlookerBeeAC()
 	{
 		// 適応度の算出
 		lfObjFunc = pflfObjectiveFunction(pplfAbcData[j], iAbcVectorDimNum);
-		if (lfObjFunc >= 0.0)	lfFitProb = 1.0 / (1.0 + lfObjFunc);
-		else					lfFitProb = 1.0 + fabs(lfObjFunc);
+//		if (lfObjFunc >= 0.0)	lfFitProb = 1.0 / (1.0 + lfObjFunc);
+//		else					lfFitProb = 1.0 + fabs(lfObjFunc);
+		lfFitProb = lfObjFunc;
 		lfRes += lfFitProb;
 		plfFit[j] = lfFitProb;
 	}
@@ -3095,7 +3100,7 @@ void CAbc::vOnlookerBeeAC()
 	m = mrand() % iAbcSearchNum;
 	h = mrand() % iAbcVectorDimNum;
 
-	lfRand = 2 * rnd() - 1;
+	lfRand = rnd();
 	for (j = 0; j < iAbcVectorDimNum; j++)
 	{
 		if (lfRand < lfCrossOverRate )
@@ -3147,7 +3152,7 @@ void CAbc::vOnlookerBeeCB(double lfMr)
 	double lfMCN = iGenerationNumber;
 	double lfLowerVelocity = -DBL_MAX;
 	double lfUpperVelocity = DBL_MAX;
-	double lfMaxFit;
+	double lfMaxFit =-DBL_MAX;
 	double lfDelta = 0.0;
 
 	lfRes = 0.0;
@@ -3155,7 +3160,7 @@ void CAbc::vOnlookerBeeCB(double lfMr)
 	{
 		lfObjFunc = pflfObjectiveFunction(pplfAbcData[j], iAbcVectorDimNum);
 		plfFit[j] = lfObjFunc;
-		lfMaxFit = plfFit[i] < lfMaxFit ? lfMaxFit : plfFit[i];
+		lfMaxFit = plfFit[j] < lfMaxFit ? lfMaxFit : plfFit[j];
 	}
 	lfRes = 0.0;
 	for (j = 0; j < iAbcSearchNum; j++)

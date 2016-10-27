@@ -199,6 +199,24 @@ void vInitialize( CCmdCheck *pcCmd, CAbc *pcAbc )
 		pcAbc->vInitialize(iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iIntervalMinNum, iAbcUpperSearchNum, lfConvergenceParam, lfFitBound, lfFitAccuracy, iParentNumber, iChildrenNumber, iUpperEvalChildrenNumber, lfLearningRate);
 		pcAbc->vSetRange(lfRange);
 	}
+	// PABC–@
+	else if (pcCmd->iGetAbcMethod() == 12)
+	{
+		pcAbc->vInitialize(iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iIntervalMinNum, iAbcUpperSearchNum, lfConvergenceParam, lfFitBound, lfFitAccuracy, iParentNumber, iChildrenNumber, iUpperEvalChildrenNumber, lfLearningRate);
+		pcAbc->vSetRange(lfRange);
+	}
+	// OLABC–@
+	else if (pcCmd->iGetAbcMethod() == 13)
+	{
+		pcAbc->vInitialize(iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iIntervalMinNum, iAbcUpperSearchNum, lfConvergenceParam, lfFitBound, lfFitAccuracy, iParentNumber, iChildrenNumber, iUpperEvalChildrenNumber, lfLearningRate);
+		pcAbc->vSetRange(lfRange);
+	}
+	// ABCBestSoFar–@
+	else if (pcCmd->iGetAbcMethod() == 14)
+	{
+		pcAbc->vInitialize(iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iIntervalMinNum, iAbcUpperSearchNum, lfConvergenceParam, lfFitBound, lfFitAccuracy, iParentNumber, iChildrenNumber, iUpperEvalChildrenNumber, lfLearningRate);
+		pcAbc->vSetRange(lfRange);
+	}
 }
 
 /**
@@ -467,6 +485,22 @@ void vStartAbc( CCmdCheck *pcCmd, CAbc *pcAbc, int iLoc )
 	else if (pcCmd->iGetAbcMethod() == 11 )
 	{
 		pcAbc->vACAbc();
+	}
+	else if (pcCmd->iGetAbcMethod() == 12)
+	{
+//		pcAbc->vACAbc();
+	}
+	else if (pcCmd->iGetAbcMethod() == 13)
+	{
+//		pcAbc->vACAbc();
+	}
+	else if (pcCmd->iGetAbcMethod() == 14)
+	{
+//		pcAbc->vACAbc();
+	}
+	else if (pcCmd->iGetAbcMethod() == 15)
+	{
+//		pcAbc->vACAbc();
 	}
 	else
 	{

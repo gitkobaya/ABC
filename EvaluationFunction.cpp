@@ -557,7 +557,7 @@ double lfKatsuura( double *plfX, int iVectorLen )
 	double lfRes1 = 0.0;
 	double lfRes2 = 0.0;
 	double lfCurK = 0.0;
-	double lfPrevK = 0.0;
+	double lfPrevK = 1.0;
 
 	M = 32;
 	for( i = 0; i < iVectorLen; i++ )
