@@ -47,6 +47,7 @@ CAbc::CAbc()
 	plfX1 = NULL;
 	plfX2 = NULL;
 	plfStepSize = NULL;
+	plfScoutBeeResult = NULL;
 
 	pcUndx = NULL;
 	pcRex = NULL;
@@ -189,6 +190,7 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 		plfX1 = new double[iAbcVectorDimNum];
 		plfX2 = new double[iAbcVectorDimNum];
 		plfStepSize = new double[iAbcVectorDimNum];
+		plfScoutBeeResult = new double[iAbcVectorDimNum];
 
 		for( i= 0;i < iAbcDataNum; i++ )
 		{
@@ -221,6 +223,7 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			plfX1[i] = 0.0;
 			plfX2[i] = 0.0;
 			plfStepSize[i] = 0.0;
+			plfScoutBeeResult[i] = 0.0;
 		}
 		// ソート用適応度を格納するベクターです。
 		stlFitProb.assign( iAbcSearchNum, Rank_t() );
@@ -308,6 +311,7 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 		plfX1 = new double[iAbcVectorDimNum];
 		plfX2 = new double[iAbcVectorDimNum];
 		plfStepSize = new double[iAbcVectorDimNum];
+		plfScoutBeeResult = new double[iAbcVectorDimNum];
 
 		for( i= 0;i < iAbcDataNum; i++ )
 		{
@@ -340,6 +344,7 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			plfX1[i] = 0.0;
 			plfX2[i] = 0.0;
 			plfStepSize[i] = 0.0;
+			plfScoutBeeResult[i] = 0.0;
 		}
 		// ソート用適応度を格納するベクターです。
 		stlFitProb.assign( iAbcSearchNum, Rank_t() );
@@ -431,6 +436,7 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 		plfX1 = new double[iAbcVectorDimNum];
 		plfX2 = new double[iAbcVectorDimNum];
 		plfStepSize = new double[iAbcVectorDimNum];
+		plfScoutBeeResult = new double[iAbcVectorDimNum];
 
 		for( i= 0;i < iAbcDataNum; i++ )
 		{
@@ -463,6 +469,7 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			plfX1[i] = 0.0;
 			plfX2[i] = 0.0;
 			plfStepSize[i] = 0.0;
+			plfScoutBeeResult[i] = 0.0;
 		}
 		pcUndx = new CUndx();
 		iCrossOverNum = iCrossOverNumData;
@@ -572,6 +579,7 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 		plfX1 = new double[iAbcVectorDimNum];
 		plfX2 = new double[iAbcVectorDimNum];
 		plfStepSize = new double[iAbcVectorDimNum];
+		plfScoutBeeResult = new double[iAbcVectorDimNum];
 
 		for( i= 0;i < iAbcDataNum; i++ )
 		{
@@ -604,6 +612,7 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			plfX1[i] = 0.0;
 			plfX2[i] = 0.0;
 			plfStepSize[i] = 0.0;
+			plfScoutBeeResult[i] = 0.0;
 		}
 		pcUndx = new CUndx();
 		iCrossOverNum = iCrossOverNumData;
@@ -718,6 +727,7 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 		plfX1 = new double[iAbcVectorDimNum];
 		plfX2 = new double[iAbcVectorDimNum];
 		plfStepSize = new double[iAbcVectorDimNum];
+		plfScoutBeeResult = new double[iAbcVectorDimNum];
 
 		for( i= 0;i < iAbcDataNum; i++ )
 		{
@@ -750,6 +760,7 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			plfX1[i] = 0.0;
 			plfX2[i] = 0.0;
 			plfStepSize[i] = 0.0;
+			plfScoutBeeResult[i] = 0.0;
 		}
 		pcRex = new CRex();
 		// UNDXの初期化を実行します。
@@ -1004,6 +1015,11 @@ void CAbc::vTerminate()
 		{
 			delete[] plfStepSize;
 			plfStepSize = NULL;
+		}
+		if (plfScoutBeeResult != NULL)
+		{
+			delete[] plfScoutBeeResult;
+			plfScoutBeeResult = NULL;
 		}
 	}
 	catch(...)
@@ -1842,13 +1858,43 @@ void CAbc::vCBAbc( int iUpdateCount )
 
 /**
  * <PRE>
+ * 　Best-so-far Artificial Bee Colony Methodを実行します。
+ *   The best-so-far selection in Artificial Bee Colony algorithm Applied Soft Computing 11 (2011) 2888-2901
+ *   ver 0.1 2016.10.28 初版
+ * </PRE>
+ * @param iCount 現在の計算回数
+ * @author kobayashi
+ * @since 2016/10/28
+ * @version 0.1
+ */
+void CAbc::vBFAbc( int iUpdateCount )
+{
+	// employee bee の動作
+	vEmployBeeBF();
+
+	// onlookers beeの動作
+	vOnlookerBeeBF();
+
+	// scout bee の実行
+	vScoutBeeBF( iUpdateCount );
+
+	// 局所最大値、最小値を取得します。
+	vGetLocalMaxMin();
+
+	// 大域的最大値、最小値を取得します。
+	vGetGlobalMaxMin();
+}
+
+/**
+ * <PRE>
  * 　Employ Beeを実行します。(大本のバージョンと同じ手法)
- *   ver 0.1 
+ *   ver 0.1 2016/08/18 初版 
  *   ver 0.2 2016/10/25 更新候補点の算出に誤りを発見し修正。
+ *   ver 0.3 2016/10/28 余計なループの削除を実施。
  * </PRE>
  * @author kobayashi
  * @since 2016/8/18
- * @version 0.2
+ * @version 0.3
  */
 void CAbc::vEmployBeeOrigin()
 {
@@ -1857,7 +1903,8 @@ void CAbc::vEmployBeeOrigin()
 	double lfRand = 0.0;
 	double lfFunc1 = 0.0;
 	double lfFunc2 = 0.0;
-	// employee bee の動作
+// employee bee の動作
+
 	// 更新点候補を算出します。
 	m = mrand() % iAbcSearchNum;
 	h = mrand() % iAbcVectorDimNum;
@@ -1868,18 +1915,14 @@ void CAbc::vEmployBeeOrigin()
 		for( j = 0; j < iAbcVectorDimNum; j++ )
 			pplfVelocityData[i][j] = pplfAbcData[i][j];
 		pplfVelocityData[i][h] = pplfAbcData[i][h] + lfRand*( pplfAbcData[i][h] - pplfAbcData[m][h] );
-	}
 
-	// 各探索点と更新しなかった回数を格納する変数を更新します。
-	for( i = 0;i < iAbcSearchNum; i++ )
-	{
+		// 各探索点と更新しなかった回数を格納する変数を更新します。
 		lfFunc1 = pflfObjectiveFunction( pplfVelocityData[i], iAbcVectorDimNum );
 		lfFunc2 = pflfObjectiveFunction( pplfAbcData[i], iAbcVectorDimNum );
 
 		if( lfFunc1 < lfFunc2 )
 		{
-			for( j = 0;j < iAbcVectorDimNum; j++ )
-				pplfAbcData[i][j] = pplfVelocityData[i][j];
+			pplfAbcData[i][h] = pplfVelocityData[i][h];
 			piNonUpdateCount[i] = 0;
 		}
 		else	piNonUpdateCount[i] = piNonUpdateCount[i] + 1;
@@ -2236,6 +2279,7 @@ double CAbc::lfEmployBeeBestEnhanced( int iUpdateCount )
  *   ver 0.1 
  *   ver 0.2 NBest版に修正
  *   ver 0.3 2016/10/25 更新候補点の算出に誤りを発見し修正。
+ *   ver 0.4 2016/10/28 余計なループの削除を実施。
  * </PRE>
  * @author kobayashi
  * @since 2016/8/10
@@ -2248,7 +2292,8 @@ void CAbc::vEmployBeeBest()
 	double lfRand = 0.0;
 	double lfFunc1 = 0.0;
 	double lfFunc2 = 0.0;
-	// employee bee の動作
+// employee bee の動作
+
 	// 更新点候補を算出します。
 	m = mrand() % iAbcSearchNum;
 	h = mrand() % iAbcVectorDimNum;
@@ -2259,18 +2304,14 @@ void CAbc::vEmployBeeBest()
 		for( j = 0; j < iAbcVectorDimNum; j++ )
 			pplfVelocityData[i][j] = pplfAbcData[i][j];
 		pplfVelocityData[i][h] = pplfAbcData[i][h] + lfRand*( pplfAbcData[i][h] - pplfLocalMinAbcData[m][h] );
-	}
 
-	// 各探索点と更新しなかった回数を格納する変数を更新します。
-	for( i = 0;i < iAbcSearchNum; i++ )
-	{
+		// 各探索点と更新しなかった回数を格納する変数を更新します。
 		lfFunc1 = pflfObjectiveFunction( pplfVelocityData[i], iAbcVectorDimNum );
 		lfFunc2 = pflfObjectiveFunction( pplfAbcData[i], iAbcVectorDimNum );
 
 		if( lfFunc1 < lfFunc2 )
 		{
-			for( j = 0;j < iAbcVectorDimNum; j++ )
-				pplfAbcData[i][j] = pplfVelocityData[i][j];
+			pplfAbcData[i][h] = pplfVelocityData[i][h];
 			piNonUpdateCount[i] = 0;
 		}
 		else	piNonUpdateCount[i] = piNonUpdateCount[i] + 1;
@@ -2284,6 +2325,7 @@ void CAbc::vEmployBeeBest()
  *   ver 0.2 NBest版に修正
  *   ver 0.3 2016/10/24 論文を基に修正
  *   ver 0.4 2016/10/25 更新候補点の算出に誤りを発見し修正。
+ *   ver 0.5 2016/10/28 余計なループの削除を実施。
  * </PRE>
  * @author kobayashi
  * @since 2016/8/10
@@ -2297,7 +2339,8 @@ void CAbc::vEmployBeeGBest()
 	double lfRand2 = 0.0;
 	double lfFunc1 = 0.0;
 	double lfFunc2 = 0.0;
-	// employee bee の動作
+// employee bee の動作
+
 	// 更新点候補を算出します。
 	m = mrand() % iAbcSearchNum;
 	h = mrand() % iAbcVectorDimNum;
@@ -2310,18 +2353,14 @@ void CAbc::vEmployBeeGBest()
 			pplfVelocityData[i][j] = pplfAbcData[i][j];
 //			pplfVelocityData[i][j] = pplfAbcData[i][j] + lfRand*(pplfAbcData[i][j] - pplfAbcData[m][j]) + lfRand2*(plfGlobalMinAbcData[j] - pplfAbcData[i][j]);
 		pplfVelocityData[i][h] = pplfAbcData[i][h] + lfRand*( pplfAbcData[i][h] - pplfAbcData[m][h] ) + lfRand2*(plfGlobalMinAbcData[h] - pplfAbcData[i][h] );
-	}
 
-	// 各探索点と更新しなかった回数を格納する変数を更新します。
-	for( i = 0;i < iAbcSearchNum; i++ )
-	{
+		// 各探索点と更新しなかった回数を格納する変数を更新します。
 		lfFunc1 = pflfObjectiveFunction( pplfVelocityData[i], iAbcVectorDimNum );
 		lfFunc2 = pflfObjectiveFunction( pplfAbcData[i], iAbcVectorDimNum );
 
 		if( lfFunc1 < lfFunc2 )
 		{
-			for( j = 0;j < iAbcVectorDimNum; j++ )
-				pplfAbcData[i][j] = pplfVelocityData[i][j];
+			pplfAbcData[i][h] = pplfVelocityData[i][h];
 			piNonUpdateCount[i] = 0;
 		}
 		else 	piNonUpdateCount[i] = piNonUpdateCount[i] + 1;
@@ -2333,6 +2372,7 @@ void CAbc::vEmployBeeGBest()
  * 　Employ Beeを実行します。
  *   ver 0.1 
  *   ver 0.2 2016/08/18 IWCFA(粒子群最適化法の一手法を適用)
+ *   ver 0.3 2016/10/28 余計なループの削除を実施。
  * </PRE>
  * @param lfK
  * @param lfCoe1
@@ -2368,18 +2408,14 @@ void CAbc::vEmployBeeIWCFA( double lfK, double lfCoe1, double lfCoe2, int iUpdat
 //		pplfVelocityData[i][h] = pplfAbcData[i][h] + lfRand*( pplfAbcData[i][h] - pplfAbcData[m][h] );
 		lfWeight = lfMaxWeight - (lfMaxWeight-lfMinWeight)/(double)iGenerationNumber*(double)(iUpdateCount-piTotalNonUpdateCount[m]);
 		pplfVelocityData[i][h] = pplfAbcData[i][h] + lfCoe1*lfRand*( pplfAbcData[i][h] - pplfAbcData[m][h] ) + lfCoe2*lfRand2*( pplfAbcData[i][h] - pplfLocalMinAbcData[m][h] );
-	}
 
-	// 各探索点と更新しなかった回数を格納する変数を更新します。
-	for( i = 0;i < iAbcSearchNum; i++ )
-	{
+		// 各探索点と更新しなかった回数を格納する変数を更新します。
 		lfFunc1 = pflfObjectiveFunction( pplfVelocityData[i], iAbcVectorDimNum );
 		lfFunc2 = pflfObjectiveFunction( pplfAbcData[i], iAbcVectorDimNum );
 
 		if( lfFunc1 < lfFunc2 )
 		{
-			for( j = 0;j < iAbcVectorDimNum; j++ )
-				pplfAbcData[i][j] = pplfVelocityData[i][j];
+			pplfAbcData[i][h] = pplfVelocityData[i][h];
 			piNonUpdateCount[i] = 0;
 		}
 		else
@@ -2393,7 +2429,8 @@ void CAbc::vEmployBeeIWCFA( double lfK, double lfCoe1, double lfCoe2, int iUpdat
 /**
 * <PRE>
 *   Ivona Brajevic, Crossover-based artificial bee colony algorithm for constrained optimization problems, Neural Computing & Application (2015) 26:1587-1601.
-*   ver 0.1
+*   ver 0.1 2016/10/19 初版
+*   ver 0.2 2016/10/28 余計なループの削除を実施。
 * </PRE>
 * @param lfMr 更新用パラメーター
 * @author kobayashi
@@ -2426,21 +2463,80 @@ void CAbc::vEmployBeeCB( double lfMr )
 			if (pplfVelocityData[i][j] < lfLowerVelocity) pplfVelocityData[i][j] = 2.0*lfLowerVelocity - pplfVelocityData[i][j];
 			else if (pplfVelocityData[i][j] > lfUpperVelocity) pplfVelocityData[i][j] = 2.0*lfUpperVelocity - pplfVelocityData[i][j];
 		}
-	}
-
-	// 各探索点と更新しなかった回数を格納する変数を更新します。
-	for (i = 0; i < iAbcSearchNum; i++)
-	{
+		// 各探索点と更新しなかった回数を格納する変数を更新します。
 		lfFunc1 = pflfObjectiveFunction(pplfVelocityData[i], iAbcVectorDimNum);
 		lfFunc2 = pflfObjectiveFunction(pplfAbcData[i], iAbcVectorDimNum);
 
 		if (lfFunc1 < lfFunc2)
 		{
-			for (j = 0; j < iAbcVectorDimNum; j++)
+			for( j = 0;j < iAbcVectorDimNum; j++ )
 				pplfAbcData[i][j] = pplfVelocityData[i][j];
 			piNonUpdateCount[i] = 0;
 		}
 		else	piNonUpdateCount[i] = piNonUpdateCount[i] + 1;
+	}
+}
+
+/**
+ * <PRE>
+ * 　Employ Beeを実行します。(Best-so-Far版)
+ *   The best-so-far selection in Artificial Bee Colony algorithm Applied Soft Computing 11 (2011) 2888-2901
+ *   ver 0.1 2016.10.28 初版
+ * </PRE>
+ * @author kobayashi
+ * @since 2016/10/28
+ * @version 0.1
+ */
+void CAbc::vEmployBeeBF()
+{
+	int m,h;
+	int i,j;
+	double lfRand = 0.0;
+	double lfRand2 = 0.0;
+	double lfFunc1 = 0.0;
+	double lfFunc2 = 0.0;
+	double lfObjFunc = 0.0;
+
+	// employee bee の動作
+	// 更新点候補を算出します。
+	m = mrand() % iAbcSearchNum;
+	h = mrand() % iAbcVectorDimNum;
+	
+	for( i = 0;i < iAbcSearchNum; i++ )
+	{
+		lfRand = 2.0*rnd()-1.0;
+		for( j = 0; j < iAbcVectorDimNum; j++ )
+			pplfVelocityData[i][j] = pplfAbcData[i][j];
+		pplfVelocityData[i][h] = pplfAbcData[i][h] + lfRand*(pplfAbcData[i][h] - pplfAbcData[m][h]);
+
+		// 各探索点と更新しなかった回数を格納する変数を更新します。
+		lfFunc1 = pflfObjectiveFunction( pplfVelocityData[i], iAbcVectorDimNum );
+		lfFunc2 = pflfObjectiveFunction( pplfAbcData[i], iAbcVectorDimNum );
+		if( lfFunc1 < lfFunc2 )
+		{
+			pplfAbcData[i][h] = pplfVelocityData[i][h];
+			piNonUpdateCount[i] = 0;
+		}
+		else 	piNonUpdateCount[i] = piNonUpdateCount[i] + 1;
+	}
+	for(i = 0;i < iAbcSearchNum; i++ )
+	{
+		if( i ==  1 )
+		{
+			for( j = 0; j < iAbcVectorDimNum; j++ )
+				plfGlobalMinAbcData[j] = pplfAbcData[i][j];
+			lfGlobalMinAbcData = pflfObjectiveFunction( pplfAbcData[i], iAbcVectorDimNum );
+		}
+		else
+		{
+			lfObjFunc = pflfObjectiveFunction(pplfAbcData[i], iAbcVectorDimNum );
+			if( lfObjFunc < lfGlobalMinAbcData)
+			{
+				for( j = 0; j < iAbcVectorDimNum; j++ )
+					plfGlobalMinAbcData[j] = pplfAbcData[i][j];
+				lfGlobalMinAbcData = pflfObjectiveFunction( pplfAbcData[i], iAbcVectorDimNum );
+			}
+		}
 	}
 }
 
@@ -2883,10 +2979,11 @@ void CAbc::vOnlookerBeeIWCFA( double lfK, double lfCoe1, double lfCoe2, int iUpd
  *   Randomized Memtic Bee Colony Method用
  *   ver 0.1 2016/09/22 初版
  *   ver 0.2 2016/10/25 更新候補点の算出に誤りを発見し修正。
+ *   ver 0.3 2016/10/28 一部誤りがあり修正。
  * </PRE>
  * @author kobayashi
  * @since 2016/9/22
- * @version 0.2
+ * @version 0.3
  */
 void CAbc::vOnlookerBeeRM()
 {
@@ -2932,7 +3029,7 @@ void CAbc::vOnlookerBeeRM()
 	m = mrand() % iAbcSearchNum;
 	h = mrand() % iAbcVectorDimNum;
 
-	lfRand = rnd();
+	lfRand = 2.0*rnd()-1.0;
 	lfRand2 = 1.5*rnd();
 	for( j = 0; j < iAbcVectorDimNum; j++ )
 		pplfVelocityData[c][j] = pplfAbcData[c][j];
@@ -3016,7 +3113,6 @@ void CAbc::vOnlookerBeeHJ()
 	// 更新点候補を乱数により決定します。
 	m = mrand() % iAbcSearchNum;
 	h = mrand() % iAbcVectorDimNum;
-	lfRand = 2*rnd()-1;
 	lfRand = 2*rnd()-1;
 	for( j = 0; j < iAbcVectorDimNum; j++ )
 		pplfVelocityData[c][j] = pplfAbcData[c][j];
@@ -3123,6 +3219,79 @@ void CAbc::vOnlookerBeeAC()
 		piNonUpdateCount[m] = 0;
 	}
 	else	piNonUpdateCount[m] = piNonUpdateCount[m] + 1;
+}
+
+/**
+ * <PRE>
+ *   Onlooker Beeを実行します。
+ *   Best-so-far Artificial Bee Colony Method用
+ *   The best-so-far seelction in ARtificial Bee Colony algorithm, Applied Soft Computing 11 (2011) 2888-2901.
+ *   ver 0.1 2016/10/28 初版
+ * </PRE>
+ * @author kobayashi
+ * @since 2016/10/28
+ * @version 0.1
+ */
+void CAbc::vOnlookerBeeBF()
+{
+	int i,j;
+	int c,m,h;
+	double lfRes = 0.0;
+	double lfRand = 0.0;
+	double lfFitProb = 0.0;
+	double lfProb = 0.0;
+	double lfPrevProb = 0.0;
+	double lfFunc1 = 0.0;
+	double lfFunc2 = 0.0;
+	double lfObjFunc = 0.0;
+
+	for( i = 0;i < iAbcSearchNum; i++ )
+	{
+		lfRes = 0.0;
+		for(j = 0;j < iAbcSearchNum; j++ )
+		{
+			// 適応度の算出
+			lfObjFunc = pflfObjectiveFunction( pplfAbcData[j], iAbcVectorDimNum );
+			lfRes += lfObjFunc;
+			plfFit[j] = lfObjFunc;
+		}
+		// 適応度の正規化
+		for( j = 0;j < iAbcSearchNum; j++ )	plfFitProb[j] = plfFit[j]/lfRes;
+		// ルーレット戦略を実行
+		lfProb = lfPrevProb = 0.0;
+		lfRand = rnd();
+		c = 0;
+		for( j = 0;j < iAbcSearchNum; j++ )
+		{
+			lfProb += plfFitProb[j];
+			if( lfPrevProb <= lfRand && lfRand <= lfProb )	c = j;
+			lfPrevProb = lfProb;
+		}
+	
+		// ルーレット選択した探索点に対して更新候補を求めます。
+	
+		// 更新点候補を算出します。
+		// 更新点候補を乱数により決定します。
+		m = mrand() % iAbcSearchNum;
+		h = mrand() % iAbcVectorDimNum;
+	
+		lfRand = 2.0*rnd()-1.0;
+		for( j = 0; j < iAbcVectorDimNum; j++ )
+			pplfVelocityData[c][j] = pplfAbcData[c][j];
+		pplfVelocityData[c][h] = pplfAbcData[c][h] + lfRand*lfGlobalMinAbcData*( pplfAbcData[c][h] - pplfAbcData[m][h] );
+
+		// 更新点候補を次のように更新します。
+		lfFunc1 = pflfObjectiveFunction( pplfVelocityData[i], iAbcVectorDimNum );
+		lfFunc2 = pflfObjectiveFunction( pplfAbcData[c], iAbcVectorDimNum );
+	
+		if( lfFunc1 < lfFunc2 )
+		{
+			for( j = 0;j < iAbcVectorDimNum; j++ )
+				pplfAbcData[c][j] = pplfVelocityData[i][j];
+			piNonUpdateCount[c] = 0;
+		}
+		else	piNonUpdateCount[c] = piNonUpdateCount[c] + 1;
+	}
 }
 
 /**
@@ -3248,8 +3417,8 @@ void CAbc::vScoutBeeOrigin()
 /**
  * <PRE>
  * Scout Beeを実行します。
- * ver 0.1
- * ver 0.2 手法の変更。（粒子群最適化法のような更新手法。論文より）
+ * ver 0.1 2016.8.10 初版
+ * ver 0.2 2016.8.11 手法の変更。（粒子群最適化法のような更新手法。論文より）
  * </PRE>
  * @author kobayashi
  * @since 2016/8/10
@@ -3276,7 +3445,7 @@ void CAbc::vScoutBeeNormal()
 /**
  * <PRE>
  * Scout Beeを実行します。（完全アレンジ版UNDXを実行する。）
- * ver 0.1
+ * ver 0.1 2016.8.18 初版
  * </PRE>
  * @author kobayashi
  * @since 2016/8/18
@@ -3306,7 +3475,7 @@ void CAbc::vScoutBeeUndx()
 /**
  * <PRE>
  * Scout Beeを実行します。（完全アレンジ版REXを実行する。）
- * ver 0.1
+ * ver 0.1 2016.8.26 初版
  * </PRE>
  * @author kobayashi
  * @since 2016/8/26
@@ -3337,7 +3506,7 @@ void CAbc::vScoutBeeRex()
 /**
  * <PRE>
  * Scout Beeを実行します。（完全アレンジ版AREXを実行する。）
- * ver 0.1
+ * ver 0.1 2016.8.27 初版
  * </PRE>
  * @author kobayashi
  * @since 2016/8/27
@@ -3368,7 +3537,7 @@ void CAbc::vScoutBeeARex()
 /**
 * <PRE>
 *   Ivona Brajevic, Crossover-based artificial bee colony algorithm for constrained optimization problems, Neural Computing & Application (2015) 26:1587-1601.
-*   ver 0.1
+*   ver 0.1 2016.10.19 初版 
 * </PRE>
 * @author kobayashi
 * @since 2016/10/19
@@ -3390,6 +3559,50 @@ void CAbc::vScoutBeeCB( int iCount )
 		}
 	}
 }
+
+/**
+ * <PRE>
+ * Scout Beeを実行します。(Best-so-far Artificial Bee Colony Method用)
+ * The best-so-far selection in Artificial Bee colony algorithm, Applied Soft Computing 11 (2011) 2888-2901.
+ * ver 0.1 初版 2016.10.28
+ * </PRE>
+ * @author kobayashi
+ * @since 2016/10/28
+ * @version 0.1
+ */
+void CAbc::vScoutBeeBF( int iUpdateCount )
+{
+	int i,j,k;
+	double lfRand = 0.0;
+	double lfMaxWeight = 0.7;
+	double lfMinWeight = 0.3;
+	double lfFunc1 = 0.0;
+	double lfFunc2 = 0.0;
+
+	// 新たな探索点を求めて探索を実行します。
+	for( i = 0;i < iAbcSearchNum; i++ )
+	{
+		if( piNonUpdateCount[i] > iAbcLimitCount )
+		{
+			for( k = 0;k < iAbcVectorDimNum; k++ )
+			{
+				lfRand = 2.0*rnd()-1.0;
+				plfScoutBeeResult[k] = pplfAbcData[i][k] + lfRand*(lfMaxWeight-(double)iUpdateCount/(double)iGenerationNumber*(lfMaxWeight-lfMinWeight))*pplfAbcData[i][k];
+			}
+			lfFunc1 = pflfObjectiveFunction(plfScoutBeeResult, iAbcVectorDimNum);
+			lfFunc2 = pflfObjectiveFunction(pplfAbcData[i], iAbcVectorDimNum);
+	
+			if (lfFunc1 < lfFunc2)
+			{
+				for (k = 0; k < iAbcVectorDimNum; k++)
+					pplfAbcData[i][k] = plfScoutBeeResult[k];
+				piNonUpdateCount[i] = 0;
+			}
+			else	piNonUpdateCount[i] = piNonUpdateCount[i] + 1;
+		}
+	}
+}
+
 
 /**
  * <PRE>

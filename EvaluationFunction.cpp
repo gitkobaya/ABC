@@ -29,7 +29,7 @@ double lfSphere( double *plfX, int iVectorLen )
 	int iVector1 = iVectorLen%5;
 	for( i = 0;i < iVector1; i++ )
 		lfRes += plfX[i]*plfX[i];
-	for( i = 0;i < iVector2; i++ )
+	for( i = iVector1;i < iVector2; i+=5 )
 		lfRes += ( plfX[i]*plfX[i] + plfX[i+1]*plfX[i+1] + plfX[i+2]*plfX[i+2] + plfX[i+3]*plfX[i+3] + plfX[i+4]*plfX[i+4] );
 	return lfRes;
 }
@@ -216,6 +216,7 @@ double lfRosenbrock( double *plfX, int iVectorLen )
  */
 double lfRosenbrockStar( double *plfX, int iVectorLen )
 {
+#if 0
 	int i;
 	double lfRes = 0.0;
 	double lfTempX1 = 0.0;
@@ -229,6 +230,48 @@ double lfRosenbrockStar( double *plfX, int iVectorLen )
 		lfRes += (100*lfTempX2*lfTempX2+lfTempX1*lfTempX1);
 	}
 	return lfRes;
+#else
+	int i;
+	double lfRes = 0.0;
+	double lfTempX1 = 0.0;
+	double lfTempX2 = 0.0;
+	double lfXX = 0.0;
+	int iVectorLen51, iVectorLen52;
+	double alfXX[5];
+	double alfTempX1[5];
+	double alfTempX2[5];
+
+	iVectorLen51 = iVectorLen % 5;
+	iVectorLen52 = iVectorLen / 5;
+	for (i = 1; i < iVectorLen51; i++)
+	{
+		lfXX = plfX[i] * plfX[i];
+		lfTempX1 = 1.0 - plfX[i];
+		lfTempX2 = plfX[0] - lfXX;
+		lfRes += (100 * lfTempX2*lfTempX2 + lfTempX1*lfTempX1);
+	}
+	for (i = iVectorLen51; i < iVectorLen52; i+=5)
+	{
+		alfXX[0] = plfX[i]*plfX[i];
+		alfXX[1] = plfX[i+1]*plfX[i+1];
+		alfXX[2] = plfX[i+2]*plfX[i+2];
+		alfXX[3] = plfX[i+3]*plfX[i+3];
+		alfXX[4] = plfX[i+4]*plfX[i+4];
+		alfTempX1[0] = 1.0 - plfX[i];
+		alfTempX1[1] = 1.0 - plfX[i+1];
+		alfTempX1[2] = 1.0 - plfX[i+2];
+		alfTempX1[3] = 1.0 - plfX[i+3];
+		alfTempX1[4] = 1.0 - plfX[i+4];
+		alfTempX2[0] = plfX[0] - alfXX[0];
+		alfTempX2[1] = plfX[0] - alfXX[1];
+		alfTempX2[2] = plfX[0] - alfXX[2];
+		alfTempX2[3] = plfX[0] - alfXX[3];
+		alfTempX2[4] = plfX[0] - alfXX[4];
+		lfRes += 100 * ( alfTempX2[0]*alfTempX2[0] + alfTempX2[1]*alfTempX2[1] + alfTempX2[2]*alfTempX2[2] + alfTempX2[3]*alfTempX2[3] + alfTempX2[4]*alfTempX2[4] ) + 
+						 alfTempX1[0]*alfTempX1[0] + alfTempX1[1]*alfTempX1[1] + alfTempX1[2]*alfTempX1[2] + alfTempX1[3]*alfTempX1[3] + alfTempX1[4]*alfTempX1[4];
+	}
+	return lfRes;
+#endif
 }
 
 /**
@@ -246,7 +289,6 @@ double lf3rdDeJongsFunc( double *plfX, int iVectorLen )
 {
 	int i;
 	double lfRes = 0.0;
-	using namespace std;
 	for( i = 0;i < iVectorLen; i++ )
 	{
 		lfRes += fabs( plfX[i] );
@@ -375,6 +417,7 @@ double lf5thDeJongsFunc( double *plfX, int iVectorLen )
  */
 double lfAckley( double *plfX, int iVectorLen )
 {
+#if 1
 	int i;
 	double lfRes = 0.0;
 	double lfCos = 0.0;
@@ -391,6 +434,35 @@ double lfAckley( double *plfX, int iVectorLen )
 
 	lfRes = 20.0-20.0*exp(-0.2*sqrt(lfX2)) + lfE - exp( lfCos );
 	return lfRes;
+#else
+	int i;
+	int iVectorLen51, iVectorLen52;
+	double lfRes = 0.0;
+	double lfCos = 0.0;
+	double lfX2 = 0.0;
+	double lfE = exp(1.0);
+	double lf2pi = pi+pi;
+	double alfCos[5];
+	double alfX2[5];
+
+	iVectorLen51 = iVectorLen % 5;
+	iVectorLen52 = iVectorLen / 5;
+	for (i = 0; i < iVectorLen51; i++)
+	{
+		lfX2 += plfX[i] * plfX[i];
+		lfCos += cos(lf2pi*plfX[i]);
+	}
+	for (i = iVectorLen51; i < iVectorLen52; i+=5)
+	{
+		lfX2 += plfX[i]*plfX[i] + plfX[i+1]*plfX[i+1] + plfX[i+2]*plfX[i+2] + plfX[i+3]*plfX[i+3] + plfX[i+4]*plfX[i+4];
+		lfCos += cos(lf2pi*plfX[i]) + cos(lf2pi*plfX[i+1]) + cos(lf2pi*plfX[i+2]) + cos(lf2pi*plfX[i+3]) + cos(lf2pi*plfX[i+4]);
+	}
+	lfX2 = lfX2 / (double)iVectorLen;
+	lfCos = lfCos / (double)iVectorLen;
+
+	lfRes = 20.0 - 20.0*exp(-0.2*sqrt(lfX2)) + lfE - exp(lfCos);
+	return lfRes;
+#endif
 }
 
 /**
@@ -1212,7 +1284,7 @@ double lfSchaffer( double *plfX, int iGenVector )
 		lfSin = sin(50.0*pow(lfSquare, 0.1));
 		lfRes += pow(lfSquare, 0.25)*(lfSin*lfSin + 1.0);
 	}
-	for (i = iGenVector_51; i < iGenVector_52; i++)
+	for (i = iGenVector_51; i < iGenVector_52; i+=5)
 	{
 		alfXX[0] = plfX[i] * plfX[i];
 		alfXX[1] = plfX[i+1] * plfX[i+1];
