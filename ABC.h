@@ -389,6 +389,20 @@ public:
 	*/
 	void vCBAbc(int iUpdateCount );
 
+
+	/**
+	 * <PRE>
+	 * 　Best-so-far Artificial Bee Colony Methodを実行します。
+	 *   The best-so-far selection in Artificial Bee Colony algorithm Applied Soft Computing 11 (2011) 2888-2901
+	 *   ver 0.1 2016.10.28 初版
+	 * </PRE>
+	 * @param iCount 現在の計算回数
+	 * @author kobayashi
+	 * @since 2016/10/28
+	 * @version 0.1
+	 */
+	void vBFAbc( int iUpdateCount );
+
 	/**
 	  *<PRE>
 	  * コールバック関数の定義です。
@@ -580,6 +594,18 @@ private:
 
 	/**
 	 * <PRE>
+	 * 　Employ Beeを実行します。(Best-so-Far版)
+	 *   The best-so-far selection in Artificial Bee Colony algorithm Applied Soft Computing 11 (2011) 2888-2901
+	 *   ver 0.1 2016.10.28 初版
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/10/28
+	 * @version 0.1
+	 */
+	void vEmployBeeBF();
+
+	/**
+	 * <PRE>
 	 * 　Onlooker Beeを実行します。
 	 * </PRE>
 	 * @author kobayashi
@@ -695,7 +721,20 @@ private:
 	* @version 0.1
 	*/
 	void vOnlookerBeeCB(double lfMr);
-		
+	
+	/**
+	 * <PRE>
+	 *   Onlooker Beeを実行します。
+	 *   Best-so-far Artificial Bee Colony Method用
+	 *   The best-so-far seelction in ARtificial Bee Colony algorithm, Applied Soft Computing 11 (2011) 2888-2901.
+	 *   ver 0.1 2016/10/28 初版
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/10/28
+	 * @version 0.1
+	 */
+	void vOnlookerBeeBF();
+
 	/**
 	 * <PRE>
 	 * Scout Beeを実行します。
@@ -763,6 +802,18 @@ private:
 	*/
 	void vScoutBeeCB(int iCount);
 		
+	/**
+	 * <PRE>
+	 * Scout Beeを実行します。(Best-so-far Artificial Bee Colony Method用)
+	 * The best-so-far selection in Artificial Bee colony algorithm, Applied Soft Computing 11 (2011) 2888-2901.
+	 * ver 0.1 初版 2016.10.28
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/10/28
+	 * @version 0.1
+	 */
+	void vScoutBeeBF( int iUpdateCount );
+
 	/**
 	 * <PRE>
 	 * 　局所最大値、最小値を取得します。
@@ -843,6 +894,7 @@ private:
 	double *plfX1;						// HJABC用更新用一時格納配列
 	double *plfX2;						// HJABC用更新用一時格納配列
 	double *plfStepSize;				// HJABC用ステップサイズ格納配列
+	double *plfScoutBeeResult;			// best-so-far ABC法用ScoutBee格納配列
 };
 
 class CAbcException

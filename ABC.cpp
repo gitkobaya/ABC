@@ -2519,23 +2519,18 @@ void CAbc::vEmployBeeBF()
 		}
 		else 	piNonUpdateCount[i] = piNonUpdateCount[i] + 1;
 	}
-	for(i = 0;i < iAbcSearchNum; i++ )
+
+	for (j = 0; j < iAbcVectorDimNum; j++)
+		pplfLocalMinAbcData[0][j] = pplfAbcData[i][j];
+	lfGlobalMinAbcData = pflfObjectiveFunction(pplfAbcData[i], iAbcVectorDimNum);
+	for(i = 1;i < iAbcSearchNum; i++ )
 	{
-		if( i ==  1 )
+		lfObjFunc = pflfObjectiveFunction(pplfAbcData[i], iAbcVectorDimNum );
+		if( lfObjFunc < lfGlobalMinAbcData)
 		{
 			for( j = 0; j < iAbcVectorDimNum; j++ )
 				plfGlobalMinAbcData[j] = pplfAbcData[i][j];
-			lfGlobalMinAbcData = pflfObjectiveFunction( pplfAbcData[i], iAbcVectorDimNum );
-		}
-		else
-		{
-			lfObjFunc = pflfObjectiveFunction(pplfAbcData[i], iAbcVectorDimNum );
-			if( lfObjFunc < lfGlobalMinAbcData)
-			{
-				for( j = 0; j < iAbcVectorDimNum; j++ )
-					plfGlobalMinAbcData[j] = pplfAbcData[i][j];
-				lfGlobalMinAbcData = pflfObjectiveFunction( pplfAbcData[i], iAbcVectorDimNum );
-			}
+			lfGlobalMinAbcData = lfObjFunc;
 		}
 	}
 }
@@ -3252,8 +3247,10 @@ void CAbc::vOnlookerBeeBF()
 		{
 			// 適応度の算出
 			lfObjFunc = pflfObjectiveFunction( pplfAbcData[j], iAbcVectorDimNum );
-			lfRes += lfObjFunc;
-			plfFit[j] = lfObjFunc;
+			if (lfObjFunc >= 0.0)	lfFitProb = 1.0 / (1.0 + lfObjFunc);
+			else					lfFitProb = 1.0 + fabs(lfObjFunc);
+			lfRes += lfFitProb;
+			plfFit[j] = lfFitProb;
 		}
 		// 適応度の正規化
 		for( j = 0;j < iAbcSearchNum; j++ )	plfFitProb[j] = plfFit[j]/lfRes;
@@ -3272,13 +3269,14 @@ void CAbc::vOnlookerBeeBF()
 	
 		// 更新点候補を算出します。
 		// 更新点候補を乱数により決定します。
-		m = mrand() % iAbcSearchNum;
 		h = mrand() % iAbcVectorDimNum;
 	
 		lfRand = 2.0*rnd()-1.0;
 		for( j = 0; j < iAbcVectorDimNum; j++ )
-			pplfVelocityData[c][j] = pplfAbcData[c][j];
-		pplfVelocityData[c][h] = pplfAbcData[c][h] + lfRand*lfGlobalMinAbcData*( pplfAbcData[c][h] - pplfAbcData[m][h] );
+//			pplfVelocityData[c][j] = pplfAbcData[c][j];
+			pplfVelocityData[i][j] = pplfAbcData[c][h] + lfRand*(pplfAbcData[c][h] - pplfLocalMinAbcData[c][h]);
+//		pplfVelocityData[c][h] = pplfAbcData[c][h] + lfRand*lfGlobalMinAbcData*( pplfAbcData[c][h] - pplfAbcData[m][h] );
+//		pplfVelocityData[c][h] = pplfAbcData[c][h] + lfRand*(pplfAbcData[c][h] - plfGlobalMinAbcData[h]);
 
 		// 更新点候補を次のように更新します。
 		lfFunc1 = pflfObjectiveFunction( pplfVelocityData[i], iAbcVectorDimNum );
@@ -3574,8 +3572,8 @@ void CAbc::vScoutBeeBF( int iUpdateCount )
 {
 	int i,j,k;
 	double lfRand = 0.0;
-	double lfMaxWeight = 0.7;
-	double lfMinWeight = 0.3;
+	double lfMaxWeight = 1.0;
+	double lfMinWeight = 0.2;
 	double lfFunc1 = 0.0;
 	double lfFunc2 = 0.0;
 

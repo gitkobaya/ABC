@@ -488,11 +488,11 @@ void vStartAbc( CCmdCheck *pcCmd, CAbc *pcAbc, int iLoc )
 	}
 	else if (pcCmd->iGetAbcMethod() == 12)
 	{
-//		pcAbc->vACAbc();
+		pcAbc->vBFAbc( iLoc );
 	}
 	else if (pcCmd->iGetAbcMethod() == 13)
 	{
-//		pcAbc->vACAbc();
+//		pcAbc->vPAbc();
 	}
 	else if (pcCmd->iGetAbcMethod() == 14)
 	{
