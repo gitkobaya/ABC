@@ -112,6 +112,8 @@ private:
 	 */
 	void vAerMahalanobis( const std::vector<Rank_t>& stlFitProb );
 
+	void vSelectGens(double **pplfChildren, int *pi1stGenLoc, int *pi2ndGenLoc);
+
 private:
 	int iParentOutputFlag;
 	int iChildrenOutputFlag;

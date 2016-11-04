@@ -599,6 +599,9 @@ void CRex::vARex()
 	std::vector<Rank_t> stlParentFitProb;
 	Rank_t tTempRankData;
 	std::vector<int> stlSelectParentLoc;
+
+	int i1stGenLoc = 0;
+	int i2ndGenLoc = 0;
 	
 /* JGGモデル */
 
@@ -689,11 +692,20 @@ void CRex::vARex()
 		{
 			vAerMahalanobis( stlFitProb );
 		}
+#if 1
 		// 親を入れ替えます。(JGGモデルの場合は親はすべて変更するものとします。)
 		for( i = 0; i < iParentNumber; i++ )
 			for( j = 0;j < iGenVector; j++ )
 				pplfGens[stlParentFitProb.at(i).iLoc][j] = pplfChildren[stlFitProb.at(i).iLoc][j];
 		// 現在の最良位置を取得します。
+#else
+		vSelectGens( pplfChildren, &i1stGenLoc, &i2ndGenLoc );
+		for( j = 0;j < iGenVector; j++ )
+		{
+			pplfGens[stlParentFitProb.at(0).iLoc][j] = pplfChildren[i1stGenLoc][j];
+			pplfGens[stlParentFitProb.at(1).iLoc][j] = pplfChildren[i2ndGenLoc][j];
+		}
+#endif
 		iBestLoc = stlParentFitProb.at(0).iLoc;
 	}
 	catch(...)
@@ -789,6 +801,43 @@ void CRex::vAerMahalanobis( const std::vector<Rank_t>& stlFitProb )
 	// αの更新を行います。
 	lfTemp = lfAlpha * sqrt( (1.0-lfLearningRate)+lfLearningRate*lfLcdp/lfLavg );
 	lfAlpha = lfTemp < 1.0 ? 1.0 : lfTemp;
+}
+
+void CRex::vSelectGens( double **pplfChildren, int *pi1stGenLoc, int *pi2ndGenLoc )
+{
+	unsigned int i;
+	double lfProb = 0.0;
+	double lfPrevProb = 0.0;
+	double lfRes = 0.0;
+	double lf1stGen = DBL_MAX;
+	double lfRand = 0.0;
+	int i1stGenLoc = INT_MAX;
+	int i2ndGenLoc = INT_MAX;
+	int iRank = 0;
+	std::vector<Rank_t> stlFitProb;
+	Rank_t tTempRankData;
+	// まず、適応度関数の値を計算します。
+	lfRes = 0.0;
+	for( i = 0;i < (unsigned int)iChildrenNumber; i++ )
+	{
+		tTempRankData.lfFitProb = pflfConstraintFunction( pplfChildren[i], iGenVector );
+		tTempRankData.iLoc = i;
+		stlFitProb.push_back( tTempRankData );
+		lfRes += stlFitProb[i].lfFitProb;
+		if( stlFitProb[i].lfFitProb < lf1stGen )
+		{
+			lf1stGen = stlFitProb[i].lfFitProb;
+			i1stGenLoc = i;
+		}
+	}
+	// 目的関数値によるソートを実施します。
+	std::sort( stlFitProb.begin(), stlFitProb.end(), CCompareToRank() );
+	// ランクに基づくルーレット選択を実行。
+	iRank = mrand() % ( iChildrenNumber-1 ) + 1;
+	i2ndGenLoc = stlFitProb[iRank].iLoc;
+	// 最良個体の位置とそれ以外でルーレット選択により選ばれた位置を返却します。
+	*pi1stGenLoc = i1stGenLoc;
+	*pi2ndGenLoc = i2ndGenLoc;
 }
 
 /**

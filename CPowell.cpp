@@ -73,14 +73,6 @@ void CPowell::vReleaseCallConstraintFunction()
 	pflfObjectiveFunction = NULL;
 }
 
-void CPowell::vLinmin()
-{
-}
-
-double CPowell::lfBrent()
-{
-}
-
 double CPowell::lfF1Dim( double lfShift )
 {
 	int i;
@@ -291,14 +283,66 @@ void CPowell::vLineMin(double *plfP, double *plfXi, int iN, double *plfRet )
 	}
 }
 
-void CPowell::vPowell( double *plfP, double **pplfXi, int iN, double lfFtol, int *piInter, double *plfRet )
+void CPowell::vPowell( double *plfP, double **pplfXi, int iN, double lfFtol, int *piInter, double *plfFRet )
 {
 	int i, j, iBig;
 	double lfDel ,lfFp, lfFptt, lfT, *plfPt, *plfPtt, *plfXit;
 
 	*plfFRet = pflfObjectiveFunction( plfP );
-	for( i = 1; i <= iN; i++ )
+	for (i = 1; i <= iN; i++)
 	{
+		plfPt[i] = plfP[i];
+	}
+	for (*pinter = 1;; ++(*pinter))
+	{
+		plfFp[i] = *plfFRet;
+		iBig = 0;
+		// 関数値の最大減少量を求める変数
+		lfDel = 0.0;
+		// 各反復で、方向集合の全要素についてループ
+		for (i = 1; i <= iN; i++)
+		{
+			// 方向をコピー
+			for (j = 1; j <= iN; j++)
+			{
+				plfXit[j] = pplfXi[j][i];
+			}
+			lfFPtt = *plfFRet;
+			// それに沿って最小化
+			vLinMin(plfP, plfXit, iN, plfFRet);
+			// 最大の現象であれば記録する。
+			if (fabs(lfFPtt - *plfFRet) > lfDel)
+			{
+				lfDel = fabs(lfFPtt - *plfFRet);
+				iBig = i;
+			}
+		}
+		// 終了判定
+		if (2.0*fabs(lfFp - *plfFRet) <= lfTol*(fabs(lfFp) + fabs(*plfFRet))
+		{
+			return;
+		}
+		if (*piInter == iItmax) break;
+		for (j = 1; j <= iN; j++)
+		{
+			plfPtt[j] = 2.0*plfP[j] - plfPt[j];
+			plfXit[j] = plfP[j] - plfPt[j];
+			plfPt[j] = plfP[j];
+		}
+		lfPtt = pflfObjectiveFunction( plfPtt, iN );
+		if (lfPtt < lfFp)
+		{
+			lfT = 2.0*( lfFp-2.0*(*plfFRet)+lfPtt)*( lfFp-(*plfFRet)-lfDel )*(lfFp - (*plfFRet) - lfDel) -lfDel*(lfFp-lfFPtt)*(lfFp - lfFPtt);
+			if (lfT < 0.0)
+			{
+				vLinMin( plfP, plfXit, iN, plfFRet );
+				for (j = 1; j <= iN; j++)
+				{
+					plfXi[j][iBig] = pplfXi[j][iN];
+					plfXi[j][iN] = plfXit[j];
+				}
+			}
+		}
 	}
 }
 

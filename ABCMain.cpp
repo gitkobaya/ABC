@@ -9,7 +9,7 @@ extern void vInitialize( CCmdCheck *pcCmd, CAbc *pcAbc );
 extern void vSetObjectiveFunction( CCmdCheck *pcCmd, CAbc *pcAbc );
 extern void vStartAbc( CCmdCheck *pcCmd, CAbc *pcAbc, int iLoc );
 extern void vTerminate( CAbc *pcAbc );
-extern void vOutputData( CCmdCheck *pcCmd, CAbc *pcAbc );
+extern void vOutputData( CCmdCheck *pcCmd, CAbc *pcAbc, int iLoc );
 extern void vSetRandom( CCmdCheck *pcCmd, CAbc *pcAbc );
 extern int iFinisher( CCmdCheck *pcCmd, CAbc *pcAbc, int iCount ); 
 
@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
 				vStartAbc( &cmd, &abc, i );
 				
 				// 結果を出力します。
-				vOutputData( &cmd, &abc );
+				vOutputData( &cmd, &abc, i );
 
 				// 終了条件を監視します。
 				lRet = iFinisher( &cmd, &abc, i );
@@ -520,7 +520,7 @@ void vStartAbc( CCmdCheck *pcCmd, CAbc *pcAbc, int iLoc )
  * @since 0.1 2015/07/28
  * @version 0.1
  */
-void vOutputData( CCmdCheck *pcCmd, CAbc *pcAbc )
+void vOutputData( CCmdCheck *pcCmd, CAbc *pcAbc, int iLoc )
 {
 	if( pcCmd->iGetOutputFlag() == 1 )
 	{
@@ -565,6 +565,10 @@ void vOutputData( CCmdCheck *pcCmd, CAbc *pcAbc )
 	else if( pcCmd->iGetOutputFlag() == 10 )
 	{
 		pcAbc->vOutputLocalMaxAbcData( 1 );
+	}
+	else if (pcCmd->iGetOutputFlag() == 11 )
+	{
+		pcAbc->vOutputGlobalMinAbcDataConstFuncValue(iLoc);
 	}
 }
 

@@ -404,6 +404,18 @@ public:
 	void vBFAbc( int iUpdateCount );
 
 	/**
+	* <PRE>
+	* 　人工蜂コロニー最適化法を実行します。
+	*   Powell法を導入したPABC法を実行します。
+	*   ver 0.1 2016/1104 初版
+	* </PRE>
+	* @author kobayashi
+	* @since 2016/11/04
+	* @version 0.1
+	*/
+	void vPAbc();
+
+	/**
 	  *<PRE>
 	  * コールバック関数の定義です。
 	  *</PRE>
@@ -470,6 +482,17 @@ public:
 	 */
 	void vOutputGlobalMinAbcData();
 
+	/**
+	* <PRE>
+	* 　現時点での最小値の粒子の目的関数値を出力します。
+	* </PRE>
+	* @param iOutputCount
+	* @author kobayashi
+	* @since 2016/11/04
+	* @version 0.1
+	*/
+	void vOutputGlobalMinAbcDataConstFuncValue(int iOutputCount);
+		
 	/**
 	 * <PRE>
 	 * 　現時点での最小値粒子の目的関数値を出力します。
@@ -860,6 +883,7 @@ private:
 	double *plfGlobalMaxAbcData;		// 大域的最適解を表す粒子のデータ
 	double *plfGlobalMinAbcData;		// 大域的最適解を表す粒子のデータ
 	double *plfLocalMaxAbcData;			// 局所最適解を表す粒子のデータ
+	double *plfLocalMinAbcData;			// 局所最適解を表す粒子のデータ
 	double lfLocalMaxAbcData;			// 局所最適値
 	double **pplfLocalMaxAbcData;		// 局所最適解を表す粒子ごとの最大値を格納するデータ
 	double **pplfLocalMinAbcData;		// 局所最適解を表す粒子ごとの最小値を格納するデータ
