@@ -913,6 +913,239 @@ void CAbc::vSetModifiedRandom( double lfRange )
 }
 
 /**
+* <PRE>
+* 　人工蜂コロニーの初期位置を粒子群最適化法に基づいた手法により
+*   算出して設定します。
+* </PRE>
+* @param lfRange 粒子の初期位置の出現範囲
+* @author kobayashi
+* @since 2016/11/07
+* @version 0.1
+*/
+void CAbc::vSetRandomPso(double lfRange)
+{
+	int i, j;
+	double lfMin = DBL_MAX;
+	int iMinLoc = 0;
+	double lfObjFunc = 0.0;
+	double lfRand;
+	for (i = 0; i < iAbcDataNum; i++)
+	{
+		for (j = 0; j < iAbcVectorDimNum; j++)
+		{
+			pplfAbcData[i][j] = lfRange*(2.0*rnd() - 1.0);
+			pplfVelocityData[i][j] = lfRange*(2.0*rnd() - 1.0);
+			pplfLocalMaxAbcData[i][j] = pplfAbcData[i][j];
+		}
+	}
+	lfSolveRange = lfRange;
+
+	// 初期の状態で最適値を取得します。
+	// 更新します。
+	for (i = 0; i < iAbcSearchNum; i++)
+	{
+		lfObjFunc = pflfObjectiveFunction(pplfAbcData[i], iAbcVectorDimNum);
+		if (lfGlobalMinAbcData >= lfObjFunc)
+		{
+			iMinLoc = j;
+			lfGlobalMinAbcData = lfObjFunc;
+			for (j = 0; j < iAbcVectorDimNum; j++)
+			{
+				plfGlobalMinAbcData[j] = pplfAbcData[i][j];
+			}
+		}
+		if (lfGlobalMaxAbcData <= lfObjFunc)
+		{
+			lfGlobalMaxAbcData = lfObjFunc;
+			for (j = 0; j < iAbcVectorDimNum; j++)
+			{
+				plfGlobalMaxAbcData[j] = pplfAbcData[i][j];
+			}
+		}
+	}
+	// 粒子群最適化法のような感じで初期化します。(ScoutBeeの更新方法を初期化に適用。)
+	for (i = 0; i < iAbcSearchNum; i++)
+	{
+		for (j = 0; j < iAbcVectorDimNum; j++)
+		{
+			lfRand = rnd();
+			pplfAbcData[i][j] = plfGlobalMinAbcData[j] + lfRand*(plfGlobalMaxAbcData[j] - plfGlobalMinAbcData[j]);
+		}
+	}
+}
+
+/**
+* <PRE>
+* 　人工蜂コロニーの初期位置をUNDXを用いて算出して設定します。
+* </PRE>
+* @param lfRange 粒子の初期位置の出現範囲
+* @author kobayashi
+* @since 2016/11/07
+* @version 0.1
+*/
+void CAbc::vSetRandomUndx(double lfRange)
+{
+	int i, j;
+	double lfMin = DBL_MAX;
+	int iMinLoc = 0;
+	double lfObjFunc = 0.0;
+	for (i = 0; i < iAbcDataNum; i++)
+	{
+		for (j = 0; j < iAbcVectorDimNum; j++)
+		{
+			pplfAbcData[i][j] = lfRange*(2.0*rnd() - 1.0);
+			pplfVelocityData[i][j] = lfRange*(2.0*rnd() - 1.0);
+			pplfLocalMaxAbcData[i][j] = pplfAbcData[i][j];
+		}
+	}
+	lfSolveRange = lfRange;
+
+	// 初期の状態で最適値を取得します。
+	// 更新します。
+	for (i = 0; i < iAbcSearchNum; i++)
+	{
+		lfObjFunc = pflfObjectiveFunction(pplfAbcData[i], iAbcVectorDimNum);
+		if (lfGlobalMinAbcData >= lfObjFunc)
+		{
+			iMinLoc = j;
+			lfGlobalMinAbcData = lfObjFunc;
+			for (j = 0; j < iAbcVectorDimNum; j++)
+			{
+				plfGlobalMinAbcData[j] = pplfAbcData[i][j];
+			}
+		}
+		if (lfGlobalMaxAbcData <= lfObjFunc)
+		{
+			lfGlobalMaxAbcData = lfObjFunc;
+			for (j = 0; j < iAbcVectorDimNum; j++)
+			{
+				plfGlobalMaxAbcData[j] = pplfAbcData[i][j];
+			}
+		}
+	}
+	// 初期化をUNDXを用いて実行します。（１回分のみ。）
+	pcUndx->vSetGenData(pplfAbcData);
+	pcUndx->vImplement();
+//	pcUndx->vGetBestGenData(pplfAbcData[i] );
+	pcUndx->vGetGenData(pplfAbcData);
+}
+
+/**
+* <PRE>
+* 　人工蜂コロニーの初期位置をREX法を適用して設定します。
+* </PRE>
+* @param lfRange 粒子の初期位置の出現範囲
+* @author kobayashi
+* @since 2016/11/07
+* @version 0.1
+*/
+void CAbc::vSetRandomRex(double lfRange)
+{
+	int i, j;
+	double lfMin = DBL_MAX;
+	int iMinLoc = 0;
+	double lfObjFunc = 0.0;
+	for (i = 0; i < iAbcDataNum; i++)
+	{
+		for (j = 0; j < iAbcVectorDimNum; j++)
+		{
+			pplfAbcData[i][j] = lfRange*(2.0*rnd() - 1.0);
+			pplfVelocityData[i][j] = lfRange*(2.0*rnd() - 1.0);
+			pplfLocalMaxAbcData[i][j] = pplfAbcData[i][j];
+		}
+	}
+	lfSolveRange = lfRange;
+
+	// 初期の状態で最適値を取得します。
+	// 更新します。
+	for (i = 0; i < iAbcSearchNum; i++)
+	{
+		lfObjFunc = pflfObjectiveFunction(pplfAbcData[i], iAbcVectorDimNum);
+		if (lfGlobalMinAbcData >= lfObjFunc)
+		{
+			iMinLoc = j;
+			lfGlobalMinAbcData = lfObjFunc;
+			for (j = 0; j < iAbcVectorDimNum; j++)
+			{
+				plfGlobalMinAbcData[j] = pplfAbcData[i][j];
+			}
+		}
+		if (lfGlobalMaxAbcData <= lfObjFunc)
+		{
+			lfGlobalMaxAbcData = lfObjFunc;
+			for (j = 0; j < iAbcVectorDimNum; j++)
+			{
+				plfGlobalMaxAbcData[j] = pplfAbcData[i][j];
+			}
+		}
+	}
+	// 交叉を実行します。ここでREXを実行します。（１回分のみ。）
+	pcRex->vSetGenData(pplfAbcData);
+	pcRex->vRex();
+//	pcRex->vGetBestGenData(pplfAbcData[i] );
+//	pcRex->vGetBest2ndGenData(pplfAbcData );
+	pcRex->vGetGenData(pplfAbcData);
+}
+
+/**
+* <PRE>
+* 　人工蜂コロニーの初期位置をAREX法を適用して算出して設定します。
+* </PRE>
+* @param lfRange 粒子の初期位置の出現範囲
+* @author kobayashi
+* @since 2016/11/07
+* @version 0.1
+*/
+void CAbc::vSetRandomARex(double lfRange)
+{
+	int i, j;
+	double lfMin = DBL_MAX;
+	int iMinLoc = 0;
+	double lfObjFunc = 0.0;
+	for (i = 0; i < iAbcDataNum; i++)
+	{
+		for (j = 0; j < iAbcVectorDimNum; j++)
+		{
+			pplfAbcData[i][j] = lfRange*(2.0*rnd() - 1.0);
+			pplfVelocityData[i][j] = lfRange*(2.0*rnd() - 1.0);
+			pplfLocalMaxAbcData[i][j] = pplfAbcData[i][j];
+		}
+	}
+	lfSolveRange = lfRange;
+
+	// 初期の状態で最適値を取得します。
+	// 更新します。
+	for (i = 0; i < iAbcSearchNum; i++)
+	{
+		lfObjFunc = pflfObjectiveFunction(pplfAbcData[i], iAbcVectorDimNum);
+		if (lfGlobalMinAbcData >= lfObjFunc)
+		{
+			iMinLoc = j;
+			lfGlobalMinAbcData = lfObjFunc;
+			for (j = 0; j < iAbcVectorDimNum; j++)
+			{
+				plfGlobalMinAbcData[j] = pplfAbcData[i][j];
+			}
+		}
+		if (lfGlobalMaxAbcData <= lfObjFunc)
+		{
+			lfGlobalMaxAbcData = lfObjFunc;
+			for (j = 0; j < iAbcVectorDimNum; j++)
+			{
+				plfGlobalMaxAbcData[j] = pplfAbcData[i][j];
+			}
+		}
+	}
+	// 新たな探索点を求めて探索を実行します。AREXを実行してABCの初期データを作成します。
+	// 交叉を実行します。ここでAREXを実行します。（１回分のみ。）
+	pcRex->vSetGenData(pplfAbcData);
+	pcRex->vARex();
+//	pcRex->vGetBestGenData( pplfAbcData[i] );
+//	pcRex->vGetBest2ndGenData(pplfAbcData);
+	pcRex->vGetGenData(pplfAbcData);
+}
+
+/**
  * <PRE>
  * 　終了処理を実行します。
  * </PRE>
@@ -1224,10 +1457,11 @@ void CAbc::vIWCFAAbc( int iUpdateCount )
  * 　2013 Memetic search in artificial bee colony algorthimより
  *   ver 0.1 2016/07/28 初版
  *   ver 0.2 2016/10/25 更新候補点の算出に誤りを発見し修正。
+ *   ver 0.3 2016/11/07 論文読み落としによるアルゴリズムの実装ミスの修正。 
  * </PRE>
  * @author kobayashi
  * @since 2016/7/28
- * @version 0.2
+ * @version 0.3
  */
 void CAbc::vMeAbc( int iUpdateCount )
 {
@@ -1243,7 +1477,7 @@ void CAbc::vMeAbc( int iUpdateCount )
 	double lfF2 = 0.0;
 
 	// employee bee の動作
-	vEmployBeeOrigin();
+	vEmployBeeGBest();
 
 	// onlookers beeの動作
 	vOnlookerBeeGBest();
@@ -1330,7 +1564,8 @@ void CAbc::vRMAbc( int iUpdateCount )
 	double lfF2 = 0.0;
 
 	// employee bee の動作
-	vEmployBeeOrigin();
+//	vEmployBeeOrigin();
+	vEmployBeeGBest();
 
 	// onlookers beeの動作
 	vOnlookerBeeRM();
@@ -1531,10 +1766,12 @@ void CAbc::vCbAbc()
 void CAbc::vUndxAbc()
 {
 	// employee bee の動作
-	vEmployBeeBest();
+//	vEmployBeeBest();
+	vEmployBeeGBest();
 
 	// onlookers beeの動作
-	vOnlookerBeeBest();
+//	vOnlookerBeeBest();
+	vOnlookerBeeGBest();
 
 	// scout bee の実行
 	vScoutBeeUndx();
@@ -1590,10 +1827,12 @@ void CAbc::vUndxEnhancedAbc( int iUpdateCount )
 void CAbc::vRexAbc()
 {
 	// employee bee の動作
-	vEmployBeeBest();
+//	vEmployBeeBest();
+	vEmployBeeGBest();
 
 	// onlookers beeの動作
-	vOnlookerBeeBest();
+//	vOnlookerBeeBest();
+	vOnlookerBeeGBest();
 
 	// scout bee の実行
 	vScoutBeeRex();
@@ -1617,10 +1856,12 @@ void CAbc::vRexAbc()
 void CAbc::vARexAbc()
 {
 	// employee bee の動作
-	vEmployBeeBest();
+//	vEmployBeeBest();
+	vEmployBeeGBest();
 
 	// onlookers beeの動作
-	vOnlookerBeeBest();
+//	vOnlookerBeeBest();
+	vOnlookerBeeGBest();
 
 	// scout bee の実行
 	vScoutBeeARex();

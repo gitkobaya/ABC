@@ -586,13 +586,29 @@ void vOutputData( CCmdCheck *pcCmd, CAbc *pcAbc, int iLoc )
  */
 void vSetRandom( CCmdCheck *pcCmd, CAbc *pcAbc )
 {
-	if( pcCmd->iGetAbcMethod() == 2 || pcCmd->iGetAbcMethod() == 8 )
+	if( pcCmd->iGetAbcMethod() == 2 )
 	{
 		pcAbc->vSetModifiedRandom( pcCmd->lfGetRange() );
 	}
-	else
+	else if( pcCmd->iGetAbcMethod() == 1 || pcCmd->iGetAbcMethod() == 12 || pcCmd->iGetAbcMethod() == 7 )
 	{
 		pcAbc->vSetRandom( pcCmd->lfGetRange() );
+	}
+	else if(pcCmd->iGetAbcMethod() == 3 || pcCmd->iGetAbcMethod() == 4 || pcCmd->iGetAbcMethod() == 5 || pcCmd->iGetAbcMethod() == 6 || pcCmd->iGetAbcMethod() == 10 || pcCmd->iGetAbcMethod() == 11 )
+	{
+		pcAbc->vSetRandomPso(pcCmd->lfGetRange());
+	}
+	else if (pcCmd->iGetAbcMethod() == 7)
+	{
+//		pcAbc->vSetRandomUndx(pcCmd->lfGetRange());
+	}
+	else if (pcCmd->iGetAbcMethod() == 8)
+	{
+		pcAbc->vSetRandomRex(pcCmd->lfGetRange());
+	}
+	else if (pcCmd->iGetAbcMethod() == 9)
+	{
+		pcAbc->vSetRandomARex(pcCmd->lfGetRange());
 	}
 }
 
@@ -623,9 +639,26 @@ int iFinisher( CCmdCheck *pcCmd, CAbc *pcAbc, int iCount )
 	// Å“K‰ð‚ÉŽû‘©‚µ‚½ê‡‚ÉI—¹‚·‚éê‡
 	else if( pcCmd->iGetFinishFlag() == 2 )
 	{
-		if( pcAbc->lfGetGlobalMinAbcDataConstFuncValue() <= 0.0000001 )
+		if (strcmp(pcCmd->pcGetFuncName(), "michaelwicz") == 0)
 		{
-			iRet = 1;
+			if ( fabs(pcAbc->lfGetGlobalMinAbcDataConstFuncValue()+1.8013) <= 0.0000001)
+			{
+				iRet = 1;
+			}
+		}
+		else if (strcmp(pcCmd->pcGetFuncName(), "Schwefel") == 0)
+		{
+			if (fabs(pcAbc->lfGetGlobalMinAbcDataConstFuncValue() + 418.9829*pcCmd->iGetAbcVectorDimNum() ) <= 0.0000001)
+			{
+				iRet = 1;
+			}
+		}
+		else
+		{
+			if (fabs(pcAbc->lfGetGlobalMinAbcDataConstFuncValue()) <= 0.0000001)
+			{
+				iRet = 1;
+			}
 		}
 	}
 	else

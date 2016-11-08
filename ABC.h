@@ -220,6 +220,51 @@ public:
 	void vSetModifiedRandom( double lfRange );
 
 	/**
+	* <PRE>
+	* 　人工蜂コロニーの初期位置を粒子群最適化法に基づいた手法により
+	*   算出して設定します。
+	* </PRE>
+	* @param lfRange 粒子の初期位置の出現範囲
+	* @author kobayashi
+	* @since 2016/11/07
+	* @version 0.1
+	*/
+	void vSetRandomPso(double lfRange);
+
+	/**
+	* <PRE>
+	* 　人工蜂コロニーの初期位置をUNDXを用いて算出して設定します。
+	* </PRE>
+	* @param lfRange 粒子の初期位置の出現範囲
+	* @author kobayashi
+	* @since 2016/11/07
+	* @version 0.1
+	*/
+	void vSetRandomUndx(double lfRange);
+
+	/**
+	* <PRE>
+	* 　人工蜂コロニーの初期位置をREX法を適用して設定します。
+	* </PRE>
+	* @param lfRange 粒子の初期位置の出現範囲
+	* @author kobayashi
+	* @since 2016/11/07
+	* @version 0.1
+	*/
+	void vSetRandomRex(double lfRange);
+
+	/**
+	* <PRE>
+	* 　人工蜂コロニーの初期位置をAREX法を適用して算出して設定します。
+	* </PRE>
+	* @param lfRange 粒子の初期位置の出現範囲
+	* @author kobayashi
+	* @since 2016/11/07
+	* @version 0.1
+	*/
+	void vSetRandomARex(double lfRange);
+		
+	/**
 	 * <PRE>
 	 * 　終了処理を実行します。
 	 * </PRE>
