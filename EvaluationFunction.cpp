@@ -1476,3 +1476,99 @@ double lfBohachevsky( double *plfX, int iGenVector )
 	}
 	return lfRes;
 }
+
+/**
+* <PRE>
+* 　目的関数のZakharov関数の計算を実行します。
+*	 -\sum^{n}_{i=1}(x_{i}^2+(sum^{n}_{i=1}(\dfrac{ix_{i}^2}{2})^{2}+(sum^{n}_{i=1}(\dfrac{ix_{i}^2}{2})^{4})
+* 　大域的最適解 -5.12 \leq x_{i} \leq 5.12 x = (0,0,0,0...,0)
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2016/11/09
+* @version 0.1
+*/
+double lfZakharov(double *plfX, int iGenVector)
+{
+	double lfRes1 = 0.0;
+	double lfRes2 = 0.0;
+	double lfRes4 = 0.0;
+	double lfXX1 = 0.0;
+	double lfXX2 = 0.0;
+	int i;
+
+	for (i = 0; i < iGenVector; i++)
+	{
+		lfXX1 = plfX[i] * plfX[i];
+		lfXX2 = plfX[i] * plfX[i]*(double)i;
+		lfRes1 += lfXX1;
+		lfRes2 += lfXX2;
+	}
+	lfRes4 = 0.25*lfRes2*lfRes2;
+	lfRes4 = lfRes4*lfRes4;
+	return lfRes1+lfRes2+lfRes4;
+}
+
+/**
+* <PRE>
+* 　目的関数のSalomon Problem関数の計算を実行します。
+*	 1-\cos(2\pi\sqrt(\sum^{n}_{i=1}(x_{i}^2)))+0.1*sqrt(\sum^{n}_{i=1}(x_{i}^2))
+* 　大域的最適解 -100 \leq x_{i} \leq 100 x = (0,0,0,0...,0)
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2016/11/09
+* @version 0.1
+*/
+double lfSalomonProblem(double *plfX, int iGenVector)
+{
+	double lfRes1 = 0.0;
+	double lfRes2 = 0.0;
+	double lfRes4 = 0.0;
+	double lfXX1 = 0.0;
+	double lfXX2 = 0.0;
+	int i;
+
+	for (i = 0; i < iGenVector; i++)
+	{
+		lfXX1 = plfX[i] * plfX[i];
+		lfRes1 += lfXX1;
+	}
+	lfRes1 = sqrt(lfRes1);
+	return 1.0 - cos(2.0*pi*lfRes1)+0.1*lfRes1;
+}
+
+/**
+* <PRE>
+* 　目的関数のQuartic functionの計算を実行します。
+*	 \sum^{n}_{i=1}(ix_{i}^4)+random[0,1)
+* 　大域的最適解 -1.28 \leq x_{i} \leq 1.28 x = (0,0,0,0...,0)
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2016/11/09
+* @version 0.1
+*/
+double lfQuarticFunction(double *plfX, int iGenVector)
+{
+	double lfRes1 = 0.0;
+	double lfRes2 = 0.0;
+	double lfRes4 = 0.0;
+	double lfXX1 = 0.0;
+	double lfXX2 = 0.0;
+	int i;
+
+	for (i = 0; i < iGenVector; i++)
+	{
+		lfXX1 = plfX[i] * plfX[i];
+		lfXX2 = lfXX1*lfXX1;
+		lfRes1 += i*lfXX1;
+	}
+	return lfRes1+rnd();
+}

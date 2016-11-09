@@ -588,4 +588,49 @@ extern double lfSchaffer( double *plfX, int iGenVector );
  */
 extern double lfBohachevsky( double *plfX, int iGenVector );
 
+/**
+* <PRE>
+* 　目的関数のZakharov関数の計算を実行します。
+*	 -\sum^{n}_{i=1}(x_{i}^2+(sum^{n}_{i=1}(\dfrac{ix_{i}^2}{2})^{2}+(sum^{n}_{i=1}(\dfrac{ix_{i}^2}{2})^{4})
+* 　大域的最適解 -5.12 \leq x_{i} \leq 5.12 x = (0,0,0,0...,0)
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2016/11/09
+* @version 0.1
+*/
+extern double lfZakharov(double *plfX, int iGenVector);
+
+/**
+* <PRE>
+* 　目的関数のSalomon Problem関数の計算を実行します。
+*	 1-\cos(2\pi\sqrt(\sum^{n}_{i=1}(x_{i}^2)))+0.1*sqrt(\sum^{n}_{i=1}(x_{i}^2))
+* 　大域的最適解 -100 \leq x_{i} \leq 100 x = (0,0,0,0...,0)
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2016/11/09
+* @version 0.1
+*/
+extern double lfSalomonProblem(double *plfX, int iGenVector);
+
+/**
+* <PRE>
+* 　目的関数のQuartic functionの計算を実行します。
+*	 \sum^{n}_{i=1}(ix_{i}^4)+random[0,1)
+* 　大域的最適解 -1.28 \leq x_{i} \leq 1.28 x = (0,0,0,0...,0)
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2016/11/09
+* @version 0.1
+*/
+extern double lfQuarticFunction(double *plfX, int iGenVector);
+
 #endif /* _EVALUATION_FUNCTION_H_ */

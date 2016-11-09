@@ -423,6 +423,18 @@ void vSetObjectiveFunction( CCmdCheck *pcCmd, CAbc *pcAbc )
 	{
 		pcAbc->vSetConstraintFunction( lfBohachevsky );
 	}
+	else if (strcmp(pcCmd->pcGetFuncName(), "Zakharov") == 0)
+	{
+		pcAbc->vSetConstraintFunction(lfBohachevsky);
+	}
+	else if (strcmp(pcCmd->pcGetFuncName(), "SalomonProblem") == 0)
+	{
+		pcAbc->vSetConstraintFunction(lfBohachevsky);
+	}
+	else if (strcmp(pcCmd->pcGetFuncName(), "QuarticFunction") == 0)
+	{
+		pcAbc->vSetConstraintFunction(lfBohachevsky);
+	}
 	else
 	{
 	}
