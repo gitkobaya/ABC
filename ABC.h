@@ -4,6 +4,8 @@
 #include"CRealCodedGa.h"
 #include"CUndx.h"
 #include"CRex.h"
+#include"CPowell.h"
+
 #include<string>
 
 const int ABC_SUCCESS = 0;
@@ -458,7 +460,7 @@ public:
 	* @since 2016/11/04
 	* @version 0.1
 	*/
-	void vPAbc();
+	void vPAbc( int iUpdateCount );
 
 	/**
 	  *<PRE>
@@ -908,6 +910,7 @@ private:
 
 	bool bHJEmStep(double *plfX1, double *plfX0, double *plfStepSize);
 	void vModifiedHookeJeevesMethod(double *plfStepSize, double *plfX1, double *plfX2, double *plfX0);
+	void vPowell(int iUpdateCount);
 
 private:
 	int iGenerationNumber;				// 計算回数
@@ -964,6 +967,7 @@ private:
 	double *plfX2;						// HJABC用更新用一時格納配列
 	double *plfStepSize;				// HJABC用ステップサイズ格納配列
 	double *plfScoutBeeResult;			// best-so-far ABC法用ScoutBee格納配列
+	CPowell *pcPowell;					// Powell法を計算する。（ニューメリカルレシピインシー参照）
 };
 
 class CAbcException

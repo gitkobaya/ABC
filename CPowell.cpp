@@ -2,34 +2,54 @@
 #include<cmath>
 #include"CPowell.h"
 
+CPowell::CPowell()
+{
+}
+
+CPowell::CPowell( int iVectorDimNum )
+{
+	vInitialize(iVectorDimNum);
+}
+
+CPowell::~CPowell()
+{
+
+}
+
 void CPowell::vInitialize( int iVectorDimNum )
 {
-	iVector = iVectorDimNum;
+	int i;
+	iVectorLen = iVectorDimNum;
 	try
 	{
-		plfXt = new double[iVector];
-		plfXCom = new double[iVector];
-		plfXiCom = new double[iVector];
+		plfXt = new double[iVectorLen];
+		plfXCom = new double[iVectorLen];
+		plfXiCom = new double[iVectorLen];
+		plfPt = new double[iVectorLen];
+		plfXit = new double[iVectorLen];
+		plfPtt = new double[iVectorLen];
 
-		for (i = 0; i < iVector; i++)
+		for (i = 0; i < iVectorLen; i++)
 		{
 			plfXt[i] = 0.0;
 			plfXCom[i] = 0.0;
 			plfXiCom[i] = 0.0;
+			plfPt[i] = 0.0;
+			plfXit[i] = 0.0;
+			plfPtt[i] = 0.0;
 		}
 	}
-	catch( bad_alloc ba )
+	catch( std::bad_alloc ba )
 	{
 
 	}
 }
 
-
 void CPowell::vTerminate()
 {
 	if (plfXt != NULL)
 	{
-		delete[] plfX;
+		delete[] plfXt;
 		plfXt = NULL;
 	}
 	if (plfXCom != NULL)
@@ -41,6 +61,21 @@ void CPowell::vTerminate()
 	{
 		delete[] plfXiCom;
 		plfXiCom = NULL;
+	}
+	if (plfPt != NULL)
+	{
+		delete[] plfPt;
+		plfPt = NULL;
+	}
+	if (plfXit != NULL)
+	{
+		delete[] plfXit;
+		plfXit = NULL;
+	}
+	if (plfPtt != NULL)
+	{
+		delete[] plfPtt;
+		plfPtt = NULL;
 	}
 }
 
@@ -76,11 +111,11 @@ void CPowell::vReleaseCallConstraintFunction()
 double CPowell::lfF1Dim( double lfShift )
 {
 	int i;
-	for (i = 1; i <= iVectorLen; i++)
+	for (i = 0; i < iNCom; i++)
 	{
-		plfXt[i] = plfCom[i] + lfShift*plfXiCom[i];
+		plfXt[i] = plfXCom[i] + lfShift*plfXiCom[i];
 	}
-	return pflfConstraintFunction(plfXt, iVectorLen);
+	return pflfObjectiveFunction(plfXt, iVectorLen);
 }
 
 /**
@@ -97,26 +132,26 @@ void CPowell::vMnbrak( double *plfAx, double *plfBx, double *plfCx, double *plfF
 {
 	double lfUlim, lfU, lfR, lfQ, lfFu, lfDum;
 
-	*plfAX = lfF1Dim( plfAX );
-	*plfBX = lfF1Dim( plfBX );
+	*plfFa = lfF1Dim( *plfAx );
+	*plfFb = lfF1Dim( *plfBx );
 
-	if (*plfXB > *plfXA)
+	if (*plfFb > *plfFa )
 	{
 		lfDum = *plfAx;	*plfAx = *plfBx; *plfBx = lfDum;
 		lfDum = *plfFb;	*plfFb = *plfFa; *plfFa = lfDum;
 	}
 	// Cの初期設定
-	*plfCx = *plfBx + lfGloden*(*plfBx-*plfAx);
-	*plfFc = lfF1Dim( plfCx );
+	*plfCx = *plfBx + lfGolden*(*plfBx-*plfAx);
+	*plfFc = lfF1Dim( *plfCx );
 
 	// 囲い込みに成功するまで繰り返す。
-	while( *plfBx > *plfCx )
+	while( *plfFb > *plfFc )
 	{
 		// a, b, cから放物線補外でuを求める。
 		lfR = (*plfBx - *plfAx)*(*plfFb-*plfFc);
 		lfQ = (*plfBx - *plfCx)*(*plfFb-*plfFa);
-		lfU = *plfBx - ((*plfBx-*plfCx)*lfQ-(*plfBx-*plfAx)*lfR)/(2.0*lfSgn((lfMax(fabs(lfQ-lfR), lfTiny), lfQ-lfR ) );
-		lfULim = *plfBx + lfGLimit*( *plfCx-*plfBx );
+		lfU = *plfBx - ((*plfBx-*plfCx)*lfQ-(*plfBx-*plfAx)*lfR)/(2.0*lfSgn( lfMax(fabs(lfQ-lfR), lfTiny), lfQ-lfR ) );
+		lfUlim = *plfBx + lfGLimit*( *plfCx-*plfBx );
 
 		// これ以上進まずに様々な可能性を調べる。
 		if( (*plfBx-lfU)*(lfU-*plfCx) > 0.0 )
@@ -127,7 +162,7 @@ void CPowell::vMnbrak( double *plfAx, double *plfBx, double *plfCx, double *plfF
 				*plfAx = *plfBx;
 				*plfBx = lfU;
 				*plfFa = *plfFb;
-				*plfFb = *plfFu;
+				*plfFb = lfFu;
 				return;
 			}
 			else if( lfFu > *plfFb )
@@ -139,7 +174,7 @@ void CPowell::vMnbrak( double *plfAx, double *plfBx, double *plfCx, double *plfF
 			lfU = *plfCx + lfGolden*(*plfCx-*plfBx);
 			lfFu = lfF1Dim( lfU );
 		}
-		else if( (*plfCx-lfU)*(lfU-lfULim) > 0.0 )
+		else if( (*plfCx-lfU)*(lfU-lfUlim) > 0.0 )
 		{
 			lfFu = lfF1Dim( lfU );
 			if( lfFu < *plfFc )
@@ -148,15 +183,15 @@ void CPowell::vMnbrak( double *plfAx, double *plfBx, double *plfCx, double *plfF
 				*plfFb = *plfFc; *plfFc = lfFu; lfFu = lfF1Dim( lfU );
 			}
 		}
-		else if( (lfU-lfULim)*(lfULim-*plfCx) >= 0.0 )
+		else if( (lfU-lfUlim)*(lfUlim-*plfCx) >= 0.0 )
 		{
-			lfU = lfULim;
+			lfU = lfUlim;
 			lfFu = lfF1Dim( lfU );
 		}
 		else
 		{
 			lfU = *plfCx + lfGolden*(*plfCx-*plfBx);
-			lfU = lfF1Dim( lfU );
+			lfFu = lfF1Dim( lfU );
 		}
 		*plfAx = *plfBx; *plfBx = *plfCx; *plfCx = lfU;
 		*plfFa = *plfFb; *plfFb = *plfFc; *plfFc = lfFu;
@@ -174,7 +209,7 @@ void CPowell::vMnbrak( double *plfAx, double *plfBx, double *plfCx, double *plfF
 double CPowell::lfBrent( double lfAx, double lfBx, double lfCx, double lfTol, double *plfXMin )
 {
 	int iInter;
-	double lfA, lfB, lfC, lfETemp, lfFu, lfFv, lfFw, lfFx, lfP, lfQ, lfR, lfToll, lfTol2, lfU, lfV, lfW, lfX, lfXm;
+	double lfA, lfB, lfD, lfETemp, lfFu, lfFv, lfFw, lfFx, lfP, lfQ, lfR, lfTol1, lfTol2, lfU, lfV, lfW, lfX, lfXm;
 	double lfE = 0.0;
 
 	// a < bにする。
@@ -192,14 +227,14 @@ double CPowell::lfBrent( double lfAx, double lfBx, double lfCx, double lfTol, do
 		lfTol2 = 2.0*(lfTol1 = lfTol*fabs(lfX)+lfZepsilon);
 		if( fabs(lfX-lfXm) <= ( lfTol2-0.5*(lfB-lfA)))
 		{
-			*plfXmin = lfX;
+			*plfXMin = lfX;
 			return lfFx;
 		}
 		if( fabs( lfE ) > lfTol1 )
 		{
 			lfR = ( lfX-lfW)*(lfFx-lfFv);
 			lfQ = ( lfX-lfV)*(lfFx-lfFw);
-			lfP = ( lfX-lfV )*lf!-(lfX-lfW)*lfR;
+			lfP = ( lfX-lfV )*lfQ-(lfX-lfW)*lfR;
 			lfQ = 2.0*(lfQ-lfR);
 			if( lfQ > 0.0 ) lfP = -lfP;
 			lfQ = fabs( lfQ );
@@ -266,17 +301,17 @@ void CPowell::vLineMin(double *plfP, double *plfXi, int iN, double *plfRet )
 	int i;
 	double lfXX, lfXMin, lfFx, lfFb, lfFa, lfBx, lfAx;
 
-	iNcom = iN;
-	for(i = 1; i <= iN; i++ )
+	iNCom = iN;
+	for(i = 0; i < iN; i++ )
 	{
-		plfCom[i] = lfP[i];
+		plfXCom[i] = plfP[i];
 		plfXiCom[i] = plfXi[i];
 	}
 	lfAx = 0.0;
 	lfXX = 1.0;
-	lfMnbrak( &lfAx, &lfXX, &lfBx, lfTol, &lfXMin );
+	vMnbrak( &lfAx, &lfXX, &lfBx, &lfFa, &lfFx, &lfFb );
 	*plfRet = lfBrent( lfAx, lfXX, lfBx, lfTol, &lfXMin );
-	for( i = 1;i <= iN; i++ )
+	for( i = 0;i < iN; i++ )
 	{
 		plfXi[i] *= lfXMin;
 		plfP[i] += plfXi[i];
@@ -286,121 +321,72 @@ void CPowell::vLineMin(double *plfP, double *plfXi, int iN, double *plfRet )
 void CPowell::vPowell( double *plfP, double **pplfXi, int iN, double lfFtol, int *piInter, double *plfFRet )
 {
 	int i, j, iBig;
-	double lfDel ,lfFp, lfFptt, lfT, *plfPt, *plfPtt, *plfXit;
+	double lfDel, lfFp, lfFptt, lfT;
 
-	*plfFRet = pflfObjectiveFunction( plfP );
-	for (i = 1; i <= iN; i++)
+	*plfFRet = pflfObjectiveFunction( plfP, iN );
+	for (i = 0; i < iN; i++)
 	{
 		plfPt[i] = plfP[i];
 	}
-	for (*pinter = 1;; ++(*pinter))
+	for (*piInter = 1;; ++(*piInter))
 	{
-		plfFp[i] = *plfFRet;
+		lfFp = *plfFRet;
 		iBig = 0;
 		// 関数値の最大減少量を求める変数
 		lfDel = 0.0;
 		// 各反復で、方向集合の全要素についてループ
-		for (i = 1; i <= iN; i++)
+		for (i = 0; i < iN; i++)
 		{
 			// 方向をコピー
-			for (j = 1; j <= iN; j++)
+			for (j = 0; j < iN; j++)
 			{
 				plfXit[j] = pplfXi[j][i];
 			}
-			lfFPtt = *plfFRet;
+			lfFptt = *plfFRet;
 			// それに沿って最小化
-			vLinMin(plfP, plfXit, iN, plfFRet);
+			vLineMin(plfP, plfXit, iN, plfFRet);
 			// 最大の現象であれば記録する。
-			if (fabs(lfFPtt - *plfFRet) > lfDel)
+			if (fabs(lfFptt - *plfFRet) > lfDel)
 			{
-				lfDel = fabs(lfFPtt - *plfFRet);
+				lfDel = fabs(lfFptt - *plfFRet);
 				iBig = i;
 			}
 		}
 		// 終了判定
-		if (2.0*fabs(lfFp - *plfFRet) <= lfTol*(fabs(lfFp) + fabs(*plfFRet))
+		if (2.0*fabs(lfFp - *plfFRet) <= lfTol*(fabs(lfFp) + fabs(*plfFRet)))
 		{
 			return;
 		}
 		if (*piInter == iItmax) break;
-		for (j = 1; j <= iN; j++)
+		for (j = 0; j < iN; j++)
 		{
 			plfPtt[j] = 2.0*plfP[j] - plfPt[j];
 			plfXit[j] = plfP[j] - plfPt[j];
 			plfPt[j] = plfP[j];
 		}
-		lfPtt = pflfObjectiveFunction( plfPtt, iN );
-		if (lfPtt < lfFp)
+		lfFptt = pflfObjectiveFunction( plfPtt, iN );
+		if (lfFptt < lfFp)
 		{
-			lfT = 2.0*( lfFp-2.0*(*plfFRet)+lfPtt)*( lfFp-(*plfFRet)-lfDel )*(lfFp - (*plfFRet) - lfDel) -lfDel*(lfFp-lfFPtt)*(lfFp - lfFPtt);
+			lfT = 2.0*( lfFp-2.0*(*plfFRet)+lfFptt)*( lfFp-(*plfFRet)-lfDel )*(lfFp - (*plfFRet) - lfDel) -lfDel*(lfFp-lfFptt)*(lfFp - lfFptt);
 			if (lfT < 0.0)
 			{
-				vLinMin( plfP, plfXit, iN, plfFRet );
+				vLineMin( plfP, plfXit, iN, plfFRet );
 				for (j = 1; j <= iN; j++)
 				{
-					plfXi[j][iBig] = pplfXi[j][iN];
-					plfXi[j][iN] = plfXit[j];
+					pplfXi[j][iBig] = pplfXi[j][iN];
+					pplfXi[j][iN] = plfXit[j];
 				}
 			}
 		}
 	}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	*plfCx = *plfBx + lfCGold*( *plfBx - *plfAx );
-	*plfFc = lfF1Dim( *plfCx );
+double CPowell::lfSgn(double lfA, double lfB)
+{
+	return ( lfB >= 0.0 ? fabs(lfA) : -fabs(lfA) );
 }
 
-void CPowell::vPowell()
+double CPowell::lfMax(double lfA, double lfB)
 {
-
+	return (lfA >= lfB ? lfA : lfB);
 }

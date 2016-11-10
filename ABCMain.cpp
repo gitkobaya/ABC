@@ -199,19 +199,19 @@ void vInitialize( CCmdCheck *pcCmd, CAbc *pcAbc )
 		pcAbc->vInitialize(iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iIntervalMinNum, iAbcUpperSearchNum, lfConvergenceParam, lfFitBound, lfFitAccuracy, iParentNumber, iChildrenNumber, iUpperEvalChildrenNumber, lfLearningRate);
 		pcAbc->vSetRange(lfRange);
 	}
-	// PABC法
+	// ABCBestSoFar法
 	else if (pcCmd->iGetAbcMethod() == 12)
 	{
 		pcAbc->vInitialize(iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iIntervalMinNum, iAbcUpperSearchNum, lfConvergenceParam, lfFitBound, lfFitAccuracy, iParentNumber, iChildrenNumber, iUpperEvalChildrenNumber, lfLearningRate);
 		pcAbc->vSetRange(lfRange);
 	}
-	// OLABC法
+	// PABC法
 	else if (pcCmd->iGetAbcMethod() == 13)
 	{
 		pcAbc->vInitialize(iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iIntervalMinNum, iAbcUpperSearchNum, lfConvergenceParam, lfFitBound, lfFitAccuracy, iParentNumber, iChildrenNumber, iUpperEvalChildrenNumber, lfLearningRate);
 		pcAbc->vSetRange(lfRange);
 	}
-	// ABCBestSoFar法
+	// OLABC法
 	else if (pcCmd->iGetAbcMethod() == 14)
 	{
 		pcAbc->vInitialize(iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iIntervalMinNum, iAbcUpperSearchNum, lfConvergenceParam, lfFitBound, lfFitAccuracy, iParentNumber, iChildrenNumber, iUpperEvalChildrenNumber, lfLearningRate);
@@ -504,7 +504,7 @@ void vStartAbc( CCmdCheck *pcCmd, CAbc *pcAbc, int iLoc )
 	}
 	else if (pcCmd->iGetAbcMethod() == 13)
 	{
-//		pcAbc->vPAbc();
+		pcAbc->vPAbc( iLoc );
 	}
 	else if (pcCmd->iGetAbcMethod() == 14)
 	{
@@ -606,13 +606,13 @@ void vSetRandom( CCmdCheck *pcCmd, CAbc *pcAbc )
 	{
 		pcAbc->vSetRandom( pcCmd->lfGetRange() );
 	}
-	else if(pcCmd->iGetAbcMethod() == 3 || pcCmd->iGetAbcMethod() == 4 || pcCmd->iGetAbcMethod() == 5 || pcCmd->iGetAbcMethod() == 6 || pcCmd->iGetAbcMethod() == 10 || pcCmd->iGetAbcMethod() == 11 )
+	else if(pcCmd->iGetAbcMethod() == 3 || pcCmd->iGetAbcMethod() == 4 || pcCmd->iGetAbcMethod() == 5 || pcCmd->iGetAbcMethod() == 6 || pcCmd->iGetAbcMethod() == 10 || pcCmd->iGetAbcMethod() == 11 || pcCmd->iGetAbcMethod() == 13 || pcCmd->iGetAbcMethod() == 14 )
 	{
 		pcAbc->vSetRandomPso(pcCmd->lfGetRange());
 	}
 	else if (pcCmd->iGetAbcMethod() == 7)
 	{
-//		pcAbc->vSetRandomUndx(pcCmd->lfGetRange());
+		pcAbc->vSetRandomUndx(pcCmd->lfGetRange());
 	}
 	else if (pcCmd->iGetAbcMethod() == 8)
 	{
