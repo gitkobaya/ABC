@@ -172,7 +172,7 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 		{
 			pplfVelocityData[i] = new double[iAbcVectorDimNum];
 		}
-		pplfNVelocityData = new double*[iAbcDataNum];
+		pplfNVelocityData = new double*[iAbcVectorDimNum];
 		for( i = 0;i < iAbcDataNum; i++ )
 		{
 			pplfNVelocityData[i] = new double[iAbcVectorDimNum];
@@ -204,7 +204,6 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 				pplfLocalMaxAbcData[i][j] = 0.0;
 				pplfLocalMinAbcData[i][j] = 0.0;
 				pplfVelocityData[i][j] = 0.0;
-				pplfNVelocityData[i][j] = 0.0;
 			}
 		}
 		for( i = 0;i < iAbcSearchNum ; i++ )
@@ -229,6 +228,10 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			plfX2[i] = 0.0;
 			plfStepSize[i] = 0.0;
 			plfScoutBeeResult[i] = 0.0;
+			for (j = 0; j < iAbcVectorDimNum; j++)
+			{
+				pplfNVelocityData[i][j] = 0.0;
+			}
 		}
 		pcPowell = new CPowell();
 		// Powellの初期化を実行します。
@@ -333,6 +336,13 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 				pplfLocalMaxAbcData[i][j] = 0.0;
 				pplfLocalMinAbcData[i][j] = 0.0;
 				pplfVelocityData[i][j] = 0.0;
+				pplfNVelocityData[i][j] = 0.0;
+			}
+		}
+		for (i = 0; i < iAbcVectorDimNum; i++)
+		{
+			for (j = 0; j < iAbcVectorDimNum; j++)
+			{
 				pplfNVelocityData[i][j] = 0.0;
 			}
 		}
@@ -1214,7 +1224,7 @@ void CAbc::vTerminate()
 		}
 		if( pplfNVelocityData != NULL )
 		{
-			for( i = 0;i < iAbcDataNum; i++ )
+			for( i = 0;i < iAbcVectorDimNum; i++ )
 			{
 				delete[] pplfNVelocityData[i];
 				pplfNVelocityData[i] = NULL;
@@ -1799,27 +1809,62 @@ void CAbc::vCbAbc()
 }
 
 /**
- * <PRE>
- * 　人工蜂コロニー最適化法（交叉を導入した手法）を実行します。
- *   完全自作アレンジ
- * </PRE>
- * @author kobayashi
- * @since 2016/8/10
- * @version 0.1
- */
+* <PRE>
+* 　人工蜂コロニー最適化法（交叉を導入した手法）を実行します。
+*   完全自作アレンジ
+* </PRE>
+* @author kobayashi
+* @since 2016/8/10
+* @version 0.1
+*/
 void CAbc::vUndxAbc()
 {
 	// employee bee の動作
+//	vEmployBeeBF();
 //	vEmployBeeBest();
 	vEmployBeeGBest();
 
 	// onlookers beeの動作
+//	vOnlookerBeeBF();
 //	vOnlookerBeeBest();
 	vOnlookerBeeGBest();
-
+#if 1
 	// scout bee の実行
+//	vScoutBeeBF(iUpdateCount);
 	vScoutBeeUndx();
-	
+#endif
+	// 局所最大値、最小値を取得します。
+	vGetLocalMaxMin();
+
+	// 大域的最大値、最小値を取得します。
+	vGetGlobalMaxMin();
+}
+
+/**
+* <PRE>
+* 　人工蜂コロニー最適化法（交叉を導入した手法）を実行します。
+*   完全自作アレンジ（ベースはBest-so-Far ABC法）
+* </PRE>
+* @author kobayashi
+* @since 2016/11/18
+* @version 0.1
+*/
+void CAbc::vUXAbc()
+{
+	// employee bee の動作
+	vEmployBeeBF();
+	//	vEmployBeeBest();
+	//	vEmployBeeGBest();
+
+	// onlookers beeの動作
+	vOnlookerBeeBF();
+	//	vOnlookerBeeBest();
+	//	vOnlookerBeeGBest();
+#if 1
+	// scout bee の実行
+	//	vScoutBeeBF(iUpdateCount);
+	vScoutBeeUndx();
+#endif
 	// 局所最大値、最小値を取得します。
 	vGetLocalMaxMin();
 
@@ -2189,9 +2234,10 @@ void CAbc::vBFAbc( int iUpdateCount )
 
 	// onlookers beeの動作
 	vOnlookerBeeBF();
-#if 0
+#if 1
 	// scout bee の実行
 	vScoutBeeBF( iUpdateCount );
+//	vScoutBeeUndx();
 #endif
 	// 局所最大値、最小値を取得します。
 	vGetLocalMaxMin();
@@ -2224,6 +2270,7 @@ void CAbc::vPAbc( int iUpdateCount )
 #endif
 	// scout bee の実行
 	vScoutBeeNormal();
+//	vScoutBeeUndx();
 
 	// 局所最大値、最小値を取得します。
 	vGetLocalMaxMin();
@@ -3590,16 +3637,18 @@ void CAbc::vOnlookerBeeBF()
 	double lfObjFunc = 0.0;
 	double lfLocalBestRand = 0.0;
 
+	std::vector<int> stlLoc;
 
-	lfLocalBestRand = pflfObjectiveFunction(pplfAbcData[0], iAbcVectorDimNum);
+
+	lfLocalBestRand = pflfObjectiveFunction(plfLocalMinAbcData, iAbcVectorDimNum);
 	lfRes = 0.0;
 	for (j = 0; j < iAbcSearchNum; j++)
 	{
 		// 適応度の算出
 		lfObjFunc = pflfObjectiveFunction(pplfAbcData[j], iAbcVectorDimNum);
-//		if (lfObjFunc >= 0.0)	lfFitProb = 1.0 / (1.0 + lfObjFunc);
-//		else					lfFitProb = 1.0 + fabs(lfObjFunc);
-		lfFitProb = lfObjFunc;
+		if (lfObjFunc >= 0.0)	lfFitProb = 1.0 / (1.0 + lfObjFunc);
+		else					lfFitProb = 1.0 + fabs(lfObjFunc);
+//		lfFitProb = lfObjFunc;
 		lfRes += lfFitProb;
 		plfFit[j] = lfFitProb;
 	}
@@ -3607,8 +3656,8 @@ void CAbc::vOnlookerBeeBF()
 	for (j = 0; j < iAbcSearchNum; j++)	plfFitProb[j] = plfFit[j] / lfRes;
 	lfLocalBestRand /= lfRes;
 
-	for (i = 0; i < iAbcSearchNum; i++)
-	{
+//	for (i = 0; i < iAbcSearchNum; i++)
+//	{
 		// ルーレット戦略を実行
 		lfProb = lfPrevProb = 0.0;
 		lfRand = rnd();
@@ -3620,31 +3669,35 @@ void CAbc::vOnlookerBeeBF()
 			if (lfPrevProb <= lfRand && lfRand <= lfProb)	c = j;
 			lfPrevProb = lfProb;
 		}
+		stlLoc.push_back(c);
 		// ルーレット選択した探索点に対して更新候補を求めます。
 
 		// 更新点候補を算出します。
 		// 更新点候補を乱数により決定します。
 		h = mrand() % iAbcVectorDimNum;
 
-		lfRand = 2.0*rnd() - 1.0;
 		for (j = 0; j < iAbcVectorDimNum; j++)
+		{
+			lfRand = 2.0*rnd() - 1.0;
 //			pplfVelocityData[c][j] = pplfAbcData[c][j];
-			pplfVelocityData[i][j] = pplfAbcData[c][h] + lfRand*lfLocalBestRand*(pplfAbcData[c][h] - pplfLocalMinAbcData[c][h]);
+//			pplfVelocityData[i][j] = pplfAbcData[c][h] + lfRand*lfLocalBestRand*(pplfAbcData[c][h] - pplfLocalMinAbcData[c][h]);
+			pplfVelocityData[c][j] = pplfAbcData[c][h] + lfRand*lfLocalBestRand*(pplfAbcData[c][h] - plfLocalMinAbcData[h]);
 //			pplfVelocityData[c][h] = pplfAbcData[c][h] + lfRand*lfGlobalMinAbcData*( pplfAbcData[c][h] - pplfAbcData[m][h] );
 //			pplfVelocityData[c][h] = pplfAbcData[c][h] + lfRand*(pplfAbcData[c][h] - plfGlobalMinAbcData[h]);
-
-				// 更新点候補を次のように更新します。
-		lfFunc1 = pflfObjectiveFunction(pplfVelocityData[i], iAbcVectorDimNum);
-		lfFunc2 = pflfObjectiveFunction(pplfAbcData[c], iAbcVectorDimNum);
-
-		if (lfFunc1 < lfFunc2)
-		{
-			for (j = 0; j < iAbcVectorDimNum; j++)
-				pplfAbcData[c][j] = pplfVelocityData[i][j];
-			piNonUpdateCount[c] = 0;
 		}
-		else	piNonUpdateCount[c] = piNonUpdateCount[c] + 1;
+//	}
+#if 1
+	// 更新点候補を次のように更新します。
+	lfFunc1 = pflfObjectiveFunction(pplfVelocityData[c], iAbcVectorDimNum);
+	lfFunc2 = pflfObjectiveFunction(pplfAbcData[c], iAbcVectorDimNum);
+	if (lfFunc1 < lfFunc2)
+	{
+		for (j = 0; j < iAbcVectorDimNum; j++)
+			pplfAbcData[c][j] = pplfVelocityData[c][j];
+		piNonUpdateCount[c] = 0;
 	}
+	else	piNonUpdateCount[c] = piNonUpdateCount[c] + 1;
+#endif
 }
 /**
 * <PRE>
@@ -3975,22 +4028,22 @@ void CAbc::vPowell(int iUpdateCount)
 		// d次元のベクトルplfVelocityData及び方向ベクトルplfDirection及び次元数を与えると最小点及び最小点での値が返却される。
 		for (i = 0; i < iAbcSearchNum; i++)
 		{
-			memset( pplfVelocityData[i], 0, sizeof(double)*iAbcVectorDimNum );
+			memset( pplfNVelocityData[i], 0, sizeof(double)*iAbcVectorDimNum );
 			if (i < iAbcVectorDimNum )
-				pplfVelocityData[i][i] = 1.0;
+				pplfNVelocityData[i][i] = 1.0;
 		}
-		pcPowell->vPowell(plfVelocity, pplfVelocityData, iAbcVectorDimNum, lfEpsilon, &iInterval, &lfRet );
+		pcPowell->vPowell(plfVelocity, pplfNVelocityData, iAbcVectorDimNum, lfEpsilon, &iInterval, &lfRet );
 
 		lfFunc1 = pflfObjectiveFunction(plfVelocity, iAbcVectorDimNum);
-		lfFunc2 = pflfObjectiveFunction(pplfAbcData[i], iAbcVectorDimNum);
+		lfFunc2 = pflfObjectiveFunction(pplfAbcData[k], iAbcVectorDimNum);
 
 		if (lfFunc1 < lfFunc2)
 		{
-			for (k = 0; k < iAbcVectorDimNum; k++)
-				pplfAbcData[i][k] = plfVelocity[k];
-			piNonUpdateCount[i] = 0;
+			for (i = 0; i < iAbcVectorDimNum; i++)
+				pplfAbcData[k][i] = plfVelocity[i];
+			piNonUpdateCount[k] = 0;
 		}
-		else	piNonUpdateCount[i] = piNonUpdateCount[i] + 1;
+		else	piNonUpdateCount[k] = piNonUpdateCount[k] + 1;
 
 	}
 }
@@ -4096,7 +4149,7 @@ void CAbc::vOutputAbcData()
 	{
 		for( j = 0;j < iAbcVectorDimNum; j++ )
 		{
-			printf("%lf,", pplfAbcData[i][j]);
+			printf("%.12f,", pplfAbcData[i][j]);
 		}
 		printf("\n");
 	}
@@ -4118,7 +4171,7 @@ void CAbc::vOutputVelocityData()
 	{
 		for( j = 0;j < iAbcVectorDimNum; j++ )
 		{
-			printf("%lf,", pplfVelocityData[i][j]);
+			printf("%.12f,", pplfVelocityData[i][j]);
 		}
 		printf("\n");
 	}
@@ -4138,7 +4191,7 @@ void CAbc::vOutputConstraintFunction()
 	// 現時点での各蜂の目的関数の値を出力します。
 	for( i = 0; i < iAbcDataNum; i++ )
 	{
-		printf("%lf,", pflfObjectiveFunction(pplfAbcData[i], iAbcVectorDimNum) );
+		printf("%.12f,", pflfObjectiveFunction(pplfAbcData[i], iAbcVectorDimNum) );
 	}
 	printf("\n");
 }
@@ -4157,7 +4210,7 @@ void CAbc::vOutputGlobalMaxAbcData()
 	// 現時点での各粒子の値を出力します。
 	for( i = 0; i < iAbcVectorDimNum; i++ )
 	{
-		printf("%lf,", plfGlobalMaxAbcData[i] );
+		printf("%.12f,", plfGlobalMaxAbcData[i] );
 	}
 	printf("\n");
 }
@@ -4173,7 +4226,7 @@ void CAbc::vOutputGlobalMaxAbcData()
 void CAbc::vOutputGlobalMaxAbcDataConstFuncValue()
 {
 	// 現時点での各粒子の目的関数の値を出力します。
-	printf("%lf\n", lfGlobalMaxAbcData );
+	printf("%.12f\n", lfGlobalMaxAbcData );
 }
 
 /**
@@ -4190,7 +4243,7 @@ void CAbc::vOutputGlobalMinAbcData()
 	// 現時点での各粒子の値を出力します。
 	for( i = 0; i < iAbcVectorDimNum; i++ )
 	{
-		printf("%lf,", plfGlobalMinAbcData[i] );
+		printf("%.12f,", plfGlobalMinAbcData[i] );
 	}
 	printf("\n");
 }
@@ -4206,7 +4259,7 @@ void CAbc::vOutputGlobalMinAbcData()
 void CAbc::vOutputGlobalMinAbcDataConstFuncValue()
 {
 	// 現時点での各粒子の目的関数の値を出力します。
-	printf("%lf\n", lfGlobalMinAbcData );
+	printf("%.12f\n", lfGlobalMinAbcData );
 }
 
 /**
@@ -4237,13 +4290,13 @@ void CAbc::vOutputAbcDataLocDist( int iOutFlag )
 			lfRes += lfDist2;
 		}
 		lfAvgDist += lfRes;
-		printf("%lf,", lfRes );
+		printf("%12f,", lfRes );
 	}
 	lfAvgDist /= (double)iAbcDataNum;
 	if( iOutFlag == 1 )
 	{
 		// 現時点粒子間の平均距離を出力します。
-		printf("%lf\n",lfAvgDist);
+		printf("%12f\n",lfAvgDist);
 	}
 }
 
@@ -4270,12 +4323,12 @@ void CAbc::vOutputLocalMaxAbcData( int iOutFlag )
 	{
 		for( j = 0; j < iAbcVectorDimNum; j++ )
 		{
-			printf("%lf,", pplfLocalMaxAbcData[i][j] );
+			printf("%12.12f,", pplfLocalMaxAbcData[i][j] );
 		}
 		if( iOutFlag == 1 )
 		{
 			// 現時点での各粒子の目的関数の値を出力します。
-			printf("%lf,", plfLocalMaxObjectiveAbcData[i] );
+			printf("%12.12f,", plfLocalMaxObjectiveAbcData[i] );
 		}
 	}
 	printf("\n");
@@ -4294,7 +4347,7 @@ void CAbc::vOutputGlobalMinAbcDataConstFuncValue( int iOutputCount )
 	// 現時点での各粒子の目的関数の値を10回おきに出力します。
 	if (iOutputCount % 10 == 0)
 	{
-		printf("%lf,", lfGlobalMinAbcData);
+		printf("%12.12f,", lfGlobalMinAbcData);
 	}
 }
 

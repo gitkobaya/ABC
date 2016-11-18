@@ -376,6 +376,17 @@ public:
 	void vUndxEnhancedAbc( int iUpdateCount );
 
 	/**
+	* <PRE>
+	* 　人工蜂コロニー最適化法（交叉を導入した手法）を実行します。
+	*   完全自作アレンジ（ベースはBest-so-Far ABC法）
+	* </PRE>
+	* @author kobayashi
+	* @since 2016/11/18
+	* @version 0.1
+	*/
+	void vUXAbc();
+		
+	/**
 	 * <PRE>
 	 * 　人工蜂コロニー最適化法（交叉を導入した手法）を実行します。
 	 *   完全自作アレンジ（Emsanble Real Coded CrossOverを用います。）

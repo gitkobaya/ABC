@@ -199,10 +199,10 @@ void vInitialize( CCmdCheck *pcCmd, CAbc *pcAbc )
 		pcAbc->vInitialize(iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iIntervalMinNum, iAbcUpperSearchNum, lfConvergenceParam, lfFitBound, lfFitAccuracy, iParentNumber, iChildrenNumber, iUpperEvalChildrenNumber, lfLearningRate);
 		pcAbc->vSetRange(lfRange);
 	}
-	// ABCBestSoFar法
+	// BestSoFarABC法
 	else if (pcCmd->iGetAbcMethod() == 12)
 	{
-		pcAbc->vInitialize(iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iIntervalMinNum, iAbcUpperSearchNum, lfConvergenceParam, lfFitBound, lfFitAccuracy, iParentNumber, iChildrenNumber, iUpperEvalChildrenNumber, lfLearningRate);
+		pcAbc->vInitialize(iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iCrossOverNum, lfAlpha, lfBeta);
 		pcAbc->vSetRange(lfRange);
 	}
 	// PABC法
@@ -211,10 +211,10 @@ void vInitialize( CCmdCheck *pcCmd, CAbc *pcAbc )
 		pcAbc->vInitialize(iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iIntervalMinNum, iAbcUpperSearchNum, lfConvergenceParam, lfFitBound, lfFitAccuracy, iParentNumber, iChildrenNumber, iUpperEvalChildrenNumber, lfLearningRate);
 		pcAbc->vSetRange(lfRange);
 	}
-	// OLABC法
+	// UXABC法
 	else if (pcCmd->iGetAbcMethod() == 14)
 	{
-		pcAbc->vInitialize(iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iIntervalMinNum, iAbcUpperSearchNum, lfConvergenceParam, lfFitBound, lfFitAccuracy, iParentNumber, iChildrenNumber, iUpperEvalChildrenNumber, lfLearningRate);
+		pcAbc->vInitialize(iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iCrossOverNum, lfAlpha, lfBeta);
 		pcAbc->vSetRange(lfRange);
 	}
 }
@@ -425,15 +425,23 @@ void vSetObjectiveFunction( CCmdCheck *pcCmd, CAbc *pcAbc )
 	}
 	else if (strcmp(pcCmd->pcGetFuncName(), "Zakharov") == 0)
 	{
-		pcAbc->vSetConstraintFunction(lfBohachevsky);
+		pcAbc->vSetConstraintFunction( lfZakharov );
 	}
 	else if (strcmp(pcCmd->pcGetFuncName(), "SalomonProblem") == 0)
 	{
-		pcAbc->vSetConstraintFunction(lfBohachevsky);
+		pcAbc->vSetConstraintFunction( lfSalomonProblem );
 	}
 	else if (strcmp(pcCmd->pcGetFuncName(), "QuarticFunction") == 0)
 	{
-		pcAbc->vSetConstraintFunction(lfBohachevsky);
+		pcAbc->vSetConstraintFunction( lfQuarticFunction );
+	}
+	else if (strcmp(pcCmd->pcGetFuncName(), "Alpine") == 0)
+	{
+		pcAbc->vSetConstraintFunction( lfAlpine );
+	}
+	else if (strcmp(pcCmd->pcGetFuncName(), "Weierstrass") == 0)
+	{
+		pcAbc->vSetConstraintFunction(lfWeierstrass);
 	}
 	else
 	{
@@ -508,11 +516,11 @@ void vStartAbc( CCmdCheck *pcCmd, CAbc *pcAbc, int iLoc )
 	}
 	else if (pcCmd->iGetAbcMethod() == 14)
 	{
-//		pcAbc->vACAbc();
+		pcAbc->vUXAbc();
 	}
 	else if (pcCmd->iGetAbcMethod() == 15)
 	{
-//		pcAbc->vACAbc();
+//		pcAbc->vOLAbc();
 	}
 	else
 	{
@@ -550,7 +558,7 @@ void vOutputData( CCmdCheck *pcCmd, CAbc *pcAbc, int iLoc )
 	{
 		pcAbc->vOutputGlobalMaxAbcData();
 	}
-	else if( pcCmd->iGetOutputFlag() == 5 )
+	else if( pcCmd->iGetOutputFlag() == 12 )
 	{
 		pcAbc->vOutputGlobalMaxAbcDataConstFuncValue();
 	}
@@ -602,15 +610,15 @@ void vSetRandom( CCmdCheck *pcCmd, CAbc *pcAbc )
 	{
 		pcAbc->vSetModifiedRandom( pcCmd->lfGetRange() );
 	}
-	else if( pcCmd->iGetAbcMethod() == 1 || pcCmd->iGetAbcMethod() == 12 || pcCmd->iGetAbcMethod() == 7 )
+	else if( pcCmd->iGetAbcMethod() == 1 )
 	{
 		pcAbc->vSetRandom( pcCmd->lfGetRange() );
 	}
-	else if(pcCmd->iGetAbcMethod() == 3 || pcCmd->iGetAbcMethod() == 4 || pcCmd->iGetAbcMethod() == 5 || pcCmd->iGetAbcMethod() == 6 || pcCmd->iGetAbcMethod() == 10 || pcCmd->iGetAbcMethod() == 11 || pcCmd->iGetAbcMethod() == 13 || pcCmd->iGetAbcMethod() == 14 )
+	else if(pcCmd->iGetAbcMethod() == 3 || pcCmd->iGetAbcMethod() == 12 || pcCmd->iGetAbcMethod() == 4 || pcCmd->iGetAbcMethod() == 5 || pcCmd->iGetAbcMethod() == 6 || pcCmd->iGetAbcMethod() == 10 || pcCmd->iGetAbcMethod() == 11 || pcCmd->iGetAbcMethod() == 13 || pcCmd->iGetAbcMethod() == 14 )
 	{
 		pcAbc->vSetRandomPso(pcCmd->lfGetRange());
 	}
-	else if (pcCmd->iGetAbcMethod() == 7)
+	else if (pcCmd->iGetAbcMethod() == 7 || pcCmd->iGetAbcMethod() == 14 )
 	{
 		pcAbc->vSetRandomUndx(pcCmd->lfGetRange());
 	}
@@ -640,6 +648,8 @@ void vSetRandom( CCmdCheck *pcCmd, CAbc *pcAbc )
 int iFinisher( CCmdCheck *pcCmd, CAbc *pcAbc, int iCount )
 {
 	int iRet = 0;
+	static double lfPrevFuncValue = DBL_MAX;
+	static int iConvergenceCount = 0;
 	// 回数による終了を指定した場合
 	if( pcCmd->iGetFinishFlag() == 1 )
 	{
@@ -653,17 +663,27 @@ int iFinisher( CCmdCheck *pcCmd, CAbc *pcAbc, int iCount )
 	{
 		if (strcmp(pcCmd->pcGetFuncName(), "michaelwicz") == 0)
 		{
-			if ( fabs(pcAbc->lfGetGlobalMinAbcDataConstFuncValue()+1.8013) <= 0.0000001)
+			if ( fabs(pcAbc->lfGetGlobalMinAbcDataConstFuncValue()-lfPrevFuncValue) <= 0.0000001)
 			{
-				iRet = 1;
+				iConvergenceCount++;
+				if (iConvergenceCount >= 10000)
+				{
+					iRet = 1;
+				}
 			}
+			else
+			{
+				iConvergenceCount = 0;
+			}
+			lfPrevFuncValue = pcAbc->lfGetGlobalMinAbcDataConstFuncValue();
 		}
 		else if (strcmp(pcCmd->pcGetFuncName(), "Schwefel") == 0)
 		{
-			if (fabs(pcAbc->lfGetGlobalMinAbcDataConstFuncValue() + 418.9829*pcCmd->iGetAbcVectorDimNum() ) <= 0.0000001)
+			if (fabs(pcAbc->lfGetGlobalMinAbcDataConstFuncValue()-lfPrevFuncValue) <= 0.0000001)
 			{
 				iRet = 1;
 			}
+			lfPrevFuncValue = pcAbc->lfGetGlobalMinAbcDataConstFuncValue();
 		}
 		else
 		{

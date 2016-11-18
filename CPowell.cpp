@@ -246,7 +246,7 @@ double CPowell::lfBrent( double lfAx, double lfBx, double lfCx, double lfTol, do
 			}
 			else
 			{
-				lfD = lfP /lfQ;
+				lfD = lfP/lfQ;
 				lfU = lfX+lfD;
 				if( lfU-lfA < lfTol2 || lfB-lfU < lfTol2 )
 					lfD = lfSgn( lfTol1, lfXm-lfX );
@@ -353,7 +353,7 @@ void CPowell::vPowell( double *plfP, double **pplfXi, int iN, double lfFtol, int
 			}
 		}
 		// I—¹”»’è
-		if (2.0*fabs(lfFp - *plfFRet) <= lfTol*(fabs(lfFp) + fabs(*plfFRet)))
+		if (2.0*fabs(lfFp - *plfFRet) <= lfFtol*(fabs(lfFp) + fabs(*plfFRet)))
 		{
 			return;
 		}
@@ -371,10 +371,10 @@ void CPowell::vPowell( double *plfP, double **pplfXi, int iN, double lfFtol, int
 			if (lfT < 0.0)
 			{
 				vLineMin( plfP, plfXit, iN, plfFRet );
-				for (j = 1; j <= iN; j++)
+				for (j = 0; j < iN; j++)
 				{
-					pplfXi[j][iBig] = pplfXi[j][iN];
-					pplfXi[j][iN] = plfXit[j];
+					pplfXi[j][iBig] = pplfXi[j][iN-1];
+					pplfXi[j][iN-1] = plfXit[j];
 				}
 			}
 		}

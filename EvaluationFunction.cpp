@@ -1572,3 +1572,68 @@ double lfQuarticFunction(double *plfX, int iGenVector)
 	}
 	return lfRes1+rnd();
 }
+
+/**
+* <PRE>
+* 　目的関数のAlpine functionの計算を実行します。
+*	 \sum^{n}_{i=1}\abs(x_{i}*\sin(x_{i})+0.1*x_{i})
+* 　大域的最適解 -10 \leq x_{i} \leq 10 x = (0,0,0,0...,0)
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2016/11/09
+* @version 0.1
+*/
+double lfAlpine(double *plfX, int iGenVector)
+{
+	double lfRes = 0.0;
+	int i;
+
+	for (i = 0; i < iGenVector; i++)
+	{
+		lfRes += fabs(plfX[i] * sin(plfX[i]) + 0.1*plfX[i]);
+	}
+	return lfRes;
+}
+
+/**
+* <PRE>
+* 　目的関数のWeierstrass functionの計算を実行します。
+*	 \sum^{n}_{i=1}\abs(x_{i}*\sin(x_{i})+0.1*x_{i})
+* 　大域的最適解 -10 \leq x_{i} \leq 10 x = (0,0,0,0...,0)
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2016/11/09
+* @version 0.1
+*/
+double lfWeierstrass(double *plfX, int iGenVector)
+{
+	double lfRes = 0.0;
+	double ikMax = 20;
+	double lfA = 0.5;
+	double lfB = 3.0;
+	double lfRes1 = 0.0;
+	double lfRes2 = 0.0;
+	double lf2pi = pi + pi;
+	double lfPowA = 1.0;
+	double lfPowB = 1.0;
+	int i;
+	int iKMax = 20;
+	double alfA[20];
+	double alfB[20];
+
+	for (i = 0; i < ikMax; i++)
+	{
+		lfPowA *= lfA;
+		lfPowB *= lfB;
+		lfRes1 += lfPowA*cos(lf2pi*lfPowB*(plfX[i] + 0.5));
+		lfRes2 += lfPowA*cos(lf2pi*lfPowB*0.5);
+		lfRes += lfRes1 - iGenVector*lfRes2;
+	}
+	return lfRes;
+}
