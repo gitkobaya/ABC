@@ -324,11 +324,19 @@ void CUndx::vUndx( double *plfParent1, double *plfParent2, double *plfParent3, d
 	}
 	lfDist1 = sqrt( lfDist1 );
 	lfDist2 = sqrt( lfDist2 );
-	lfDistTemp = lfDistTemp/(lfDist1*lfDist2);
+	lfDistTemp = lfDist1 > 0.0 && lfDist2 > 0.0 ? lfDistTemp/(lfDist1*lfDist2) : lfDistTemp/100000000.0;
 	lfDist3 = lfDist2*sqrt(1.0-lfDistTemp*lfDistTemp);
 	lfSigma1 = lfDist1*lfAlpha;
 	lfSigma2 = lfDist3*lfBeta/sqrt((double)iGenVector);
 
+#if 0
+	for (i = 0; i < iGenVector; i++)
+	{
+		// ここで、z1,z2を生成します。z1=N(0,σ_{1}^2), z2=N(0,σ_{2}^2)なので、これに従って生成します。
+		//		stlTempT1.push_back(grand(lfSigma1, 0.0));
+		stlTempT2.push_back(grand(lfSigma2, 0.0));
+	}
+#endif
 	lfProduct = 0.0;
 	for( i = 0; i < iGenVector; i++ )
 	{

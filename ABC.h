@@ -5,6 +5,7 @@
 #include"CUndx.h"
 #include"CRex.h"
 #include"CPowell.h"
+#include"ConstraintCondition.h"
 
 #include<string>
 
@@ -200,6 +201,27 @@ public:
 	void vReleaseCallConstraintFunction();
 
 	/**
+	* <PRE>
+	* 　処理したい制約条件の登録を行います。
+	* </PRE>
+	* @param pflfConstarintCondition コールバック関数
+	* @author kobayashi
+	* @since 2017/3/8
+	* @version 0.1
+	*/
+	void vSetConstraintCondition(void(*pfvConstraintCondition)(double *plfData, int iVectorLen));
+
+	/**
+	* <PRE>
+	* 　登録したコールバック関数の解法処理を実行します。
+	* </PRE>
+	* @author kobayashi
+	* @since 2017/3/8
+	* @version 0.1
+	*/
+	void vReleaseCallConstraintCondition();
+
+	/**
 	 * <PRE>
 	 * 　粒子を一様乱数で初期化します。
 	 * </PRE>
@@ -210,6 +232,18 @@ public:
 	 */
 	void vSetRandom( double lfRange );
 
+	/**
+	* <PRE>
+	* 　人工蜂コロニーの初期位置を中心0の半径range内で一様乱数により設定します。
+	* </PRE>
+	* @param lfRangeMin 粒子の初期位置の出現範囲の最小値
+	* @param lfRangeMax 粒子の初期位置の出現範囲の最大値
+	* @author kobayashi
+	* @since 2017/3/7
+	* @version 0.1
+	*/
+	void vSetRandom(double lfRangeMin, double lfRangeMax);
+		
 	/**
 	 * <PRE>
 	 * 　粒子を一様乱数で初期化します。(ModifiedAbc法用)
@@ -244,6 +278,18 @@ public:
 	*/
 	void vSetRandomUndx(double lfRange);
 
+	/**
+	* <PRE>
+	* 　人工蜂コロニーの初期位置をUNDXを用いて算出して設定します。
+	* </PRE>
+	* @param lfRangeMin 粒子の初期位置の出現範囲の最小値
+	* @param lfRangeMax 粒子の初期位置の出現範囲の最大値
+	* @author kobayashi
+	* @since 2017/03/08
+	* @version 0.1
+	*/
+	void vSetRandomUndx(double lfRangeMin, double lfRangeMax);
+		
 	/**
 	* <PRE>
 	* 　人工蜂コロニーの初期位置をREX法を適用して設定します。
@@ -474,11 +520,42 @@ public:
 	void vPAbc( int iUpdateCount );
 
 	/**
+	* <PRE>
+	* 　人工蜂コロニー最適化法（交叉を導入した手法）を実行します。
+	*   完全自作アレンジ（ベースはBest-so-Far ABC法）
+	* </PRE>
+	* @author kobayashi
+	* @since 2016/11/18
+	* @version 0.1
+	*/
+	void vBFRexAbc();
+		
+	/**
+	* <PRE>
+	* 　人工蜂コロニー最適化法（交叉を導入した手法）を実行します。
+	*   完全自作アレンジ（ベースはBest-so-Far ABC法）
+	* </PRE>
+	* @author kobayashi
+	* @since 2016/11/18
+	* @version 0.1
+	*/
+	void vBFARexAbc();
+
+	/**
 	  *<PRE>
 	  * コールバック関数の定義です。
+	  * 目的関数を定義します。
 	  *</PRE>
 	  */
 	double (*pflfObjectiveFunction)( double *pplfData, int iVectorLen );
+
+	/**
+	*<PRE>
+	* コールバック関数の定義です。
+	* 制約条件を定義します。
+	*</PRE>
+	*/
+	void(*pfvConstraintCondition)(double *pplfData, int iVectorLen);
 
 	/**
 	 * <PRE>
@@ -944,6 +1021,7 @@ private:
 	double *plfLocalMaxAbcData;			// 局所最適解を表す粒子のデータ
 	double *plfLocalMinAbcData;			// 局所最適解を表す粒子のデータ
 	double lfLocalMaxAbcData;			// 局所最適値
+	double lfLocalMinAbcData;			// 局所最適値
 	double **pplfLocalMaxAbcData;		// 局所最適解を表す粒子ごとの最大値を格納するデータ
 	double **pplfLocalMinAbcData;		// 局所最適解を表す粒子ごとの最小値を格納するデータ
 	double *plfLocalMaxObjectiveAbcData;// 局所最適解を表す粒子のデータ
@@ -956,6 +1034,8 @@ private:
 	double *plfVelocity;				// ルーレット選択により選択する速度ベクトル
 	double *plfCrossOverData;			// 交叉一時格納用配列
 	double lfSolveRange;				// 出力範囲
+	double lfSolveRangeMin;				// 出力範囲の最小値
+	double lfSolveRangeMax;				// 出力範囲の最大値
 	double lfFitInit;					// 平均評価値
 	double lfFitCurrentBest;			// 現在の最良値の適応度
 	double *plfXnew1;					// Memetic Algorithm用更新配列

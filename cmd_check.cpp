@@ -12,6 +12,7 @@ CCmdCheck::CCmdCheck()
 	iAbcVectorDimNum = 0;		// 各粒子群の特徴ベクトル
 	iAbcMethod = 0;			// 粒子群最適化法の手法設定
 	pcFuncName = NULL;		// 使用する関数用フラグ
+	pcConditionName = NULL;		// 使用する制約条件フラグ
 	iOutputFlag = 0;		// 結果出力用フラグ
 	iIntervalMinNum = 0;		// 最低反復回数
 	iAbcSearchNum = 0;		// employ beeの総数
@@ -23,6 +24,7 @@ CCmdCheck::CCmdCheck()
 	lfAlpha = 0.0;			// Undxのα
 	lfBeta = 0.0;			// Undxのβ
 	iCrossOverNum = 0;		// 交叉回数
+	lfRangeMin = lfRangeMax = lfRange = 0.0;
 }
 
 CCmdCheck::~CCmdCheck()
@@ -162,12 +164,38 @@ long CCmdCheck::lCommandCheck( int argc, char* argv[] )
 			strcpy( pcFuncName, argv[i+1] );
 			i++;
 		}
+		/* 評価を実施する目的関数 */
+		else if (strcmp(argv[i], "-cc") == 0)
+		{
+			lRet = lCommandErrorCheck(argv[i]);
+			if (lRet != 0) return lRet;
+			pcConditionName = new char[strlen(argv[i + 1]) + 1];
+			memset(pcConditionName, '\0', sizeof(pcConditionName));
+			strcpy(pcConditionName, argv[i + 1]);
+			i++;
+		}
 		/* 解探索範囲 */
 		else if( strcmp( argv[i], "-r" ) == 0 )
 		{
 			lRet = lCommandErrorCheck( argv[i] );
 			if( lRet != 0 ) return lRet;
 			lfRange = atof( argv[i+1] );
+			i++;
+		}
+		/* 解探索範囲 */
+		else if (strcmp(argv[i], "-rmin") == 0)
+		{
+			lRet = lCommandErrorCheck(argv[i]);
+			if (lRet != 0) return lRet;
+			lfRangeMin = atof(argv[i + 1]);
+			i++;
+		}
+		/* 解探索範囲 */
+		else if (strcmp(argv[i], "-rmax") == 0)
+		{
+			lRet = lCommandErrorCheck(argv[i]);
+			if (lRet != 0) return lRet;
+			lfRangeMax = atof(argv[i + 1]);
 			i++;
 		}
 		/* 結果出力 */
@@ -269,7 +297,7 @@ long CCmdCheck::lCommandCheck( int argc, char* argv[] )
 long CCmdCheck::lCommandErrorCheck( char *argv )
 {
 	long lRet = 0L;
-	if( ( strcmp( argv, "-gn" ) == 0 ) 	||
+	if( ( strcmp( argv, "-gn" ) == 0 ) 		||
 		( strcmp( argv, "-an" ) == 0 )		||
 		( strcmp( argv, "-vn" ) == 0 )		||
 		( strcmp( argv, "-sn" ) == 0 )  	||
@@ -281,7 +309,10 @@ long CCmdCheck::lCommandErrorCheck( char *argv )
 		( strcmp( argv, "-cp" ) == 0 )		||	
 		( strcmp( argv, "-abcm" ) == 0 )	||
 		( strcmp( argv, "-f" ) == 0 )		||
+		( strcmp( argv, "-cc" ) == 0)		||
 		( strcmp( argv, "-r" ) == 0 )		||
+		( strcmp(argv, "-rmin") == 0)		||
+		( strcmp(argv, "-rmax") == 0)		||
 		( strcmp( argv, "-out" ) == 0 ) 	||
 		( strcmp( argv, "-cr" ) == 0 )		||
 		( strcmp( argv, "-alpha" ) == 0 )	||
@@ -315,7 +346,7 @@ void CCmdCheck::vHelp()
 {
 	printf("ABC法計算\n");
 	printf("使用方法\n");
-	printf("abc [-gn][-an][-vn][-sn][-cl][-usn][-fa][-fb][-imn][-cp][-abcm][-f][-r][-out]\n");
+	printf("abc [-gn][-an][-vn][-sn][-cl][-usn][-fa][-fb][-imn][-cp][-abcm][-f][-cc][-r][-rmin][-rmax][-out]\n");
 	printf("-gn 更新回数\n");
 	printf("-an colony数)\n");
 	printf("-vn 蜂のベクトル数\n");
@@ -328,7 +359,10 @@ void CCmdCheck::vHelp()
 	printf("-cp 解への収束状況パラメータ\n");
 	printf("-abcm ABC法の手法設定\n");
 	printf("-f 目的関数の設定\n");
+	printf("-f 制約条件の設定\n");
 	printf("-r 目的関数の解探索範囲\n");
+	printf("-rmin 目的関数の解探索範囲の最小値\n");
+	printf("-rmax 目的関数の解探索範囲の最大値\n");
 	printf("-cr 交叉回数\n");
 	printf("-alpha Undxのα\n");
 	printf("-beta Undxのβ\n");
@@ -380,6 +414,11 @@ char* CCmdCheck::pcGetFuncName()
 	return pcFuncName;
 }
 
+char* CCmdCheck::pcGetConditionName()
+{
+	return pcConditionName;
+}
+
 int CCmdCheck::iGetGenerationNumber()
 {
 	return iGenerationNumber;
@@ -408,6 +447,16 @@ int CCmdCheck::iGetOutputFlag()
 double CCmdCheck::lfGetRange()
 {
 	return lfRange;
+}
+
+double CCmdCheck::lfGetRangeMin()
+{
+	return lfRangeMin;
+}
+
+double CCmdCheck::lfGetRangeMax()
+{
+	return lfRangeMax;
 }
 
 int CCmdCheck::iGetCrossOverNum()
@@ -449,6 +498,8 @@ int CCmdCheck::iGetFinishFlag()
 {
 	return iFinishFlag;
 }
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////CCmdCheckExceptionクラス

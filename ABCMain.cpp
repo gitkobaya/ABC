@@ -3,10 +3,12 @@
 #include<iostream>
 #include"ABC.h"
 #include"EvaluationFunction.h"
+#include"ConstraintCondition.h"
 #include"cmd_check.h"
 
 extern void vInitialize( CCmdCheck *pcCmd, CAbc *pcAbc );
 extern void vSetObjectiveFunction( CCmdCheck *pcCmd, CAbc *pcAbc );
+extern void vSetConstraintCondition(CCmdCheck *pcCmd, CAbc *pcAbc);
 extern void vStartAbc( CCmdCheck *pcCmd, CAbc *pcAbc, int iLoc );
 extern void vTerminate( CAbc *pcAbc );
 extern void vOutputData( CCmdCheck *pcCmd, CAbc *pcAbc, int iLoc );
@@ -31,7 +33,9 @@ int main(int argc, char* argv[])
 			// 目的関数を設定します。
 			vSetObjectiveFunction( &cmd, &abc );
 
-
+			// 制約条件を設定します。
+			vSetConstraintCondition(&cmd, &abc);
+			
 			// 初期値を設定します。
 			vSetRandom( &cmd, &abc );
 						
@@ -217,6 +221,18 @@ void vInitialize( CCmdCheck *pcCmd, CAbc *pcAbc )
 		pcAbc->vInitialize(iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iCrossOverNum, lfAlpha, lfBeta);
 		pcAbc->vSetRange(lfRange);
 	}
+	// REXを混ぜたハイブリッドABC法(提案手法3)
+	else if (pcCmd->iGetAbcMethod() == 15)
+	{
+		pcAbc->vInitialize(iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iIntervalMinNum, iAbcUpperSearchNum, lfConvergenceParam, lfFitBound, lfFitAccuracy, iParentNumber, iChildrenNumber, iUpperEvalChildrenNumber, lfLearningRate);
+		pcAbc->vSetRange(lfRange);
+	}
+	// AREXを混ぜたハイブリッドABC法(提案手法4)
+	else if (pcCmd->iGetAbcMethod() == 16)
+	{
+		pcAbc->vInitialize(iGenerationNumber, iAbcDataNum, iAbcVectorDimNum, iAbcSearchNum, iAbcLimitCount, iIntervalMinNum, iAbcUpperSearchNum, lfConvergenceParam, lfFitBound, lfFitAccuracy, iParentNumber, iChildrenNumber, iUpperEvalChildrenNumber, lfLearningRate);
+		pcAbc->vSetRange(lfRange);
+	}
 }
 
 /**
@@ -235,6 +251,9 @@ void vTerminate( CAbc *pcAbc )
 	// 目的関数のアンインストールを実行します。
 	pcAbc->vReleaseCallConstraintFunction();
 	
+	// 制約条件のアンインストールを実行します。
+	pcAbc->vReleaseCallConstraintCondition();
+
 	// 粒子群最適化の処理を終了します。
 	pcAbc->vTerminate();
 }
@@ -299,11 +318,13 @@ void vSetObjectiveFunction( CCmdCheck *pcCmd, CAbc *pcAbc )
 	{
 		pcAbc->vSetConstraintFunction( lfModified3rdDeJongsFunc );
 	}
-	else if( strcmp(pcCmd->pcGetFuncName(), "4th-de-jongs" ) == 0 )
+	else if( ( strcmp(pcCmd->pcGetFuncName(), "4th-de-jongs" ) == 0 ) || 
+		     ( strcmp(pcCmd->pcGetFuncName(), "QuarticFunction") == 0) )
 	{
 		pcAbc->vSetConstraintFunction( lf4thDeJongsFunc );
 	}
-	else if( strcmp(pcCmd->pcGetFuncName(), "modified-4th-de-jongs" ) == 0 )
+	else if( ( strcmp(pcCmd->pcGetFuncName(), "modified-4th-de-jongs" ) == 0)  || 
+		     ( strcmp(pcCmd->pcGetFuncName(), "QuarticGussianFunction") == 0) )
 	{
 		pcAbc->vSetConstraintFunction( lfModified4thDeJongsFunc );
 	}
@@ -431,10 +452,6 @@ void vSetObjectiveFunction( CCmdCheck *pcCmd, CAbc *pcAbc )
 	{
 		pcAbc->vSetConstraintFunction( lfSalomonProblem );
 	}
-	else if (strcmp(pcCmd->pcGetFuncName(), "QuarticFunction") == 0)
-	{
-		pcAbc->vSetConstraintFunction( lfQuarticFunction );
-	}
 	else if (strcmp(pcCmd->pcGetFuncName(), "Alpine") == 0)
 	{
 		pcAbc->vSetConstraintFunction( lfAlpine );
@@ -443,8 +460,42 @@ void vSetObjectiveFunction( CCmdCheck *pcCmd, CAbc *pcAbc )
 	{
 		pcAbc->vSetConstraintFunction(lfWeierstrass);
 	}
+	else if (strcmp(pcCmd->pcGetFuncName(), "nedocs") == 0)
+	{
+		pcAbc->vSetConstraintFunction(lfNedocs);
+	}
 	else
 	{
+	}
+}
+
+/**
+*<PRE>
+*  制約条件を設定します。
+*  特に指定していない場合は何も制約条件をかけないようにします。
+*  ver 0.1 初版
+*</PRE>
+* @param pcCmd	コマンドチェッククラス
+* @param pcAbc	ABCアルゴリズムを実行するクラスインスタンス
+* @throw CAbcException
+* @author kobayashi
+* @since 0.1 2017/03/08
+* @version 0.1
+*/
+void vSetConstraintCondition(CCmdCheck *pcCmd, CAbc *pcAbc)
+{
+	if (pcCmd->pcGetConditionName() == NULL)
+	{
+		pcAbc->vSetConstraintCondition(vNone);
+	}
+	else if (strcmp(pcCmd->pcGetConditionName(), "nedocs") == 0)
+	{
+		// NEDOCSはすべて正の値を指定することからここでリミッターを設定します。
+		pcAbc->vSetConstraintCondition(vNedocsLimitter);
+	}
+	else
+	{
+		pcAbc->vSetConstraintCondition(vNone);
 	}
 }
 
@@ -520,7 +571,11 @@ void vStartAbc( CCmdCheck *pcCmd, CAbc *pcAbc, int iLoc )
 	}
 	else if (pcCmd->iGetAbcMethod() == 15)
 	{
-//		pcAbc->vOLAbc();
+		pcAbc->vBFRexAbc();
+	}
+	else if (pcCmd->iGetAbcMethod() == 16)
+	{
+		pcAbc->vBFARexAbc();
 	}
 	else
 	{
@@ -612,7 +667,7 @@ void vSetRandom( CCmdCheck *pcCmd, CAbc *pcAbc )
 	}
 	else if( pcCmd->iGetAbcMethod() == 1 )
 	{
-		pcAbc->vSetRandom( pcCmd->lfGetRange() );
+		pcAbc->vSetRandom( pcCmd->lfGetRangeMin(), pcCmd->lfGetRangeMax() );
 	}
 	else if(pcCmd->iGetAbcMethod() == 3 || pcCmd->iGetAbcMethod() == 12 || pcCmd->iGetAbcMethod() == 4 || pcCmd->iGetAbcMethod() == 5 || pcCmd->iGetAbcMethod() == 6 || pcCmd->iGetAbcMethod() == 10 || pcCmd->iGetAbcMethod() == 11 || pcCmd->iGetAbcMethod() == 13 || pcCmd->iGetAbcMethod() == 14 )
 	{
@@ -622,13 +677,14 @@ void vSetRandom( CCmdCheck *pcCmd, CAbc *pcAbc )
 	{
 		pcAbc->vSetRandomUndx(pcCmd->lfGetRange());
 	}
-	else if (pcCmd->iGetAbcMethod() == 8)
+	else if (pcCmd->iGetAbcMethod() == 8 || pcCmd->iGetAbcMethod() == 15)
 	{
 		pcAbc->vSetRandomRex(pcCmd->lfGetRange());
 	}
-	else if (pcCmd->iGetAbcMethod() == 9)
+	else if (pcCmd->iGetAbcMethod() == 9 || pcCmd->iGetAbcMethod() == 16 )
 	{
-		pcAbc->vSetRandomARex(pcCmd->lfGetRange());
+//		pcAbc->vSetRandomARex(pcCmd->lfGetRange());
+		pcAbc->vSetRandom(pcCmd->lfGetRange());
 	}
 }
 
@@ -663,7 +719,8 @@ int iFinisher( CCmdCheck *pcCmd, CAbc *pcAbc, int iCount )
 	{
 		if (strcmp(pcCmd->pcGetFuncName(), "michaelwicz") == 0)
 		{
-			if ( fabs(pcAbc->lfGetGlobalMinAbcDataConstFuncValue()-lfPrevFuncValue) <= 0.0000001)
+//			if ( fabs(pcAbc->lfGetGlobalMinAbcDataConstFuncValue()-lfPrevFuncValue) <= 0.0000001)
+			if (0)
 			{
 				iConvergenceCount++;
 				if (iConvergenceCount >= 10000)
@@ -677,17 +734,26 @@ int iFinisher( CCmdCheck *pcCmd, CAbc *pcAbc, int iCount )
 			}
 			lfPrevFuncValue = pcAbc->lfGetGlobalMinAbcDataConstFuncValue();
 		}
+#if 1
 		else if (strcmp(pcCmd->pcGetFuncName(), "Schwefel") == 0)
 		{
-			if (fabs(pcAbc->lfGetGlobalMinAbcDataConstFuncValue()-lfPrevFuncValue) <= 0.0000001)
+			if (fabs(pcAbc->lfGetGlobalMinAbcDataConstFuncValue()) <= 0.0000001)
 			{
-				iRet = 1;
+				iConvergenceCount++;
+				if (iConvergenceCount >= 10000)
+					iRet = 1;
+			}
+			else
+			{
+				iConvergenceCount = 0;
 			}
 			lfPrevFuncValue = pcAbc->lfGetGlobalMinAbcDataConstFuncValue();
 		}
+#endif
 		else
 		{
 			if (fabs(pcAbc->lfGetGlobalMinAbcDataConstFuncValue()) <= 0.0000001)
+//			if (fabs(pcAbc->lfGetGlobalMinAbcDataConstFuncValue()) <= 1e-4)
 			{
 				iRet = 1;
 			}

@@ -71,12 +71,14 @@ double lfEllipsoid( double *plfX, int iVectorLen )
  * 　目的関数のHyper-Ellipsoid関数の計算を実行します。
  * 　-1 <= x_i <= 1 f_i(x_i)=0,  x_i=0, i = 1,2,･･･,n
  * 　f(x) = sum(i^{2}*x_{i}^{2})
+ *   ver 0.1 2015/06/12 初期版
+ *   ver 0.2 2016/11/30 実装ミスを修正
  * </PRE>
  * @param plfX			引数
  * @param iVectorLen	引数の次元数
  * @author kobayashi
  * @since 2015/6/12
- * @version 1.0
+ * @version 0.2
  */
 double lfHyperEllipsoid( double *plfX, int iVectorLen )
 {
@@ -84,7 +86,7 @@ double lfHyperEllipsoid( double *plfX, int iVectorLen )
 	double lfRes = 0.0;
 	for( i = 0;i < iVectorLen; i++ )
 	{
-		lfRes += (double)i*(double)i*plfX[i]*plfX[i];
+		lfRes += (double)(i+1)*(double)(i+1)*plfX[i]*plfX[i];
 	}
 	return lfRes;
 }
@@ -94,12 +96,14 @@ double lfHyperEllipsoid( double *plfX, int iVectorLen )
  * 　目的関数のAxis Parallel hyper-ellipsoid関数の計算を実行します。
  * 　-5.12 <= x_i <= 5.12,  f_{i}(x_{i})=0,  x_{i}=0, i = 1,2,･･･,n
  * 　f(x) = sum(i*x_{i}^{2})
+ *   ver 0.1 2015/06/12 初期版
+ *   ver 0.2 2016/11/30 実装ミスを修正
  * </PRE>
  * @param plfX			引数
  * @param iVectorLen	引数の次元数
  * @author kobayashi
  * @since 2015/6/12
- * @version 1.0
+ * @version 0.2
  */
 double lfAxisParallelHyperEllipsoid( double *plfX, int iVectorLen )
 {
@@ -107,7 +111,7 @@ double lfAxisParallelHyperEllipsoid( double *plfX, int iVectorLen )
 	double lfRes = 0.0;
 	for( i = 0;i < iVectorLen; i++ )
 	{
-		lfRes += (double)i*plfX[i]*plfX[i];
+		lfRes += (double)(i+1)*plfX[i]*plfX[i];
 	}
 	return lfRes;
 }
@@ -372,14 +376,17 @@ double lfModified3rdDeJongsFunc( double *plfX, int iVectorLen )
 
 /**
  * <PRE>
- * 　目的関数の4th DeJong's Function関数の計算を実行します。
- *   大域的最適解 Xi = 1 のときf(Xi) = 0
+ * 　目的関数の4th DeJong's Function( Quartic Function )関数の計算を実行します。
+ *	 \sum^{n}_{i=1}(ix_{i}^4)
+ * 　大域的最適解 -1.28 \leq x_{i} \leq 1.28 x = (0,0,0,0...,0)
+ *  ver 0.1 初期版
+ *  ver 0.2 2016/12/05 実装ミスを修正
  * </PRE>
  * @param plfX			引数
  * @param iVectorLen	引数の次元数
  * @author kobayashi
  * @since 2015/6/12
- * @version 1.0
+ * @version 0.2
  */
 double lf4thDeJongsFunc( double *plfX, int iVectorLen )
 {
@@ -389,21 +396,25 @@ double lf4thDeJongsFunc( double *plfX, int iVectorLen )
 	for( i = 0;i < iVectorLen; i++ )
 	{
 		lfXX = plfX[i]*plfX[i];
-		lfRes += (double)i*lfXX*lfXX;
+		lfRes += (double)(i+1)*lfXX*lfXX;
 	}
 	return lfRes;
 }
 
 /**
  * <PRE>
- * 　目的関数のModified 4th DeJong's Function関数の計算を実行します。
- *   大域的最適解 Xi = 1 のときf(Xi) = 0
+ * 　的関数のModified 4th DeJong's Function(Quartic Gussian Function)関数の計算を実行します。
+ *  大域的最適解 Xi = 1 のときf(Xi) = 0
+ *	 \sum^{n}_{i=1}(ix_{i}^4)+random[0,1)
+ * 　大域的最適解 -1.28 \leq x_{i} \leq 1.28 x = (0,0,0,0...,0)
+ *  ver 0.1 初期版
+ *  ver 0.2 2016/12/05 実装ミスを修正
  * </PRE>
  * @param plfX			引数
  * @param iVectorLen	引数の次元数
  * @author kobayashi
  * @since 2015/10/16
- * @version 1.0
+ * @version 0.2
  */
 double lfModified4thDeJongsFunc( double *plfX, int iVectorLen )
 {
@@ -412,10 +423,17 @@ double lfModified4thDeJongsFunc( double *plfX, int iVectorLen )
 	double lfXX;
 	for( i = 0;i < iVectorLen; i++ )
 	{
-		lfXX = plfX[i]*plfX[i];
-		lfRes += (double)i*lfXX*lfXX + rnd();
+//		if (-1.28 <= plfX[i] && plfX[i] <= 1.28)
+		{
+			lfXX = plfX[i] * plfX[i];
+			lfRes += (double)(i + 1)*lfXX*lfXX;
+		}
+//		else
+		{
+//			lfRes += (double)(i + 1)*1.28*1.28*1.28*1.28;
+		}
 	}
-	return lfRes;
+	return lfRes+rnd();
 }
 
 /**
@@ -518,16 +536,18 @@ double lfAckley( double *plfX, int iVectorLen )
 /**
  * <PRE>
  * 　目的関数のEasom's Function関数の計算を実行します。
+ *   f(x) = -\cos(x_{1})\cos(x_{2})\exp(-(x_{1}-\pi)^{2}-(x_{2}-\pi)^{2})
  *   大域的最適解 Xi = pi のときf(Xi) = -1
  *   2次元関数であることに注意。
  *   ver 0.1 初期バージョン
  *   ver 0.2 2016/9/27 実装していなかったので実装
+ *   ver 0.3 2016/11/29 実装ミスを修正
  * </PRE>
  * @param plfX			引数
  * @param iVectorLen	引数の次元数
  * @author kobayashi
  * @since 2015/10/16
- * @version 0.2
+ * @version 0.3
  */
 double lfEasoms( double *plfX, int iVectorLen )
 {
@@ -538,10 +558,9 @@ double lfEasoms( double *plfX, int iVectorLen )
 	lfDiff1 = plfX[0]-pi;
 	lfDiff2 = plfX[1]-pi;
 	
-	lfRes = (iVectorLen==2)*cos(plfX[0])*cos(plfX[1])*exp(-(lfDiff1*lfDiff1+lfDiff2*lfDiff2));
-	return lfRes;
+	lfRes = cos(plfX[0])*cos(plfX[1])*exp(-(lfDiff1*lfDiff1+lfDiff2*lfDiff2));
+	return -lfRes;
 }
-
 
 /**
  * <PRE>
@@ -580,15 +599,17 @@ double lfExtendEasoms( double *plfX, int iVectorLen )
 /**
  * <PRE>
  * 　目的関数のEquality-Constrained 関数の計算を実行します。
+ *   -\sqrt(n)^{n}\PRO^{n}_i=1 x_{i}
  *   大域的最適解 Xi = 1.0/\sqrt(n) のときf(Xi) = -1 (0 <= Xi <= 1.0)
  *   ver 0.1 初期バージョン
  *   ver 0.2 2016/9/27 関数に誤りがあり修正
+ *   ver 0.3 2016/12/5 実装ミスのため修正
  * </PRE>
  * @param plfX			引数
  * @param iVectorLen	引数の次元数
  * @author kobayashi
  * @since 2015/6/6
- * @version 0.1
+ * @version 0.3
  */
 double lfEqualityConstrained( double *plfX, int iVectorLen )
 {
@@ -596,10 +617,11 @@ double lfEqualityConstrained( double *plfX, int iVectorLen )
 	double lfRes  = 1.0;
 	double lfSqrt;
 
-	lfSqrt = sqrt((double)iVectorLen);
+	lfSqrt = sqrt(1.0/(double)iVectorLen);
 	for( i = 0; i < iVectorLen; i++ )
 	{
-		lfRes *= lfSqrt*plfX[i];
+		if (0.0 <= plfX[i] && plfX[i] <= 1.0)
+			lfRes *= lfSqrt*plfX[i];
 	}
 	return -lfRes;
 }
@@ -656,7 +678,10 @@ double lfMichaelwicz( double *plfX, int iVectorLen )
 	m = 10;
 	for( i = 0; i < iVectorLen; i++ )
 	{
-		lfRes += sin(plfX[i])*pow(sin((double)i*plfX[i]*plfX[i]/pi),2.0*m);
+		if (0.0 <= plfX[i] && plfX[i] <= pi)
+			lfRes += sin(plfX[i])*pow(sin((double)(i + 1)*plfX[i] * plfX[i] / pi), 2.0*m);
+		else
+			lfRes += 0.0;
 	}
 	return -lfRes;
 }
@@ -815,9 +840,10 @@ double lfSchwefel( double *plfX, int iVectorLen )
 	double lfRes = 0.0;
 	for( i = 0;i < iVectorLen; i++ )
 	{
-		lfRes += ( plfX[i]*sin(sqrt(fabs(plfX[i]))) );
+		if( -512 <= plfX[i] && plfX[i] <= 512 )	
+			lfRes += ( -plfX[i]*sin(sqrt(fabs(plfX[i]))) );
 	}
-	return -lfRes;
+	return 418.982887272433369*iVectorLen-lfRes;
 }
 
 /**
@@ -842,7 +868,7 @@ double lfSixHumpCamelBack( double *plfX, int iVectorLen )
 	double lfXX2;
 	lfXX1 = plfX[0]*plfX[0];
 	lfXX2 = plfX[1]*plfX[1];
-	lfRes = (iVectorLen==2)*( 4.0-2.1*lfXX1+1.0/3.0*lfXX1*lfXX1 )*lfXX1 + plfX[0]*plfX[1] + 4.0*(lfXX2-1.0)*lfXX2;
+	lfRes = ( 4.0-2.1*lfXX1+lfXX1*lfXX1/3.0 )*lfXX1 + plfX[0]*plfX[1] + 4.0*(lfXX2-1.0)*lfXX2;
 	return lfRes;
 }
 
@@ -872,9 +898,9 @@ double lfShubert( double *plfX, int iVectorLen )
 
 	for( i = 0;i < n; i++ )
 	{
-		iData = i+1;
-		lfResX += (double)i*cos(i+iData*plfX[0]);
-		lfResY += (double)i*cos(i+iData*plfX[1]);
+		iData = i+2;
+		lfResX += (double)(i+1)*cos(i+1+iData*plfX[0]);
+		lfResY += (double)(i+1)*cos(i+1+iData*plfX[1]);
 	}
 	return lfResX*lfResY;
 }
@@ -886,12 +912,13 @@ double lfShubert( double *plfX, int iVectorLen )
  *   2次元関数です。
  *   ver 0.1 初期バージョン
  *   ver 0.2 条件を追加(2次元以外はすべて0)
+ *   ver 0.3 2016/11/29 関数の誤りを修正
  * </PRE>
  * @param plfX			引数
  * @param iVectorLen	引数の次元数
  * @author kobayashi
  * @since 2015/6/17
- * @version 1.0
+ * @version 0.3
  */
 double lfGoldsteinPrice( double *plfX, int iVectorLen )
 {
@@ -906,7 +933,8 @@ double lfGoldsteinPrice( double *plfX, int iVectorLen )
 	lfX2_4 = plfX[1]*plfX[1];
 	lfX2_5 = plfX[0]*plfX[1];
 
-	lfRes = (iVectorLen==2)*( 1.0+lfX2_1*( 19.0-14.0*plfX[0]+3*lfX2_3-14*plfX[1]+6*lfX2_5+3*lfX2_4 ) ) * ( 30.0+lfX2_2*( 18.0-32.0*plfX[0]+12.0*lfX2_3+48.0*plfX[1]-36.0*lfX2_5+27.0*lfX2_2) );
+	lfRes = ( 1.0+lfX2_1*( 19.0-14.0*plfX[0]+3*lfX2_3-14*plfX[1]+6*lfX2_5+3*lfX2_4 ) ) *
+			( 30.0+lfX2_2*( 18.0-32.0*plfX[0]+12.0*lfX2_3+48.0*plfX[1]-36.0*lfX2_5+27.0*lfX2_4) );
 
 	return lfRes;
 }
@@ -915,12 +943,14 @@ double lfGoldsteinPrice( double *plfX, int iVectorLen )
  * <PRE>
  * 　目的関数のBranins's rcos 関数の計算を実行します。(2次元関数)
  * 　大域的最適解 (x_{1},x_{2})=0.397887 f(x_{1},x_{2})=(-π,12.275), (π,2.275) (9.42478,2.475)
+ *   ver 0.1 2015/6/17 初期版
+ *   ver 0.2 2016/11/29 実装誤りの修正
  * </PRE>
  * @param plfX			引数
  * @param iVectorLen	引数の次元数
  * @author kobayashi
  * @since 2015/6/17
- * @version 1.0
+ * @version 0.2
  */
 double lfBraninsRCos( double *plfX, int iVectorLen )
 {
@@ -934,10 +964,10 @@ double lfBraninsRCos( double *plfX, int iVectorLen )
 	lfD = 6.0;
 	lfE = 10.0;
 	lfF = 1.0/(8.0*pi);
-	lfX2_1 = plfX[1]-lfB*plfX[0]*plfX[0]+lfC*plfX[1]-lfD;
+	lfX2_1 = plfX[1]-lfB*plfX[0]*plfX[0]+lfC*plfX[0]-lfD;
 	lfX2_1 *= lfX2_1;
 
-	lfRes = lfA*lfX2_1 + lfE*(1.0-lfF)*cos(plfX[1]) + lfE;
+	lfRes = lfA*lfX2_1 + lfE*(1.0-lfF)*cos(plfX[0]) + lfE;
 
 	return lfRes;
 }
@@ -967,6 +997,7 @@ double lfLangermann( double *plfX, int iVectorLen )
 
 	for( i = 0;i < M; i++ )
 	{
+		lfRes1 = lfRes2 = 0.0;
 		for( j = 0;j < iVectorLen; j++ )
 		{
 			lfRes1 += (plfX[j]-pplfA[i][j])*(plfX[j]-pplfA[i][j]);
@@ -999,7 +1030,7 @@ double lfDropWave( double *plfX, int iVectorLen )
 	double lfDist;
 
 	lfDist = plfX[0]*plfX[0]+plfX[1]*plfX[1];
-	lfRes = (iVectorLen==2)*( 1.0+cos(12.0*sqrt(lfDist) ) )/( 0.5*lfDist+2.0 );
+	lfRes = ( 1.0+cos(12.0*sqrt(lfDist) ) )/( 0.5*lfDist+2.0 );
 	return lfRes;
 }
 
@@ -1544,37 +1575,6 @@ double lfSalomonProblem(double *plfX, int iGenVector)
 
 /**
 * <PRE>
-* 　目的関数のQuartic functionの計算を実行します。
-*	 \sum^{n}_{i=1}(ix_{i}^4)+random[0,1)
-* 　大域的最適解 -1.28 \leq x_{i} \leq 1.28 x = (0,0,0,0...,0)
-*   ver 0.1 初版
-* </PRE>
-* @param plfX			引数
-* @param iVectorLen	引数の次元数
-* @author kobayashi
-* @since 2016/11/09
-* @version 0.1
-*/
-double lfQuarticFunction(double *plfX, int iGenVector)
-{
-	double lfRes1 = 0.0;
-	double lfRes2 = 0.0;
-	double lfRes4 = 0.0;
-	double lfXX1 = 0.0;
-	double lfXX2 = 0.0;
-	int i;
-
-	for (i = 0; i < iGenVector; i++)
-	{
-		lfXX1 = plfX[i] * plfX[i];
-		lfXX2 = lfXX1*lfXX1;
-		lfRes1 += i*lfXX1;
-	}
-	return lfRes1+rnd();
-}
-
-/**
-* <PRE>
 * 　目的関数のAlpine functionの計算を実行します。
 *	 \sum^{n}_{i=1}\abs(x_{i}*\sin(x_{i})+0.1*x_{i})
 * 　大域的最適解 -10 \leq x_{i} \leq 10 x = (0,0,0,0...,0)
@@ -1635,5 +1635,45 @@ double lfWeierstrass(double *plfX, int iGenVector)
 		lfRes2 += lfPowA*cos(lf2pi*lfPowB*0.5);
 		lfRes += lfRes1 - iGenVector*lfRes2;
 	}
+	return lfRes;
+}
+
+
+/**
+* <PRE>
+* 　救急部門における混雑度合いを表した評価指標であるNEDOCSの計算を実行します。
+*	 NEDOCS = -20 + 85.8*\dfrac{Total patient}{ED beds} + 600*\dfrac{admits}{hospital beds}+13.4*vetilators+0.93*(longest admit)+5.64*(Last bed time)
+* 　最小値 -20.0 各変数が0の場合 次元数は7次元
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2017/03/07
+* @version 0.1
+*/
+double lfNedocs(double *plfX, int iGenVector)
+{
+	int i;
+	double lfEdBeds = 0;
+	double lfHospitalBeds = 0;
+	double lfTotalPatients = 0;
+	double lfEdPatients = 0;
+	double lfVentilators = 0;
+	double lfLongestAdmit = 0.0;
+	double lfLastBedTime = 0.0;
+	double lfRes = 0.0;
+
+	lfTotalPatients = plfX[0];
+	lfEdBeds = plfX[1];
+	lfEdPatients = plfX[2];
+	lfHospitalBeds = plfX[3];
+	lfVentilators = plfX[4];
+	lfLongestAdmit = plfX[5];
+	lfLastBedTime = plfX[6];
+	// 診察室、初療室、手術室に人がいない状況が算出される場合は極端な場合がシミュレーション結果として出ているので、
+	// この場合はNEDOCS値を極端に高くし、採用されないようにします。
+	lfRes = -20.0 + 85.8*(lfTotalPatients / lfEdBeds) + 600.0*(lfEdPatients / lfHospitalBeds) + 13.4*lfVentilators + 0.93*lfLongestAdmit + 5.64*lfLastBedTime;
+//	lfRes = lfRes < 0.0 ? 10000.0 : lfRes;
 	return lfRes;
 }

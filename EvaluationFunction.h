@@ -620,21 +620,6 @@ extern double lfSalomonProblem(double *plfX, int iGenVector);
 
 /**
 * <PRE>
-* 　目的関数のQuartic functionの計算を実行します。
-*	 \sum^{n}_{i=1}(ix_{i}^4)+random[0,1)
-* 　大域的最適解 -1.28 \leq x_{i} \leq 1.28 x = (0,0,0,0...,0)
-*   ver 0.1 初版
-* </PRE>
-* @param plfX			引数
-* @param iVectorLen	引数の次元数
-* @author kobayashi
-* @since 2016/11/09
-* @version 0.1
-*/
-extern double lfQuarticFunction(double *plfX, int iGenVector);
-
-/**
-* <PRE>
 * 　目的関数のAlpine functionの計算を実行します。
 *	 \sum^{n}_{i=1}\abs(x_{i}*\sin(x_{i})+0.1*x_{i})
 * 　大域的最適解 -10 \leq x_{i} \leq 10 x = (0,0,0,0...,0)
@@ -662,5 +647,20 @@ extern double lfAlpine(double *plfX, int iGenVector);
 * @version 0.1
 */
 extern double lfWeierstrass(double *plfX, int iGenVector);
+
+/**
+* <PRE>
+* 　救急部門における混雑度合いを表した評価指標であるNEDOCSの計算を実行します。
+*	 NEDOCS = -20 + 85.8*\dfrac{Total patient}{ED beds} + 600*\dfrac{admits}{hospital beds}+13.4*vetilators+0.93*(longest admit)+5.64*(Last bed time)
+* 　最小値 -20.0 各変数が0の場合 次元数は7次元
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2017/03/07
+* @version 0.1
+*/
+extern double lfNedocs(double *plfX, int iGenVector);
 
 #endif /* _EVALUATION_FUNCTION_H_ */

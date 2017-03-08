@@ -58,12 +58,15 @@ public:
 	double lfGetFitBound();
 	double lfGetFitAccuracy();
 	char* pcGetFuncName();
+	char* pcGetConditionName();
 	int iGetGenerationNumber();
 	int iGetAbcDataNum();
 	int iGetAbcVectorDimNum();
 	int iGetAbcMethod();
 	int iGetOutputFlag();
 	double lfGetRange();
+	double lfGetRangeMin();
+	double lfGetRangeMax();
 	int iGetCrossOverNum();
 	double lfGetAlpha();
 	double lfGetBeta();
@@ -79,6 +82,7 @@ private:
 	int iAbcVectorDimNum;		// 各粒子群の特徴ベクトル
 	int iAbcMethod;			// 粒子群最適化法の手法設定
 	char* pcFuncName;		// 使用する関数用フラグ
+	char* pcConditionName;	// 使用する制約条件のフラグ
 	int iOutputFlag;		// 結果出力用フラグ
 	int iIntervalMinNum;		// 最低反復回数
 	int iAbcSearchNum;		// employ beeの総数
@@ -88,6 +92,8 @@ private:
 	double lfFitBound;		// 適合度許容限界値
 	double lfFitAccuracy;		// 適合度の収束精度
 	double lfRange;			// 解の探索範囲
+	double lfRangeMin;			// 解の探索範囲の最小値
+	double lfRangeMax;			// 解の探索範囲の最大値
 	int iCrossOverNum;		// 交叉回数
 	double lfAlpha;			// UNDXパラメータのα
 	double lfBeta;			// UNDXパラメータのβ

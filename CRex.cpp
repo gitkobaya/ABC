@@ -608,7 +608,7 @@ void CRex::vARex()
 	try
 	{
 		// 親をランダムにNp個選択します。
-		for( i = iGenNumber-1; i > 0 ; i-- )
+		for( i = iGenNumber-1; i >= 0 ; i-- )
 		{
 			iLoc = (int)((i+1)*rnd());
 			iTemp = piParentLoc[i];
@@ -801,6 +801,7 @@ void CRex::vAerMahalanobis( const std::vector<Rank_t>& stlFitProb )
 	// αの更新を行います。
 	lfTemp = lfAlpha * sqrt( (1.0-lfLearningRate)+lfLearningRate*lfLcdp/lfLavg );
 	lfAlpha = lfTemp < 1.0 ? 1.0 : lfTemp;
+	printf("α = %lf\n", lfAlpha);
 }
 
 void CRex::vSelectGens( double **pplfChildren, int *pi1stGenLoc, int *pi2ndGenLoc )
