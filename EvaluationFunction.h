@@ -650,6 +650,67 @@ extern double lfWeierstrass(double *plfX, int iGenVector);
 
 /**
 * <PRE>
+* 　目的関数のLevy functionの計算を実行します。
+*	 \sin^{2}(\pi\omega_{1})+\sum^{d-1}_{i=1}(\omega-1)^{2}[1+10\sin^{2}(\pi\oemga_{i}+1)]+(\oemga_{d}-1)^{2}[1+\sin^{2}(2\pi\omega_{d})]
+*    \omega_{i} = 1 + \dfrac{x_{i}-1}{4}
+* 　大域的最適解 -10 \leq x_{i} \leq 10 x = (1,1,1,1...,1)
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2017/02/28
+* @version 0.1
+*/
+extern double lfLevy(double *plfX, int iGenVector);
+
+/**
+* <PRE>
+* 　目的関数のBukin functionの計算を実行します。
+*	 f(x) = 100\sqrt{x_{2}-0.01x^{2}_{1}}+0.01|x_{1}+10|
+* 　大域的最適解  f_{x} = 0 x = (10,1)
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2017/02/28
+* @version 0.1
+*/
+extern double lfBukin(double *plfX, int iGenVector);
+
+/**
+* <PRE>
+* 　目的関数のGramacy & Lee functionの計算を実行します。
+*	 f(x) = \dfrac{\sin(10\pi x)}{2x}+(x-1)^{4}
+* 　大域的最適解  f_{x} = 0 x = 0.5 or 2.5
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2017/02/28
+* @version 0.1
+*/
+extern double lfGramacyLee(double *plfX, int iGenVector);
+
+/**
+* <PRE>
+* 　目的関数のMcCormick functionの計算を実行します。
+*	 f(x) = \sin(x_{1}+x_{2})+(x_{1}-x_{2})^{2}-1.5x_{1}+2.5x_{2}+1
+* 　大域的最適解  -1.5 <= x_{1} <= 4, -3 <= x_{2} <= 4 f_{x} = -1.9133 x = (-0.54719, -1.54719)
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2017/03/09
+* @version 0.1
+*/
+extern double lfMccormick(double *plfX, int iGenVector);
+
+/**
+* <PRE>
 * 　救急部門における混雑度合いを表した評価指標であるNEDOCSの計算を実行します。
 *	 NEDOCS = -20 + 85.8*\dfrac{Total patient}{ED beds} + 600*\dfrac{admits}{hospital beds}+13.4*vetilators+0.93*(longest admit)+5.64*(Last bed time)
 * 　最小値 -20.0 各変数が0の場合 次元数は7次元

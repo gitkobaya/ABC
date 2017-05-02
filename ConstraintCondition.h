@@ -28,4 +28,13 @@ extern void vNedocsLimitter(double *plfX, int iGenVector);
 */
 extern void vNone(double *plfX, int iGenVector);
 
+/**
+* <PRE>
+*   ‹~‹}•”–å—p‚Ìˆê”Ê“I‚È§–ñğŒİ’è
+* </PRE>
+* @param plfArg		ˆø”
+* @param iGenVector	ˆø”‚ÌŸŒ³”
+*/
+extern void vSetEDCalibrationCondition(double* plfArg, int iGenVector);
+
 #endif /*_CONSTRAINT_CONDITION_H_*/

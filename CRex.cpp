@@ -22,6 +22,7 @@ CRex::CRex()
 	pplfChildren = NULL;
 	piParentLoc = NULL;
 	iDistanceFlag = 2;
+	lfAlpha = 1.0;
 }
 
 CRex::~CRex()
@@ -384,6 +385,47 @@ void CRex::vTerminate()
 	}
 }
 
+void CRex::vSelectParent()
+{
+	int i, j, k;
+	double lfSumAbs1, lfSumAbs2, lfSumAbs3;
+	int i1, i2, i3;
+	int iLoc;
+	int iTemp;
+	int iFlag = 0;
+	// REXを行う親を2つ決定します。
+	// 親をランダムにNp個選択します。
+	for (i = iGenNumber - 1; i > 0; i--)
+	{
+		iLoc = (int)((i + 1)*rnd());
+		iTemp = piParentLoc[i];
+		piParentLoc[i] = piParentLoc[iLoc];
+		piParentLoc[iLoc] = iTemp;
+	}
+	for (i = 0; i < iGenNumber; i++)
+	{
+		for (j = i; j > 0; j--)
+		{
+			// 一致するかどうかを算出。
+			lfSumAbs1 = 0.0;
+			for (k = 0; k < iGenVector; k++)
+			{
+				lfSumAbs1 += fabs(pplfGens[piParentLoc[i]][k] - pplfGens[piParentLoc[j]][k]);
+			}
+			// 一致する場合は次の配列番号の値と交換する。
+			if (lfSumAbs1 <= 0.0000000000001)
+			{
+				if (i < iGenNumber - 1)
+				{
+					iTemp = piParentLoc[i];
+					piParentLoc[i + 1] = piParentLoc[i];
+					piParentLoc[i] = iTemp;
+				}
+			}
+		}
+	}
+}
+
 void CRex::vRex()
 {
 	CRexException cre;
@@ -399,14 +441,16 @@ void CRex::vRex()
 	try
 	{
 		// 親をランダムにNp個選択します。
-		for( i = iGenNumber-1; i > 0 ; i-- )
-		{
-			iLoc = (int)((i+1)*rnd());
-			iTemp = piParentLoc[i];
-			piParentLoc[i] = piParentLoc[iLoc];
-			piParentLoc[iLoc] = iTemp;
-		}
-	
+//		for( i = iGenNumber-1; i > 0 ; i-- )
+//		{
+//			iLoc = (int)((i+1)*rnd());
+//			iTemp = piParentLoc[i];
+//			piParentLoc[i] = piParentLoc[iLoc];
+//			piParentLoc[iLoc] = iTemp;
+//		}
+
+		vSelectParent();
+
 		// 重心を算出します。
 		for( j = 0;j < iGenVector; j++ )
 		{
@@ -778,7 +822,7 @@ void CRex::vAerMahalanobis( const std::vector<Rank_t>& stlFitProb )
 	double lfRandAvgSumSquareAvg = 0.0;
 
 	// Ldcpを算出します。
-	lfSigma = 1.0/(double)sqrt( (double)iParentNumber );
+	lfSigma = 1.0/(double)sqrt( (double)iParentNumber-1 );
 //	lfSigma = sqrt( 3.0/(double)iParentNumber );
 	lfLcdp = 0.0;
 	for( i = 0;i < iParentNumber; i++ )
@@ -801,7 +845,7 @@ void CRex::vAerMahalanobis( const std::vector<Rank_t>& stlFitProb )
 	// αの更新を行います。
 	lfTemp = lfAlpha * sqrt( (1.0-lfLearningRate)+lfLearningRate*lfLcdp/lfLavg );
 	lfAlpha = lfTemp < 1.0 ? 1.0 : lfTemp;
-	printf("α = %lf\n", lfAlpha);
+//	printf("α = %lf, Lavg= %lf\n", lfAlpha, lfLavg);
 }
 
 void CRex::vSelectGens( double **pplfChildren, int *pi1stGenLoc, int *pi2ndGenLoc )

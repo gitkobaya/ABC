@@ -1638,6 +1638,104 @@ double lfWeierstrass(double *plfX, int iGenVector)
 	return lfRes;
 }
 
+/**
+* <PRE>
+* 　目的関数のLevy functionの計算を実行します。
+*	 \sin^{2}(\pi\omega_{1})+\sum^{d-1}_{i=1}(\omega-1)^{2}[1+10\sin^{2}(\pi\oemga_{i}+1)]+(\oemga_{d}-1)^{2}[1+\sin^{2}(2\pi\omega_{d})]
+*    \omega_{i} = 1 + \dfrac{x_{i}-1}{4}
+* 　大域的最適解 -10 \leq x_{i} \leq 10 x = (1,1,1,1...,1)
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2017/02/28
+* @version 0.1
+*/
+double lfLevy(double *plfX, int iGenVector)
+{
+	int i;
+	double lfRes = 0.0;
+	double lfOmega;
+	double lfOmega2;
+	double lfSin21;
+	double lfSin22;
+	double lfSin20;
+
+	lfOmega = 1.0 + (plfX[0] - 1.0)*0.25;
+	lfSin20 = sin(pi*lfOmega);
+	lfSin20 *= lfSin20;
+	for (i = 0; i < iGenVector-1; i++)
+	{
+		lfOmega = 1.0 + (plfX[i] - 1.0)*0.25;
+		lfOmega2 = (lfOmega - 1.0);
+		lfOmega2 *= lfOmega2;
+		lfSin21 = sin(pi*lfOmega + 1.0);
+		lfSin21 *= lfSin21;
+		lfRes += lfOmega2*(1.0+10.0*lfSin21);
+	}
+	lfOmega = 1.0 + (plfX[iGenVector-1] - 1.0)*0.25;
+	lfOmega2 = (lfOmega - 1.0);
+	lfOmega2 *= lfOmega2;
+	lfSin22 = sin(2.0*pi*lfOmega);
+	lfSin22 *= lfSin22;
+
+	return lfSin20 + lfRes + lfSin22;
+}
+
+/**
+* <PRE>
+* 　目的関数のBukin functionの計算を実行します。
+*	 f(x) = 100\sqrt{x_{2}-0.01x^{2}_{1}}+0.01|x_{1}+10|
+* 　大域的最適解  f_{x} = 0 x = (10,1)
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2017/02/28
+* @version 0.1
+*/
+double lfBukin(double *plfX, int iGenVector)
+{
+	return 100.0 * sqrt(fabs(plfX[1] - 0.01*plfX[0]*plfX[0])) + 0.01*fabs(plfX[0] + 10.0);
+}
+
+/**
+* <PRE>
+* 　目的関数のGramacy & Lee functionの計算を実行します。
+*	 f(x) = \dfrac{\sin(10\pi x)}{2x}+(x-1)^{4}
+* 　大域的最適解  f_{x} = 0 x = 0.5 or 2.5
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2017/02/28
+* @version 0.1
+*/
+double lfGramacyLee(double *plfX, int iGenVector)
+{
+	return sin(10*pi*plfX[0])/plfX[0]*0.5+(plfX[0]-1.0)*(plfX[0] - 1.0)*(plfX[0] - 1.0)*(plfX[0] - 1.0);
+}
+
+/**
+* <PRE>
+* 　目的関数のMcCormick functionの計算を実行します。
+*	 f(x) = \sin(x_{1}+x_{2})+(x_{1}-x_{2})^{2}-1.5x_{1}+2.5x_{2}+1
+* 　大域的最適解  -1.5 <= x_{1} <= 4, -3 <= x_{2} <= 4 f_{x} = -1.9133 x = (-0.54719, -1.54719)
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2017/03/09
+* @version 0.1
+*/
+double lfMccormick(double *plfX, int iGenVector)
+{
+	return sin(plfX[0]+plfX[1])+(plfX[0]-plfX[1])*(plfX[0] - plfX[1])-1.5*plfX[0]+2.5*plfX[1]+1;
+}
 
 /**
 * <PRE>
@@ -1664,16 +1762,23 @@ double lfNedocs(double *plfX, int iGenVector)
 	double lfLastBedTime = 0.0;
 	double lfRes = 0.0;
 
-	lfTotalPatients = plfX[0];
-	lfEdBeds = plfX[1];
-	lfEdPatients = plfX[2];
-	lfHospitalBeds = plfX[3];
-	lfVentilators = plfX[4];
-	lfLongestAdmit = plfX[5];
-	lfLastBedTime = plfX[6];
+//	lfTotalPatients = plfX[0];
+//	lfEdBeds = plfX[1];
+//	lfEdPatients = plfX[2];
+//	lfHospitalBeds = plfX[3];
+//	lfVentilators = plfX[4];
+//	lfLongestAdmit = plfX[5];
+//	lfLastBedTime = plfX[6];
+	lfTotalPatients = plfX[35];
+	lfEdBeds = plfX[0] + plfX[2] + plfX[5] * plfX[24] + plfX[6] * plfX[26];
+	lfEdPatients = plfX[36];
+	lfHospitalBeds = plfX[5] * plfX[24] + plfX[6] * plfX[26] + plfX[7] * plfX[28];
+	lfVentilators = plfX[37];
+	lfLongestAdmit = plfX[38];
+	lfLastBedTime = plfX[39];
 	// 診察室、初療室、手術室に人がいない状況が算出される場合は極端な場合がシミュレーション結果として出ているので、
 	// この場合はNEDOCS値を極端に高くし、採用されないようにします。
 	lfRes = -20.0 + 85.8*(lfTotalPatients / lfEdBeds) + 600.0*(lfEdPatients / lfHospitalBeds) + 13.4*lfVentilators + 0.93*lfLongestAdmit + 5.64*lfLastBedTime;
-//	lfRes = lfRes < 0.0 ? 10000.0 : lfRes;
+	lfRes = lfRes < 0.0 ? 10000.0 : lfRes;
 	return lfRes;
 }

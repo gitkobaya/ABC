@@ -247,7 +247,7 @@ long CCmdCheck::lCommandCheck( int argc, char* argv[] )
 			i++;
 		}
 		/* ARexの生成した子供から上位選択する数 */
-		else if( strcmp( argv[i], "-cl" ) == 0 )
+		else if( strcmp( argv[i], "-uec" ) == 0 )
 		{
 			lRet = lCommandErrorCheck( argv[i] );
 			if( lRet != 0 ) return lRet;
@@ -319,7 +319,7 @@ long CCmdCheck::lCommandErrorCheck( char *argv )
 		( strcmp( argv, "-beta" ) == 0 )	||
 		( strcmp( argv, "-pn" ) == 0 )		||
 		( strcmp( argv, "-cn" ) == 0 )		||
-		( strcmp( argv, "-cl" ) == 0 )		||
+		( strcmp( argv, "-uec" ) == 0 )		||
 		( strcmp( argv, "-fin" ) == 0 )		||
 		( strcmp( argv, "-lr" ) == 0 ))
 	{
@@ -368,7 +368,7 @@ void CCmdCheck::vHelp()
 	printf("-beta Undxのβ\n");
 	printf("-pn Rexの選択する親の数\n");
 	printf("-cn Rexの生成する子供の数\n");
-	printf("-cl ARexの生成した子供のうち上位選択する数\n");
+	printf("-uec ARexの生成した子供のうち上位選択する数\n");
 	printf("-lr ARexの学習率\n");
 	printf("-fin 終了条件の設定1:回数, 2:収束\n");
 	printf("-out 結果出力\n");

@@ -188,6 +188,8 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 		plfGlobalMinAbcData = new double[iAbcVectorDimNum];
 		plfLocalMaxAbcData = new double[iAbcVectorDimNum];
 		plfLocalMinAbcData = new double[iAbcVectorDimNum];
+		plfLocalMaxObjectiveAbcData = new double[iAbcSearchNum];
+		plfLocalMinObjectiveAbcData = new double[iAbcSearchNum];
 		plfCrossOverData = new double[iAbcVectorDimNum];
 		plfXnew1 = new double[iAbcVectorDimNum];
 		plfXnew2 = new double[iAbcVectorDimNum];
@@ -203,8 +205,8 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			{
 				pplfAbcData[i][j] = 0.0;
 				pplfNAbcData[i][j] = 0.0;
-				pplfLocalMaxAbcData[i][j] = 0.0;
-				pplfLocalMinAbcData[i][j] = 0.0;
+				pplfLocalMaxAbcData[i][j] = -DBL_MAX;
+				pplfLocalMinAbcData[i][j] = DBL_MAX;
 				pplfVelocityData[i][j] = 0.0;
 			}
 		}
@@ -214,6 +216,8 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			plfFitProb[i] = 0.0;
 			piNonUpdateCount[i] = 0;
 			piTotalNonUpdateCount[i] = 0;
+			plfLocalMaxObjectiveAbcData[i] = 0.0;
+			plfLocalMinObjectiveAbcData[i] = 0.0;
 		}
 		for( i = 0;i < iAbcVectorDimNum; i++ )
 		{
@@ -320,6 +324,8 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 		plfGlobalMinAbcData = new double[iAbcVectorDimNum];
 		plfLocalMaxAbcData = new double[iAbcVectorDimNum];
 		plfLocalMinAbcData = new double[iAbcVectorDimNum];
+		plfLocalMaxObjectiveAbcData = new double[iAbcSearchNum];
+		plfLocalMinObjectiveAbcData = new double[iAbcSearchNum];
 		plfCrossOverData = new double[iAbcVectorDimNum];
 		plfXnew1 = new double[iAbcVectorDimNum];
 		plfXnew2 = new double[iAbcVectorDimNum];
@@ -335,8 +341,8 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			{
 				pplfAbcData[i][j] = 0.0;
 				pplfNAbcData[i][j] = 0.0;
-				pplfLocalMaxAbcData[i][j] = 0.0;
-				pplfLocalMinAbcData[i][j] = 0.0;
+				pplfLocalMaxAbcData[i][j] = -DBL_MAX;
+				pplfLocalMinAbcData[i][j] = DBL_MAX;
 				pplfVelocityData[i][j] = 0.0;
 			}
 		}
@@ -346,6 +352,8 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			plfFitProb[i] = 0.0;
 			piNonUpdateCount[i] = 0;
 			piTotalNonUpdateCount[i] = 0;
+			plfLocalMaxObjectiveAbcData[i] = 0.0;
+			plfLocalMinObjectiveAbcData[i] = 0.0;
 		}
 		for( i = 0;i < iAbcVectorDimNum; i++ )
 		{
@@ -456,6 +464,8 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 		plfGlobalMinAbcData = new double[iAbcVectorDimNum];
 		plfLocalMaxAbcData = new double[iAbcVectorDimNum];
 		plfLocalMinAbcData = new double[iAbcVectorDimNum];
+		plfLocalMaxObjectiveAbcData = new double[iAbcSearchNum];
+		plfLocalMinObjectiveAbcData = new double[iAbcSearchNum];
 		plfCrossOverData = new double[iAbcVectorDimNum];
 		plfXnew1 = new double[iAbcVectorDimNum];
 		plfXnew2 = new double[iAbcVectorDimNum];
@@ -471,8 +481,8 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			{
 				pplfAbcData[i][j] = 0.0;
 				pplfNAbcData[i][j] = 0.0;
-				pplfLocalMaxAbcData[i][j] = 0.0;
-				pplfLocalMinAbcData[i][j] = 0.0;
+				pplfLocalMaxAbcData[i][j] = -DBL_MAX;
+				pplfLocalMinAbcData[i][j] = DBL_MAX;
 				pplfVelocityData[i][j] = 0.0;
 			}
 		}
@@ -482,6 +492,8 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			plfFitProb[i] = 0.0;
 			piNonUpdateCount[i] = 0;
 			piTotalNonUpdateCount[i] = 0;
+			plfLocalMaxObjectiveAbcData[i] = 0.0;
+			plfLocalMinObjectiveAbcData[i] = 0.0;
 		}
 		for( i = 0;i < iAbcVectorDimNum; i++ )
 		{
@@ -610,6 +622,8 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 		plfGlobalMinAbcData = new double[iAbcVectorDimNum];
 		plfLocalMaxAbcData = new double[iAbcVectorDimNum];
 		plfLocalMinAbcData = new double[iAbcVectorDimNum];
+		plfLocalMaxObjectiveAbcData = new double[iAbcSearchNum];
+		plfLocalMinObjectiveAbcData = new double[iAbcSearchNum];
 		plfCrossOverData = new double[iAbcVectorDimNum];
 		plfXnew1 = new double[iAbcVectorDimNum];
 		plfXnew2 = new double[iAbcVectorDimNum];
@@ -625,8 +639,8 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			{
 				pplfAbcData[i][j] = 0.0;
 				pplfNAbcData[i][j] = 0.0;
-				pplfLocalMaxAbcData[i][j] = 0.0;
-				pplfLocalMinAbcData[i][j] = 0.0;
+				pplfLocalMaxAbcData[i][j] = -DBL_MAX;
+				pplfLocalMinAbcData[i][j] = DBL_MAX;
 				pplfVelocityData[i][j] = 0.0;
 			}
 		}
@@ -636,6 +650,8 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			plfFitProb[i] = 0.0;
 			piNonUpdateCount[i] = 0;
 			piTotalNonUpdateCount[i] = 0;
+			plfLocalMaxObjectiveAbcData[i] = 0.0;
+			plfLocalMinObjectiveAbcData[i] = 0.0;
 		}
 		for( i = 0;i < iAbcVectorDimNum; i++ )
 		{
@@ -770,6 +786,8 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 		plfGlobalMinAbcData = new double[iAbcVectorDimNum];
 		plfLocalMaxAbcData = new double[iAbcVectorDimNum];
 		plfLocalMinAbcData = new double[iAbcVectorDimNum];
+		plfLocalMaxObjectiveAbcData = new double[iAbcSearchNum];
+		plfLocalMinObjectiveAbcData = new double[iAbcSearchNum];
 		plfCrossOverData = new double[iAbcVectorDimNum];
 		plfXnew1 = new double[iAbcVectorDimNum];
 		plfXnew2 = new double[iAbcVectorDimNum];
@@ -785,8 +803,8 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			{
 				pplfAbcData[i][j] = 0.0;
 				pplfNAbcData[i][j] = 0.0;
-				pplfLocalMaxAbcData[i][j] = 0.0;
-				pplfLocalMinAbcData[i][j] = 0.0;
+				pplfLocalMaxAbcData[i][j] = -DBL_MAX;
+				pplfLocalMinAbcData[i][j] = DBL_MAX;
 				pplfVelocityData[i][j] = 0.0;
 			}
 		}
@@ -796,6 +814,8 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 			plfFitProb[i] = 0.0;
 			piNonUpdateCount[i] = 0;
 			piTotalNonUpdateCount[i] = 0;
+			plfLocalMaxObjectiveAbcData[i] = 0.0;
+			plfLocalMinObjectiveAbcData[i] = 0.0;
 		}
 		for( i = 0;i < iAbcVectorDimNum; i++ )
 		{
@@ -836,6 +856,55 @@ void CAbc::vInitialize( int iGenCount, int iGenNum, int iGenVectorDim, int iSear
 	{
 		cae.SetErrorInfo( ABC_FATAL_ERROR, "vInitialize", "CAbc", "致命的エラーが発生しました。", __LINE__ );
 		throw( cae );
+	}
+}
+
+/**
+* <PRE>
+* 　人工蜂コロニーの初期位置を1に設定します。
+* </PRE>
+* @param lfRange 粒子の初期位置の出現範囲
+* @author kobayashi
+* @since 2017/4/4
+* @version 0.1
+*/
+void CAbc::vSetData()
+{
+	int i, j;
+	double lfMin = DBL_MAX;
+	int iMinLoc = 0;
+	double lfObjFunc = 0.0;
+	for (i = 0; i < iAbcDataNum; i++)
+	{
+		for (j = 0; j < iAbcVectorDimNum; j++)
+		{
+			pplfAbcData[i][j] = 1.0;
+			pplfVelocityData[i][j] = 1.0;
+			pplfLocalMaxAbcData[i][j] = pplfAbcData[i][j];
+		}
+	}
+	// 初期の状態で最適値を取得します。
+	// 更新します。
+	for (i = 0; i < iAbcSearchNum; i++)
+	{
+		lfObjFunc = pflfObjectiveFunction(pplfAbcData[i], iAbcVectorDimNum);
+		if (lfGlobalMinAbcData >= lfObjFunc)
+		{
+			iMinLoc = j;
+			lfGlobalMinAbcData = lfObjFunc;
+			for (j = 0; j < iAbcVectorDimNum; j++)
+			{
+				plfGlobalMinAbcData[j] = pplfAbcData[i][j];
+			}
+		}
+		if (lfGlobalMaxAbcData <= lfObjFunc)
+		{
+			lfGlobalMaxAbcData = lfObjFunc;
+			for (j = 0; j < iAbcVectorDimNum; j++)
+			{
+				plfGlobalMaxAbcData[j] = pplfAbcData[i][j];
+			}
+		}
 	}
 }
 
@@ -1013,6 +1082,71 @@ void CAbc::vSetModifiedRandom( double lfRange )
 
 /**
 * <PRE>
+* 　人工蜂コロニーの初期位置を中心0の半径range内で一様乱数により設定します。
+* </PRE>
+* @param lfRange 粒子の初期位置の出現範囲
+* @author kobayashi
+* @since 2015/7/28
+* @version 0.1
+*/
+void CAbc::vSetModifiedRandom(double lfRangeMin, double lfRangeMax )
+{
+	int i, j;
+	double lfMin = DBL_MAX;
+	int iMinLoc = 0;
+	double lfObjFunc = 0.0;
+	for (i = 0; i < iAbcDataNum; i++)
+	{
+		for (j = 0; j < iAbcVectorDimNum; j++)
+		{
+			pplfAbcData[i][j] = (lfRangeMax-lfRangeMin)*rnd() + lfRangeMin;
+			pplfVelocityData[i][j] = (lfRangeMax-lfRangeMin)*rnd() + lfRangeMin;
+			pplfLocalMaxAbcData[i][j] = pplfAbcData[i][j];
+		}
+		pfvConstraintCondition(pplfAbcData[i], iAbcVectorDimNum);
+		pfvConstraintCondition(pplfVelocityData[i], iAbcVectorDimNum);
+	}
+	lfSolveRange = lfRangeMax - lfRangeMin;
+	lfSolveRangeMax = lfRangeMax;
+	lfSolveRangeMin = lfRangeMin;
+
+	// 初期の状態で最適値を取得します。
+	// 更新します。
+	for (i = 0; i < iAbcSearchNum; i++)
+	{
+		lfObjFunc = pflfObjectiveFunction(pplfAbcData[i], iAbcVectorDimNum);
+		if (lfGlobalMinAbcData >= lfObjFunc)
+		{
+			iMinLoc = j;
+			lfGlobalMinAbcData = lfObjFunc;
+			for (j = 0; j < iAbcVectorDimNum; j++)
+			{
+				plfGlobalMinAbcData[j] = pplfAbcData[i][j];
+			}
+			lfFitCurrentBest = lfGlobalMinAbcData;
+		}
+		if (lfGlobalMaxAbcData <= lfObjFunc)
+		{
+			lfGlobalMaxAbcData = lfObjFunc;
+			for (j = 0; j < iAbcVectorDimNum; j++)
+			{
+				plfGlobalMaxAbcData[j] = pplfAbcData[i][j];
+			}
+			//			lfFitCurrentBest = lfMin;
+		}
+	}
+
+	lfObjFunc = 0.0;
+	// 初期状態における前探索点の平均評価値を算出します。
+	for (i = 0; i < iAbcSearchNum; i++)
+	{
+		lfObjFunc += pflfObjectiveFunction(pplfAbcData[i], iAbcVectorDimNum);
+	}
+	lfFitInit = lfObjFunc / (double)iAbcSearchNum;
+}
+
+/**
+* <PRE>
 * 　人工蜂コロニーの初期位置を粒子群最適化法に基づいた手法により
 *   算出して設定します。
 * </PRE>
@@ -1040,6 +1174,73 @@ void CAbc::vSetRandomPso(double lfRange)
 		pfvConstraintCondition(pplfVelocityData[i], iAbcVectorDimNum);
 	}
 	lfSolveRange = lfRange;
+
+	// 初期の状態で最適値を取得します。
+	// 更新します。
+	for (i = 0; i < iAbcSearchNum; i++)
+	{
+		lfObjFunc = pflfObjectiveFunction(pplfAbcData[i], iAbcVectorDimNum);
+		if (lfGlobalMinAbcData >= lfObjFunc)
+		{
+			iMinLoc = j;
+			lfGlobalMinAbcData = lfObjFunc;
+			for (j = 0; j < iAbcVectorDimNum; j++)
+			{
+				plfGlobalMinAbcData[j] = pplfAbcData[i][j];
+			}
+		}
+		if (lfGlobalMaxAbcData <= lfObjFunc)
+		{
+			lfGlobalMaxAbcData = lfObjFunc;
+			for (j = 0; j < iAbcVectorDimNum; j++)
+			{
+				plfGlobalMaxAbcData[j] = pplfAbcData[i][j];
+			}
+		}
+	}
+	// 粒子群最適化法のような感じで初期化します。(ScoutBeeの更新方法を初期化に適用。)
+	for (i = 0; i < iAbcSearchNum; i++)
+	{
+		for (j = 0; j < iAbcVectorDimNum; j++)
+		{
+			lfRand = rnd();
+			pplfAbcData[i][j] = plfGlobalMinAbcData[j] + lfRand*(plfGlobalMaxAbcData[j] - plfGlobalMinAbcData[j]);
+		}
+	}
+}
+
+/**
+* <PRE>
+* 　人工蜂コロニーの初期位置を粒子群最適化法に基づいた手法により
+*   算出して設定します。
+* </PRE>
+* @param lfRangeMax 粒子の初期位置の出現範囲の最大値
+* @param lfRangeMin 粒子の初期位置の出現範囲の最小値
+* @author kobayashi
+* @since 2016/11/07
+* @version 0.1
+*/
+void CAbc::vSetRandomPso(double lfRangeMin, double lfRangeMax )
+{
+	int i, j;
+	double lfMin = DBL_MAX;
+	int iMinLoc = 0;
+	double lfObjFunc = 0.0;
+	double lfRand;
+	for (i = 0; i < iAbcDataNum; i++)
+	{
+		for (j = 0; j < iAbcVectorDimNum; j++)
+		{
+			pplfAbcData[i][j] = (lfRangeMax-lfRangeMin)*rnd() + lfRangeMin;
+			pplfVelocityData[i][j] = (lfRangeMax-lfRangeMin)*rnd() + lfRangeMin;
+			pplfLocalMaxAbcData[i][j] = pplfAbcData[i][j];
+		}
+		pfvConstraintCondition(pplfAbcData[i], iAbcVectorDimNum);
+		pfvConstraintCondition(pplfVelocityData[i], iAbcVectorDimNum);
+	}
+	lfSolveRange = lfRangeMax-lfRangeMin;
+	lfSolveRangeMax = lfRangeMax;
+	lfSolveRangeMin = lfRangeMin;
 
 	// 初期の状態で最適値を取得します。
 	// 更新します。
@@ -1255,6 +1456,67 @@ void CAbc::vSetRandomRex(double lfRange)
 
 /**
 * <PRE>
+* 　人工蜂コロニーの初期位置をREX法を適用して設定します。
+* </PRE>
+* @param lfRange 粒子の初期位置の出現範囲
+* @author kobayashi
+* @since 2016/11/07
+* @version 0.1
+*/
+void CAbc::vSetRandomRex(double lfRangeMin, double lfRangeMax )
+{
+	int i, j;
+	double lfMin = DBL_MAX;
+	int iMinLoc = 0;
+	double lfObjFunc = 0.0;
+	for (i = 0; i < iAbcDataNum; i++)
+	{
+		for (j = 0; j < iAbcVectorDimNum; j++)
+		{
+			pplfAbcData[i][j] = (lfRangeMax-lfRangeMin)*rnd() + lfRangeMin;
+			pplfVelocityData[i][j] = (lfRangeMax-lfRangeMin)*rnd() + lfRangeMin;
+			pplfLocalMaxAbcData[i][j] = pplfAbcData[i][j];
+		}
+		pfvConstraintCondition(pplfAbcData[i], iAbcVectorDimNum);
+		pfvConstraintCondition(pplfVelocityData[i], iAbcVectorDimNum);
+	}
+	lfSolveRange = lfRangeMax-lfRangeMin;
+	lfSolveRangeMax = lfRangeMax;
+	lfSolveRangeMin = lfRangeMin;
+
+	// 初期の状態で最適値を取得します。
+	// 更新します。
+	for (i = 0; i < iAbcSearchNum; i++)
+	{
+		lfObjFunc = pflfObjectiveFunction(pplfAbcData[i], iAbcVectorDimNum);
+		if (lfGlobalMinAbcData >= lfObjFunc)
+		{
+			iMinLoc = j;
+			lfGlobalMinAbcData = lfObjFunc;
+			for (j = 0; j < iAbcVectorDimNum; j++)
+			{
+				plfGlobalMinAbcData[j] = pplfAbcData[i][j];
+			}
+		}
+		if (lfGlobalMaxAbcData <= lfObjFunc)
+		{
+			lfGlobalMaxAbcData = lfObjFunc;
+			for (j = 0; j < iAbcVectorDimNum; j++)
+			{
+				plfGlobalMaxAbcData[j] = pplfAbcData[i][j];
+			}
+		}
+	}
+	// 交叉を実行します。ここでREXを実行します。（１回分のみ。）
+	pcRex->vSetGenData(pplfAbcData);
+	pcRex->vRex();
+	//	pcRex->vGetBestGenData(pplfAbcData[i] );
+	//	pcRex->vGetBest2ndGenData(pplfAbcData );
+	pcRex->vGetGenData(pplfAbcData);
+}
+
+/**
+* <PRE>
 * 　人工蜂コロニーの初期位置をAREX法を適用して算出して設定します。
 * </PRE>
 * @param lfRange 粒子の初期位置の出現範囲
@@ -1311,6 +1573,158 @@ void CAbc::vSetRandomARex(double lfRange)
 //	pcRex->vGetBestGenData( pplfAbcData[i] );
 //	pcRex->vGetBest2ndGenData(pplfAbcData);
 	pcRex->vGetGenData(pplfAbcData);
+}
+
+/**
+* <PRE>
+* 　人工蜂コロニーの初期位置をAREX法を適用して算出して設定します。
+* </PRE>
+* @param lfRange 粒子の初期位置の出現範囲
+* @author kobayashi
+* @since 2016/11/07
+* @version 0.1
+*/
+void CAbc::vSetRandomARex(double lfRangeMin, double lfRangeMax )
+{
+	int i, j;
+	double lfMin = DBL_MAX;
+	int iMinLoc = 0;
+	double lfObjFunc = 0.0;
+	for (i = 0; i < iAbcDataNum; i++)
+	{
+		for (j = 0; j < iAbcVectorDimNum; j++)
+		{
+			pplfAbcData[i][j] = (lfRangeMax-lfRangeMin)*rnd() + lfRangeMin;
+			pplfVelocityData[i][j] = (lfRangeMax - lfRangeMin)*rnd() + lfRangeMin;
+			pplfLocalMaxAbcData[i][j] = pplfAbcData[i][j];
+		}
+		pfvConstraintCondition(pplfAbcData[i], iAbcVectorDimNum);
+		pfvConstraintCondition(pplfVelocityData[i], iAbcVectorDimNum);
+	}
+	lfSolveRange = lfRangeMax-lfRangeMin;
+	lfSolveRangeMax = lfRangeMax;
+	lfSolveRangeMin = lfRangeMin;
+
+	// 初期の状態で最適値を取得します。
+	// 更新します。
+	for (i = 0; i < iAbcSearchNum; i++)
+	{
+		lfObjFunc = pflfObjectiveFunction(pplfAbcData[i], iAbcVectorDimNum);
+		if (lfGlobalMinAbcData >= lfObjFunc)
+		{
+			iMinLoc = j;
+			lfGlobalMinAbcData = lfObjFunc;
+			for (j = 0; j < iAbcVectorDimNum; j++)
+			{
+				plfGlobalMinAbcData[j] = pplfAbcData[i][j];
+			}
+		}
+		if (lfGlobalMaxAbcData <= lfObjFunc)
+		{
+			lfGlobalMaxAbcData = lfObjFunc;
+			for (j = 0; j < iAbcVectorDimNum; j++)
+			{
+				plfGlobalMaxAbcData[j] = pplfAbcData[i][j];
+			}
+		}
+	}
+	// 新たな探索点を求めて探索を実行します。AREXを実行してABCの初期データを作成します。
+	// 交叉を実行します。ここでAREXを実行します。（１回分のみ。）
+	pcRex->vSetGenData(pplfAbcData);
+	pcRex->vARex();
+	//	pcRex->vGetBestGenData( pplfAbcData[i] );
+	//	pcRex->vGetBest2ndGenData(pplfAbcData);
+	pcRex->vGetGenData(pplfAbcData);
+}
+
+/**
+* <PRE>
+* 　人工蜂コロニーの初期位置を中心0の半径range内で一様乱数により設定します。
+* </PRE>
+* @param lfRange 粒子の初期位置の出現範囲
+* @param iUpdateStartLoc 更新したいベクトルの次元開始位置
+* @param iUpdateEndLoc 更新したいベクトルの次元終了位置
+* @author kobayashi
+* @since 2017/4/3
+* @version 0.1
+*/
+void CAbc::vSetUpdateData(double lfRange, int iUpdateStartLoc, int iUpdateEndLoc )
+{
+	int i, j;
+	double lfMin = DBL_MAX;
+	int iMinLoc = 0;
+	double lfObjFunc = 0.0;
+	for (i = 0; i < iAbcDataNum; i++)
+	{
+		for (j = iUpdateStartLoc; j < iAbcVectorDimNum; j++)
+		{
+			if (j < iUpdateEndLoc)
+			{
+				pplfAbcData[i][j] = lfRange*(2.0*rnd() - 1.0);
+				pplfVelocityData[i][j] = lfRange*(2.0*rnd() - 1.0);
+			}
+		}
+		pfvConstraintCondition(pplfAbcData[i], iAbcVectorDimNum);
+		pfvConstraintCondition(pplfVelocityData[i], iAbcVectorDimNum);
+	}
+}
+
+/**
+* <PRE>
+* 　人工蜂コロニーの初期位置を中心0の半径range内で一様乱数により設定します。
+* </PRE>
+* @param lfMinRange 粒子の最小位置の出現範囲
+* @param lfMaxRange 粒子の最大位置の出現範囲
+* @param iUpdateStartLoc 更新したいベクトルの次元開始位置
+* @param iUpdateEndLoc 更新したいベクトルの次元終了位置
+* @author kobayashi
+* @since 2017/4/3
+* @version 0.1
+*/
+void CAbc::vSetUpdateData(double lfMinRange, double lfMaxRange, int iUpdateStartLoc, int iUpdateEndLoc)
+{
+	int i, j;
+	double lfMin = DBL_MAX;
+	int iMinLoc = 0;
+	double lfObjFunc = 0.0;
+	for (i = 0; i < iAbcDataNum; i++)
+	{
+//		for (j = iUpdateStartLoc; j < iAbcVectorDimNum; j++)
+//		{
+//			if (j < iUpdateEndLoc)
+//			{
+//				pplfAbcData[i][j] = (lfMaxRange-lfMinRange)*rnd() + lfMinRange;
+//				pplfVelocityData[i][j] = (lfMaxRange-lfMinRange)*rnd() + lfMinRange;
+//			}
+//		}
+		// NEDOCS用
+		double lfPatientNum = 100;
+		//全患者数
+		lfPatientNum = lfPatientNum*rnd();
+		pplfAbcData[i][35] = lfPatientNum;
+		// 診察及び処置を受けている人数
+		pplfAbcData[i][36] = lfPatientNum*0.4+lfPatientNum*0.1l+lfPatientNum*0.04;
+		// 人工呼吸器をつけている人数
+		pplfAbcData[i][37] = lfPatientNum*0.05+lfPatientNum*0.05+lfPatientNum*0.1;
+		// 診察後から最も長くいる人の時間数
+		pplfAbcData[i][38] = 24.0*rnd();
+		// 一番最後に入院した患者が入院してからの時間
+		pplfAbcData[i][39] = 24.0*rnd();
+		// 待合室にいる患者の人数
+		pplfAbcData[i][40] = lfPatientNum*0.2;
+		// 患者の緊急度別人数1
+		pplfAbcData[i][41] = lfPatientNum*0.05;
+		// 患者の緊急度別人数2
+		pplfAbcData[i][42] = lfPatientNum*0.05;
+		// 患者の緊急度別人数3
+		pplfAbcData[i][43] = lfPatientNum*0.1;
+		// 患者の緊急度別人数4
+		pplfAbcData[i][44] = lfPatientNum*0.2;
+		// 患者の緊急度別人数5
+		pplfAbcData[i][45] = lfPatientNum*0.6;
+		pfvConstraintCondition(pplfAbcData[i], iAbcVectorDimNum);
+//		pfvConstraintCondition(pplfVelocityData[i], iAbcVectorDimNum);
+	}
 }
 
 /**
@@ -2506,8 +2920,8 @@ void CAbc::vBFARexAbc()
 	vGetGlobalMaxMin();
 
 	// AREXを実行して探索範囲の計算を逐次実行します。
-	pcRex->vSetGenData(pplfAbcData);
-	pcRex->vARex();
+//	pcRex->vSetGenData(pplfAbcData);
+//	pcRex->vARex();
 }
 
 
@@ -4041,21 +4455,20 @@ void CAbc::vOnlookerBeeBF()
 			lfRand = 2.0*rnd() - 1.0;
 //			pplfVelocityData[c][j] = pplfAbcData[c][j];
 //			pplfVelocityData[i][j] = pplfAbcData[c][h] + lfRand*lfLocalBestRand*(pplfAbcData[c][h] - pplfLocalMinAbcData[c][h]);
-//			pplfVelocityData[i][j] = pplfAbcData[c][h] + lfRand*lfLocalBestRand*(pplfAbcData[c][h] - plfLocalMinAbcData[h]);
-			pplfVelocityData[c][j] = pplfAbcData[c][h] + lfRand*lfLocalBestRand*(pplfAbcData[c][h] - plfLocalMinAbcData[h]);
+			pplfVelocityData[i][j] = pplfAbcData[c][h] + lfRand*lfLocalBestRand*(pplfAbcData[c][h] - plfLocalMinAbcData[h]);
+//			pplfVelocityData[c][j] = pplfAbcData[c][h] + lfRand*lfLocalBestRand*(pplfAbcData[c][h] - plfLocalMinAbcData[h]);
 //			pplfVelocityData[c][h] = pplfAbcData[c][h] + lfRand*lfGlobalMinAbcData*( pplfAbcData[c][h] - pplfAbcData[m][h] );
 //			pplfVelocityData[c][h] = pplfAbcData[c][h] + lfRand*(pplfAbcData[c][h] - plfGlobalMinAbcData[h]);
 			pfvConstraintCondition(pplfVelocityData[c], iAbcVectorDimNum);
 		}
 #if 1
 		// 更新点候補を次のように更新します。
-//		lfFunc1 = pflfObjectiveFunction(pplfVelocityData[c], iAbcVectorDimNum);
+		pfvConstraintCondition(pplfVelocityData[i], iAbcVectorDimNum);
 		lfFunc1 = pflfObjectiveFunction(pplfVelocityData[i], iAbcVectorDimNum);
 		lfFunc2 = pflfObjectiveFunction(pplfAbcData[c], iAbcVectorDimNum);
 		if (lfFunc1 < lfFunc2)
 		{
 			for (j = 0; j < iAbcVectorDimNum; j++)
-//				pplfAbcData[c][j] = pplfVelocityData[c][j];
 				pplfAbcData[c][j] = pplfVelocityData[i][j];
 			piNonUpdateCount[c] = 0;
 		}
@@ -4442,20 +4855,33 @@ void CAbc::vGetLocalMaxMin()
 	lfLocalMinAbcData = DBL_MAX;
 	lfLocalMaxAbcData = -DBL_MAX;
 	// ローカルの最大値を更新します。
-	for( i = 1;i < iAbcSearchNum; i++ )
+	for( i = 0;i < iAbcSearchNum; i++ )
 	{
 		lfFunc = pflfObjectiveFunction( pplfAbcData[i], iAbcVectorDimNum );
 
-		if( lfLocalMinAbcData > lfFunc )
+		if( plfLocalMinObjectiveAbcData[i] > lfFunc )
 		{
 			for( j = 0;j < iAbcVectorDimNum; j++ )
 				pplfLocalMinAbcData[i][j] = pplfAbcData[i][j];
-			lfLocalMinAbcData = lfFunc;
+			plfLocalMinObjectiveAbcData[i] = lfFunc;
 		}
-		else if( lfLocalMaxAbcData < lfFunc )
+		else if( plfLocalMaxObjectiveAbcData[i] < lfFunc )
 		{
 			for( j = 0;j < iAbcVectorDimNum; j++ )
 				pplfLocalMaxAbcData[i][j] = pplfAbcData[i][j];
+			plfLocalMaxObjectiveAbcData[i] = lfFunc;
+		}
+
+		if ( lfLocalMinAbcData > lfFunc)
+		{
+			for (j = 0; j < iAbcVectorDimNum; j++)
+				plfLocalMinAbcData[j] = pplfAbcData[i][j];
+			lfLocalMinAbcData = lfFunc;
+		}
+		else if ( lfLocalMaxAbcData < lfFunc)
+		{
+			for (j = 0; j < iAbcVectorDimNum; j++)
+				plfLocalMaxAbcData[j] = pplfAbcData[i][j];
 			lfLocalMaxAbcData = lfFunc;
 		}
 	}
@@ -4478,7 +4904,7 @@ void CAbc::vGetGlobalMaxMin()
 	for( i = 0;i < iAbcSearchNum; i++ )
 	{
 		lfObjFunc = pflfObjectiveFunction( pplfAbcData[i], iAbcVectorDimNum );
-		if( lfGlobalMinAbcData >= lfObjFunc )
+     	if( lfGlobalMinAbcData >= lfObjFunc )
 		{
 			iMinLoc = i;
 			lfGlobalMinAbcData = lfObjFunc;
@@ -4577,19 +5003,31 @@ void CAbc::vOutputConstraintFunction()
  * <PRE>
  * 　現時点での最大値を出す粒子の位置を出力します。
  * </PRE>
+ * @param iFlag 出力方法フラグ
  * @author kobayashi
  * @since 2015/6/19
  * @version 1.0
  */
-void CAbc::vOutputGlobalMaxAbcData()
+void CAbc::vOutputGlobalMaxAbcData( int iFlag )
 {
 	int i;
 	// 現時点での各粒子の値を出力します。
-	for( i = 0; i < iAbcVectorDimNum; i++ )
+	if (iFlag == 0)
 	{
-		printf("%.12f,", plfGlobalMaxAbcData[i] );
+		for (i = 0; i < iAbcVectorDimNum; i++)
+		{
+			printf("%.12f,", plfGlobalMaxAbcData[i]);
+		}
+		printf("\n");
 	}
-	printf("\n");
+	else
+	{
+		for (i = 0; i < iAbcVectorDimNum; i++)
+		{
+			printf("%.12f,", plfGlobalMaxAbcData[i]);
+		}
+		printf("%.12f\n", lfGlobalMaxAbcData);
+	}
 }
 
 /**
@@ -4610,19 +5048,31 @@ void CAbc::vOutputGlobalMaxAbcDataConstFuncValue()
  * <PRE>
  * 　現時点での最小値を出す粒子の位置を出力します。
  * </PRE>
+ * @param iFlag 出力方法フラグ
  * @author kobayashi
  * @since 2015/6/19
  * @version 1.0
  */
-void CAbc::vOutputGlobalMinAbcData()
+void CAbc::vOutputGlobalMinAbcData( int iFlag )
 {
 	int i;
 	// 現時点での各粒子の値を出力します。
-	for( i = 0; i < iAbcVectorDimNum; i++ )
+	if (iFlag == 0)
 	{
-		printf("%.12f,", plfGlobalMinAbcData[i] );
+		for (i = 0; i < iAbcVectorDimNum; i++)
+		{
+			printf("%.12f,", plfGlobalMinAbcData[i]);
+		}
+		printf("\n");
 	}
-	printf("\n");
+	else
+	{
+		for (i = 0; i < iAbcVectorDimNum; i++)
+		{
+			printf("%.12f,", plfGlobalMinAbcData[i]);
+		}
+		printf("%.12f\n", lfGlobalMinAbcData);
+	}
 }
 
 /**
@@ -4706,6 +5156,39 @@ void CAbc::vOutputLocalMaxAbcData( int iOutFlag )
 		{
 			// 現時点での各粒子の目的関数の値を出力します。
 			printf("%12.12f,", plfLocalMaxObjectiveAbcData[i] );
+		}
+	}
+	printf("\n");
+}
+
+/**
+* <PRE>
+* 　現時点での各粒子ごとの最良位置を出力します。
+* </PRE>
+* @param iFlag 0 目的関数値を出力しない。
+* 　　　　　　 1 目的関数値を出力する。
+* @author kobayashi
+* @since 2015/7/6
+* @version 0.2
+*/
+void CAbc::vOutputLocalMinAbcData(int iOutFlag)
+{
+	int i, j;
+	double lfRes = 0.0;
+	double lfAvgDist = 0.0;
+	double lfDist = 0.0;
+	double lfDist2 = 0.0;
+	// 現時点での各粒子ごとの最良位置を出力します。
+	for (i = 0; i < iAbcDataNum; i++)
+	{
+		for (j = 0; j < iAbcVectorDimNum; j++)
+		{
+			printf("%12.12f,", pplfLocalMinAbcData[i][j]);
+		}
+		if (iOutFlag == 1)
+		{
+			// 現時点での各粒子の目的関数の値を出力します。
+//			printf("%12.12f,", plfLocalMinObjectiveAbcData[i]);
 		}
 	}
 	printf("\n");

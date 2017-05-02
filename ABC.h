@@ -222,13 +222,24 @@ public:
 	void vReleaseCallConstraintCondition();
 
 	/**
+	* <PRE>
+	* 　人工蜂コロニーの初期位置を1に設定します。
+	* </PRE>
+	* @param lfRange 粒子の初期位置の出現範囲
+	* @author kobayashi
+	* @since 2017/4/4
+	* @version 0.1
+	*/
+	void vSetData();
+		
+	/**
 	 * <PRE>
 	 * 　粒子を一様乱数で初期化します。
 	 * </PRE>
 	 * @param lfRange 粒子の初期位置の出現範囲
 	 * @author kobayashi
-	 * @since 2015/6/8
-	 * @version 1.0
+	 * @since 2017/03/07
+	 * @version 0.1
 	 */
 	void vSetRandom( double lfRange );
 
@@ -257,6 +268,18 @@ public:
 
 	/**
 	* <PRE>
+	* 　粒子を一様乱数で初期化します。(ModifiedAbc法用)
+	* </PRE>
+	* @param lfRangeMin 粒子の初期位置の出現範囲最小値
+	* @param lfRangeMax 粒子の初期位置の出現範囲最大値
+	* @author kobayashi
+	* @since 2017/03/07
+	* @version 0.1
+	*/
+	void vSetModifiedRandom(double lfRangeMin, double lfRangeMax);
+
+	/**
+	* <PRE>
 	* 　人工蜂コロニーの初期位置を粒子群最適化法に基づいた手法により
 	*   算出して設定します。
 	* </PRE>
@@ -266,6 +289,19 @@ public:
 	* @version 0.1
 	*/
 	void vSetRandomPso(double lfRange);
+
+	/**
+	* <PRE>
+	* 　人工蜂コロニーの初期位置を粒子群最適化法に基づいた手法により
+	*   算出して設定します。
+	* </PRE>
+	* @param lfRangeMin 粒子の初期位置の出現範囲最小値
+	* @param lfRangeMax 粒子の初期位置の出現範囲最大値
+	* @author kobayashi
+	* @since 2017/03/07
+	* @version 0.1
+	*/
+	void vSetRandomPso(double lfRangeMin, double lfRangeMax);
 
 	/**
 	* <PRE>
@@ -303,6 +339,18 @@ public:
 
 	/**
 	* <PRE>
+	* 　人工蜂コロニーの初期位置をREX法を適用して設定します。
+	* </PRE>
+	* @param lfRangeMin 粒子の初期位置の出現範囲最小値
+	* @param lfRangeMax 粒子の初期位置の出現範囲最大値
+	* @author kobayashi
+	* @since 2017/03/07
+	* @version 0.1
+	*/
+	void vSetRandomRex(double lfRangeMin, double lfRangeMax);
+
+	/**
+	* <PRE>
 	* 　人工蜂コロニーの初期位置をAREX法を適用して算出して設定します。
 	* </PRE>
 	* @param lfRange 粒子の初期位置の出現範囲
@@ -311,6 +359,45 @@ public:
 	* @version 0.1
 	*/
 	void vSetRandomARex(double lfRange);
+		
+	/**
+	* <PRE>
+	* 　人工蜂コロニーの初期位置をAREX法を適用して算出して設定します。
+	* </PRE>
+	* @param lfRangeMin 粒子の初期位置の出現範囲最小値
+	* @param lfRangeMax 粒子の初期位置の出現範囲最大値
+	* @author kobayashi
+	* @since 2017/03/07
+	* @version 0.1
+	*/
+	void vSetRandomARex(double lfRangeMin, double lfRangeMax);
+
+	/**
+	* <PRE>
+	* 　人工蜂コロニーの初期位置を中心0の半径range内で一様乱数により設定します。
+	* </PRE>
+	* @param lfRange 粒子の初期位置の出現範囲
+	* @param iUpdateStartLoc 更新したいベクトルの次元開始位置
+	* @param iUpdateEndLoc 更新したいベクトルの次元終了位置
+	* @author kobayashi
+	* @since 2017/4/3
+	* @version 0.1
+	*/
+	void vSetUpdateData(double lfRange, int iUpdateStartLoc, int iUpdateEndLoc);
+
+	/**
+	* <PRE>
+	* 　人工蜂コロニーの初期位置を中心0の半径range内で一様乱数により設定します。
+	* </PRE>
+	* @param lfMinRange 粒子の最小位置の出現範囲
+	* @param lfMaxRange 粒子の最大位置の出現範囲
+	* @param iUpdateStartLoc 更新したいベクトルの次元開始位置
+	* @param iUpdateEndLoc 更新したいベクトルの次元終了位置
+	* @author kobayashi
+	* @since 2017/4/3
+	* @version 0.1
+	*/
+	void vSetUpdateData(double lfMinRange, double lfMaxRange, int iUpdateStartLoc, int iUpdateEndLoc);
 		
 	/**
 	 * <PRE>
@@ -590,12 +677,15 @@ public:
 	/**
 	 * <PRE>
 	 * 　現時点での最大値粒子の位置を出力します。
+	 *   ver 0.1 初期版
+	 *   ver 2017/03/29 0.2 出力方法を追加
 	 * </PRE>
+	 * @param iFlag 出力方法フラグ
 	 * @author kobayashi
 	 * @since 2015/6/19
-	 * @version 1.0
+	 * @version 0.2
 	 */
-	void vOutputGlobalMaxAbcData();
+	void vOutputGlobalMaxAbcData( int iFlag );
 
 	/**
 	 * <PRE>
@@ -610,12 +700,15 @@ public:
 	/**
 	 * <PRE>
 	 * 　現時点での最小値粒子の位置を出力します。
+	 *   ver 0.1 初期版
+	 *   ver 2017/03/29 0.2 出力方法を追加
 	 * </PRE>
+	 * @param iFlag 出力方法フラグ
 	 * @author kobayashi
 	 * @since 2015/6/19
-	 * @version 1.0
+	 * @version 0.2
 	 */
-	void vOutputGlobalMinAbcData();
+	void vOutputGlobalMinAbcData( int iFlag );
 
 	/**
 	* <PRE>
@@ -661,6 +754,18 @@ public:
 	 */
 	void vOutputLocalMaxAbcData( int iOutFlag );
 
+	/**
+	* <PRE>
+	* 　現時点での各粒子ごとの最良位置を出力します。
+	* </PRE>
+	* @param iFlag 0 目的関数値を出力しない。
+	* 　　　　 　　 1 目的関数値を出力する。
+	* @author kobayashi
+	* @since 2015/7/6
+	* @version 0.2
+	*/
+	void vOutputLocalMinAbcData(int iOutFlag);
+		
 	void vSetRange( double lfRange );
 	double lfGetGlobalMinAbcDataConstFuncValue();
 private:
@@ -1020,11 +1125,12 @@ private:
 	double *plfGlobalMinAbcData;		// 大域的最適解を表す粒子のデータ
 	double *plfLocalMaxAbcData;			// 局所最適解を表す粒子のデータ
 	double *plfLocalMinAbcData;			// 局所最適解を表す粒子のデータ
-	double lfLocalMaxAbcData;			// 局所最適値
-	double lfLocalMinAbcData;			// 局所最適値
+	double lfLocalMaxAbcData;			// 局所最適値(最大)
+	double lfLocalMinAbcData;			// 局所最適値(最小)
 	double **pplfLocalMaxAbcData;		// 局所最適解を表す粒子ごとの最大値を格納するデータ
 	double **pplfLocalMinAbcData;		// 局所最適解を表す粒子ごとの最小値を格納するデータ
-	double *plfLocalMaxObjectiveAbcData;// 局所最適解を表す粒子のデータ
+	double *plfLocalMaxObjectiveAbcData;// 局所最適解を表す目的関数値のデータ（最大値）
+	double *plfLocalMinObjectiveAbcData;// 局所最適解を表す目的関数値のデータ（最小値）
 	double **pplfVelocityData;			// ABCデータ速度配列
 	double **pplfNVelocityData;			// ABC更新用データ速度配列
 	double *plfFitProb;					// 適合度相対確率

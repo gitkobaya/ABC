@@ -24,6 +24,9 @@ public:
 	void vARex();
 	void vTerminate();
 
+private:
+	void vSelectParent();
+
 	// ŒöŠJŠÖ”get set ŠÖ”ŒQ
 public:
 	inline int iGetParentNumber(){return iParentNumber; };

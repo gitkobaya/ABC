@@ -13,7 +13,8 @@ extern void vStartAbc( CCmdCheck *pcCmd, CAbc *pcAbc, int iLoc );
 extern void vTerminate( CAbc *pcAbc );
 extern void vOutputData( CCmdCheck *pcCmd, CAbc *pcAbc, int iLoc );
 extern void vSetRandom( CCmdCheck *pcCmd, CAbc *pcAbc );
-extern int iFinisher( CCmdCheck *pcCmd, CAbc *pcAbc, int iCount ); 
+extern void vSetUpdateData(CCmdCheck *pcCmd, CAbc *pcAbc);
+extern int iFinisher( CCmdCheck *pcCmd, CAbc *pcAbc, int iCount );
 
 int main(int argc, char* argv[])
 {
@@ -47,6 +48,9 @@ int main(int argc, char* argv[])
 				// 粒子群最適化を実行します。
 				vStartAbc( &cmd, &abc, i );
 				
+				// 特殊関数。通常はこれは動作しません。
+				vSetUpdateData(&cmd, &abc);
+
 				// 結果を出力します。
 				vOutputData( &cmd, &abc, i );
 
@@ -109,6 +113,8 @@ void vInitialize( CCmdCheck *pcCmd, CAbc *pcAbc )
 	double lfFitBound;
 	double lfFitAccuracy;
 	double lfRange;
+	double lfRangeMax;
+	double lfRangeMin;
 	int iCrossOverNum;
 	double lfAlpha;
 	double lfBeta;
@@ -127,7 +133,9 @@ void vInitialize( CCmdCheck *pcCmd, CAbc *pcAbc )
 	lfConvergenceParam	= pcCmd->lfGetConvergenceParam();
 	lfFitBound			= pcCmd->lfGetFitBound();
 	lfFitAccuracy		= pcCmd->lfGetFitAccuracy();
-	lfRange			= pcCmd->lfGetRange();
+	lfRange				= pcCmd->lfGetRange();
+	lfRangeMin			= pcCmd->lfGetRangeMin();
+	lfRangeMax			= pcCmd->lfGetRangeMax();
 	iCrossOverNum		= pcCmd->iGetCrossOverNum();
 	lfAlpha			= pcCmd->lfGetAlpha();
 	lfBeta			= pcCmd->lfGetBeta();
@@ -460,6 +468,18 @@ void vSetObjectiveFunction( CCmdCheck *pcCmd, CAbc *pcAbc )
 	{
 		pcAbc->vSetConstraintFunction(lfWeierstrass);
 	}
+	else if (strcmp(pcCmd->pcGetFuncName(), "Levy") == 0)
+	{
+		pcAbc->vSetConstraintFunction(lfLevy);
+	}
+	else if (strcmp(pcCmd->pcGetFuncName(), "Bukin") == 0)
+	{
+		pcAbc->vSetConstraintFunction(lfBukin);
+	}
+	else if (strcmp(pcCmd->pcGetFuncName(), "Mccormick") == 0)
+	{
+		pcAbc->vSetConstraintFunction(lfMccormick);
+	}
 	else if (strcmp(pcCmd->pcGetFuncName(), "nedocs") == 0)
 	{
 		pcAbc->vSetConstraintFunction(lfNedocs);
@@ -492,6 +512,11 @@ void vSetConstraintCondition(CCmdCheck *pcCmd, CAbc *pcAbc)
 	{
 		// NEDOCSはすべて正の値を指定することからここでリミッターを設定します。
 		pcAbc->vSetConstraintCondition(vNedocsLimitter);
+	}
+	else if (strcmp(pcCmd->pcGetConditionName(), "inverse_simulation") == 0)
+	{
+		// 逆シミュレーションで使用しているNEDOCS及び制約条件を設定します。
+		pcAbc->vSetConstraintCondition(vSetEDCalibrationCondition);
 	}
 	else
 	{
@@ -611,39 +636,59 @@ void vOutputData( CCmdCheck *pcCmd, CAbc *pcAbc, int iLoc )
 	}
 	else if( pcCmd->iGetOutputFlag() == 4 )
 	{
-		pcAbc->vOutputGlobalMaxAbcData();
-	}
-	else if( pcCmd->iGetOutputFlag() == 12 )
-	{
-		pcAbc->vOutputGlobalMaxAbcDataConstFuncValue();
+		pcAbc->vOutputGlobalMaxAbcData( 0 );
 	}
 	else if( pcCmd->iGetOutputFlag() == 5 )
 	{
-		pcAbc->vOutputGlobalMinAbcData();
+		pcAbc->vOutputGlobalMinAbcData( 0 );
 	}
 	else if( pcCmd->iGetOutputFlag() == 6 )
 	{
 		pcAbc->vOutputGlobalMinAbcDataConstFuncValue();
 	}
-	else if( pcCmd->iGetOutputFlag() == 7 )
+	else if (pcCmd->iGetOutputFlag() == 7)
 	{
-		pcAbc->vOutputAbcDataLocDist( 0 );
+		pcAbc->vOutputGlobalMinAbcData( 1 );
 	}
-	else if( pcCmd->iGetOutputFlag() == 8 )
+	else if (pcCmd->iGetOutputFlag() == 8)
 	{
-		pcAbc->vOutputAbcDataLocDist( 1 );
+		pcAbc->vOutputGlobalMaxAbcDataConstFuncValue();
 	}
-	else if( pcCmd->iGetOutputFlag() == 9 )
+	else if (pcCmd->iGetOutputFlag() == 9)
 	{
-		pcAbc->vOutputLocalMaxAbcData( 0 );
+		pcAbc->vOutputGlobalMaxAbcData(1);
 	}
 	else if( pcCmd->iGetOutputFlag() == 10 )
 	{
+		pcAbc->vOutputLocalMaxAbcData( 0 );
+	}
+	else if( pcCmd->iGetOutputFlag() == 11 )
+	{
 		pcAbc->vOutputLocalMaxAbcData( 1 );
 	}
-	else if (pcCmd->iGetOutputFlag() == 11 )
+	else if (pcCmd->iGetOutputFlag() == 11)
 	{
-		pcAbc->vOutputGlobalMinAbcDataConstFuncValue(iLoc);
+		pcAbc->vOutputLocalMinAbcData(0);
+	}
+	else if (pcCmd->iGetOutputFlag() == 12)
+	{
+		pcAbc->vOutputLocalMinAbcData(1);
+	}
+	else if (pcCmd->iGetOutputFlag() == 13 )
+	{
+//		pcAbc->vOutputLocalMinAbcDataConstFuncValue(iLoc);
+	}
+	else if (pcCmd->iGetOutputFlag() == 14 )
+	{
+//		pcAbc->vOutputGlobalMaxMinDistance();
+	}
+	else if (pcCmd->iGetOutputFlag() == 15 )
+	{
+		pcAbc->vOutputAbcDataLocDist(0);
+	}
+	else if (pcCmd->iGetOutputFlag() == 16 )
+	{
+		pcAbc->vOutputAbcDataLocDist(1);
 	}
 }
 
@@ -663,28 +708,103 @@ void vSetRandom( CCmdCheck *pcCmd, CAbc *pcAbc )
 {
 	if( pcCmd->iGetAbcMethod() == 2 )
 	{
-		pcAbc->vSetModifiedRandom( pcCmd->lfGetRange() );
+		if (pcCmd->lfGetRange() != 0.0)
+		{
+			pcAbc->vSetModifiedRandom(pcCmd->lfGetRange());
+		}
+		else
+		{
+			pcAbc->vSetModifiedRandom(pcCmd->lfGetRangeMin(), pcCmd->lfGetRangeMax());
+		}
 	}
 	else if( pcCmd->iGetAbcMethod() == 1 )
 	{
-		pcAbc->vSetRandom( pcCmd->lfGetRangeMin(), pcCmd->lfGetRangeMax() );
+		if (pcCmd->lfGetRange() != 0.0)
+		{
+			pcAbc->vSetRandom(pcCmd->lfGetRange());
+		}
+		else
+		{
+			pcAbc->vSetRandom(pcCmd->lfGetRangeMin(), pcCmd->lfGetRangeMax());
+		}
 	}
 	else if(pcCmd->iGetAbcMethod() == 3 || pcCmd->iGetAbcMethod() == 12 || pcCmd->iGetAbcMethod() == 4 || pcCmd->iGetAbcMethod() == 5 || pcCmd->iGetAbcMethod() == 6 || pcCmd->iGetAbcMethod() == 10 || pcCmd->iGetAbcMethod() == 11 || pcCmd->iGetAbcMethod() == 13 || pcCmd->iGetAbcMethod() == 14 )
 	{
-		pcAbc->vSetRandomPso(pcCmd->lfGetRange());
+		if (pcCmd->lfGetRange() != 0.0)
+		{
+			pcAbc->vSetRandomPso(pcCmd->lfGetRange());
+		}
+		else
+		{
+			pcAbc->vSetRandomPso(pcCmd->lfGetRangeMin(), pcCmd->lfGetRangeMax());
+		}
 	}
 	else if (pcCmd->iGetAbcMethod() == 7 || pcCmd->iGetAbcMethod() == 14 )
 	{
-		pcAbc->vSetRandomUndx(pcCmd->lfGetRange());
+		if (pcCmd->lfGetRange() != 0.0)
+		{
+			pcAbc->vSetRandomUndx(pcCmd->lfGetRange());
+		}
+		else
+		{
+			pcAbc->vSetRandomUndx(pcCmd->lfGetRangeMin(), pcCmd->lfGetRangeMax());
+		}
 	}
 	else if (pcCmd->iGetAbcMethod() == 8 || pcCmd->iGetAbcMethod() == 15)
 	{
-		pcAbc->vSetRandomRex(pcCmd->lfGetRange());
+		if (pcCmd->lfGetRange() != 0.0)
+		{
+			pcAbc->vSetRandomRex(pcCmd->lfGetRange());
+		}
+		else
+		{
+			pcAbc->vSetRandomRex(pcCmd->lfGetRangeMin(), pcCmd->lfGetRangeMax());
+		}
 	}
 	else if (pcCmd->iGetAbcMethod() == 9 || pcCmd->iGetAbcMethod() == 16 )
 	{
-//		pcAbc->vSetRandomARex(pcCmd->lfGetRange());
-		pcAbc->vSetRandom(pcCmd->lfGetRange());
+		if (pcCmd->lfGetRange() != 0.0)
+		{
+			pcAbc->vSetRandom(pcCmd->lfGetRange());
+//			pcAbc->vSetRandomARex(pcCmd->lfGetRange());
+		}
+		else
+		{
+			pcAbc->vSetRandom(pcCmd->lfGetRangeMin(), pcCmd->lfGetRangeMax());
+//			pcAbc->vSetRandomARex(pcCmd->lfGetRangeMin(), pcCmd->lfGetRangeMax());
+		}
+	}
+	// 逆シミュレーションの評価の場合は別の関数から初期化します。
+	if (strcmp(pcCmd->pcGetConditionName(), "inverse_simulation") == 0)
+	{
+		pcAbc->vSetData();
+	}
+}
+
+/**
+*<PRE>
+*  登場する粒子の値で特定の部分を再度ランダムに設定します。実験用。NEDOCSの逆シミュレーション用の特殊関数。
+*  ver 0.1 初版
+*</PRE>
+* @param pcCmd	コマンドチェッククラス
+* @param pcAbc	ABCアルゴリズムを実行するクラスインスタンス
+* @throw CAbcException
+* @author kobayashi
+* @since 0.1 2015/07/28
+* @version 0.1
+*/
+void vSetUpdateData(CCmdCheck *pcCmd, CAbc *pcAbc)
+{
+	if (strcmp(pcCmd->pcGetConditionName(), "inverse_simulation") == 0)
+	{
+		if (pcCmd->lfGetRange() != 0.0)
+		{
+			pcAbc->vSetUpdateData(pcCmd->lfGetRange(), pcCmd->iGetAbcVectorDimNum()-12, pcCmd->iGetAbcVectorDimNum() );
+		}
+		else
+		{
+			pcAbc->vSetUpdateData(pcCmd->lfGetRangeMin(), pcCmd->lfGetRangeMax(), pcCmd->iGetAbcVectorDimNum()-12, pcCmd->iGetAbcVectorDimNum() );
+		}
 	}
 }
 
