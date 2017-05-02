@@ -109,6 +109,16 @@ public:
 	 */
 	void vOutputGlobalMaxGenDataConstFuncValue();
 
+	/**
+	* <PRE>
+	* 　現時点でのもっともよい遺伝子及び最も悪い遺伝子の距離を算出します。
+	* </PRE>
+	* @author kobayashi
+	* @since 2017/03/27
+	* @version 0.1
+	*/
+	void vOutputGlobalMaxMinDistance();
+
 protected:
 	int iGenerationNumber;
 	int iGenNumber;

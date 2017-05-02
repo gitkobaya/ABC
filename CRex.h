@@ -24,6 +24,9 @@ public:
 	void vARex();
 	void vTerminate();
 
+private:
+	void vSelectParent();
+
 	// ŒöŠJŠÖ”get set ŠÖ”ŒQ
 public:
 	inline int iGetParentNumber(){return iParentNumber; };
@@ -111,6 +114,8 @@ private:
 	 * @version 0.1
 	 */
 	void vAerMahalanobis( const std::vector<Rank_t>& stlFitProb );
+
+	void vSelectGens(double **pplfChildren, int *pi1stGenLoc, int *pi2ndGenLoc);
 
 private:
 	int iParentOutputFlag;

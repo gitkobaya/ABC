@@ -38,6 +38,9 @@ public:
 	void vGetGenData( double **pplfGenData );
 	void vGetBestGenData( double *plfGenData );
 
+	int iGet1stLoc() { return i1stLoc; };
+	int iGet2ndLoc() { return i2ndLoc; };
+
 public:
 	/**
 	 * <PRE>
@@ -79,7 +82,8 @@ private:
 	double *plfChild1;
 	double *plfChild2;
 	int *piParentLoc;
-	int iBestLoc;
+	int i1stLoc;
+	int i2ndLoc;
 };
 
 class CUndxException

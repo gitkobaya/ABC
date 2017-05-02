@@ -25,11 +25,10 @@ double lfSphere( double *plfX, int iVectorLen )
 {
 	int i;
 	double lfRes = 0.0;
-	int iVector2 = iVectorLen/5;
 	int iVector1 = iVectorLen%5;
 	for( i = 0;i < iVector1; i++ )
 		lfRes += plfX[i]*plfX[i];
-	for( i = 0;i < iVector2; i++ )
+	for( i = iVector1;i < iVectorLen; i+=5 )
 		lfRes += ( plfX[i]*plfX[i] + plfX[i+1]*plfX[i+1] + plfX[i+2]*plfX[i+2] + plfX[i+3]*plfX[i+3] + plfX[i+4]*plfX[i+4] );
 	return lfRes;
 }
@@ -39,21 +38,29 @@ double lfSphere( double *plfX, int iVectorLen )
  * 　目的関数のEllipsoid関数の計算を実行します。
  * 　-5.12 <= x_i <= 5.12 f_i(x_i)=0,  x_i=0, i = 1,2,･･･,n
  * 　f(x) = sum(1000^{i-1/n-1}x_{i})^{2}
+ *   ver 0.1 2016/08/24 初版
+ *   ver 0.2 2016/11/01 高速化及び修正
  * </PRE>
  * @param plfX			引数
  * @param iVectorLen	引数の次元数
  * @author kobayashi
  * @since 2016/8/24
- * @version 0.1
+ * @version 0.2
  */
 double lfEllipsoid( double *plfX, int iVectorLen )
 {
 	int i;
 	double lfRes = 0.0;
 	double lfX = 0.0;
-	for( i = 0;i < iVectorLen; i++ )
+	double lfPower = 0.0;
+	double lfPowerRes = 1.0;
+
+	lfPower = pow(1000, 1.0 / (double)(iVectorLen - 1));
+	lfRes = plfX[0]*plfX[0];
+	for( i = 1;i < iVectorLen; i++ )
 	{
-		lfX = pow(1000.0, (double)(i-1)/(double)(iVectorLen-1))*plfX[i];
+		lfPowerRes *= lfPower;
+		lfX = lfPowerRes*plfX[i];
 		lfRes += lfX*lfX;
 	}
 	return lfRes;
@@ -64,12 +71,14 @@ double lfEllipsoid( double *plfX, int iVectorLen )
  * 　目的関数のHyper-Ellipsoid関数の計算を実行します。
  * 　-1 <= x_i <= 1 f_i(x_i)=0,  x_i=0, i = 1,2,･･･,n
  * 　f(x) = sum(i^{2}*x_{i}^{2})
+ *   ver 0.1 2015/06/12 初期版
+ *   ver 0.2 2016/11/30 実装ミスを修正
  * </PRE>
  * @param plfX			引数
  * @param iVectorLen	引数の次元数
  * @author kobayashi
  * @since 2015/6/12
- * @version 1.0
+ * @version 0.2
  */
 double lfHyperEllipsoid( double *plfX, int iVectorLen )
 {
@@ -77,7 +86,7 @@ double lfHyperEllipsoid( double *plfX, int iVectorLen )
 	double lfRes = 0.0;
 	for( i = 0;i < iVectorLen; i++ )
 	{
-		lfRes += (double)i*(double)i*plfX[i]*plfX[i];
+		lfRes += (double)(i+1)*(double)(i+1)*plfX[i]*plfX[i];
 	}
 	return lfRes;
 }
@@ -87,12 +96,14 @@ double lfHyperEllipsoid( double *plfX, int iVectorLen )
  * 　目的関数のAxis Parallel hyper-ellipsoid関数の計算を実行します。
  * 　-5.12 <= x_i <= 5.12,  f_{i}(x_{i})=0,  x_{i}=0, i = 1,2,･･･,n
  * 　f(x) = sum(i*x_{i}^{2})
+ *   ver 0.1 2015/06/12 初期版
+ *   ver 0.2 2016/11/30 実装ミスを修正
  * </PRE>
  * @param plfX			引数
  * @param iVectorLen	引数の次元数
  * @author kobayashi
  * @since 2015/6/12
- * @version 1.0
+ * @version 0.2
  */
 double lfAxisParallelHyperEllipsoid( double *plfX, int iVectorLen )
 {
@@ -100,7 +111,7 @@ double lfAxisParallelHyperEllipsoid( double *plfX, int iVectorLen )
 	double lfRes = 0.0;
 	for( i = 0;i < iVectorLen; i++ )
 	{
-		lfRes += (double)i*plfX[i]*plfX[i];
+		lfRes += (double)(i+1)*plfX[i]*plfX[i];
 	}
 	return lfRes;
 }
@@ -185,10 +196,11 @@ double lfSumOfDifferentPower( double *plfX, int iVectorLen )
  * @param iVectorLen	引数の次元数
  * @author kobayashi
  * @since 2015/6/6
- * @version 1.0
+ * @version 0.1
  */
 double lfRosenbrock( double *plfX, int iVectorLen )
 {
+#if 1
 	int i;
 	double lfRes = 0.0;
 	double lfTempX1 = 0.0;
@@ -202,6 +214,48 @@ double lfRosenbrock( double *plfX, int iVectorLen )
 		lfRes += (100*lfTempX2*lfTempX2+lfTempX1*lfTempX1);
 	}
 	return lfRes;
+#else
+	int i;
+	double lfRes = 0.0;
+	double lfTempX1 = 0.0;
+	double lfTempX2 = 0.0;
+	double lfXX = 0.0;
+	int iVectorLen51, iVectorLen52;
+	double alfXX[5];
+	double alfTempX1[5];
+	double alfTempX2[5];
+
+	iVectorLen51 = iVectorLen % 5;
+	iVectorLen52 = (iVectorLen-1) / 5;
+	for (i = 0; i < iVectorLen51; i++)
+	{
+		lfXX = plfX[i] * plfX[i];
+		lfTempX1 = 1.0 - plfX[i];
+		lfTempX2 = plfX[i + 1] - lfXX;
+		lfRes += (100 * lfTempX2*lfTempX2 + lfTempX1*lfTempX1);
+	}
+	for (i = iVectorLen51; i < iVectorLen; i+=5)
+	{
+		alfXX[0] = plfX[i]*plfX[i];
+		alfXX[1] = plfX[i+1]*plfX[i+1];
+		alfXX[2] = plfX[i+2]*plfX[i+2];
+		alfXX[3] = plfX[i+3]*plfX[i+3];
+		alfXX[4] = plfX[i+4]*plfX[i+4];
+		alfTempX1[0] = 1.0 - plfX[i];
+		alfTempX1[1] = 1.0 - plfX[i+1];
+		alfTempX1[2] = 1.0 - plfX[i+2];
+		alfTempX1[3] = 1.0 - plfX[i+3];
+		alfTempX1[4] = 1.0 - plfX[i+4];
+		alfTempX2[0] = plfX[i + 1] - alfXX[0];
+		alfTempX2[1] = plfX[i + 2] - alfXX[1];
+		alfTempX2[2] = plfX[i + 3] - alfXX[2];
+		alfTempX2[3] = plfX[i + 4] - alfXX[3];
+		alfTempX2[4] = plfX[i + 5] - alfXX[4];
+		lfRes += 100*( alfTempX2[0]*alfTempX2[0] + alfTempX2[1]*alfTempX2[1] + alfTempX2[2]*alfTempX2[2] + alfTempX2[3]*alfTempX2[3] + alfTempX2[4]*alfTempX2[4]) + 
+					   alfTempX1[0]*alfTempX1[0] + alfTempX1[1]*alfTempX1[1] + alfTempX1[2]*alfTempX1[2] + alfTempX1[3]*alfTempX1[3] + alfTempX1[4]*alfTempX1[4];
+	}
+	return lfRes;
+#endif
 }
 
 /**
@@ -216,6 +270,7 @@ double lfRosenbrock( double *plfX, int iVectorLen )
  */
 double lfRosenbrockStar( double *plfX, int iVectorLen )
 {
+#if 1
 	int i;
 	double lfRes = 0.0;
 	double lfTempX1 = 0.0;
@@ -229,6 +284,48 @@ double lfRosenbrockStar( double *plfX, int iVectorLen )
 		lfRes += (100*lfTempX2*lfTempX2+lfTempX1*lfTempX1);
 	}
 	return lfRes;
+#else
+	int i;
+	double lfRes = 0.0;
+	double lfTempX1 = 0.0;
+	double lfTempX2 = 0.0;
+	double lfXX = 0.0;
+	int iVectorLen51, iVectorLen52;
+	double alfXX[5];
+	double alfTempX1[5];
+	double alfTempX2[5];
+
+	iVectorLen51 = iVectorLen % 5;
+	iVectorLen52 = iVectorLen / 5;
+	for (i = 1; i < iVectorLen51; i++)
+	{
+		lfXX = plfX[i] * plfX[i];
+		lfTempX1 = 1.0 - plfX[i];
+		lfTempX2 = plfX[0] - lfXX;
+		lfRes += (100 * lfTempX2*lfTempX2 + lfTempX1*lfTempX1);
+	}
+	for (i = iVectorLen51; i < iVectorLen; i+=5)
+	{
+		alfXX[0] = plfX[i]*plfX[i];
+		alfXX[1] = plfX[i+1]*plfX[i+1];
+		alfXX[2] = plfX[i+2]*plfX[i+2];
+		alfXX[3] = plfX[i+3]*plfX[i+3];
+		alfXX[4] = plfX[i+4]*plfX[i+4];
+		alfTempX1[0] = 1.0 - plfX[i];
+		alfTempX1[1] = 1.0 - plfX[i+1];
+		alfTempX1[2] = 1.0 - plfX[i+2];
+		alfTempX1[3] = 1.0 - plfX[i+3];
+		alfTempX1[4] = 1.0 - plfX[i+4];
+		alfTempX2[0] = plfX[0] - alfXX[0];
+		alfTempX2[1] = plfX[0] - alfXX[1];
+		alfTempX2[2] = plfX[0] - alfXX[2];
+		alfTempX2[3] = plfX[0] - alfXX[3];
+		alfTempX2[4] = plfX[0] - alfXX[4];
+		lfRes += 100 * ( alfTempX2[0]*alfTempX2[0] + alfTempX2[1]*alfTempX2[1] + alfTempX2[2]*alfTempX2[2] + alfTempX2[3]*alfTempX2[3] + alfTempX2[4]*alfTempX2[4] ) + 
+						 alfTempX1[0]*alfTempX1[0] + alfTempX1[1]*alfTempX1[1] + alfTempX1[2]*alfTempX1[2] + alfTempX1[3]*alfTempX1[3] + alfTempX1[4]*alfTempX1[4];
+	}
+	return lfRes;
+#endif
 }
 
 /**
@@ -246,7 +343,6 @@ double lf3rdDeJongsFunc( double *plfX, int iVectorLen )
 {
 	int i;
 	double lfRes = 0.0;
-	using namespace std;
 	for( i = 0;i < iVectorLen; i++ )
 	{
 		lfRes += fabs( plfX[i] );
@@ -280,14 +376,17 @@ double lfModified3rdDeJongsFunc( double *plfX, int iVectorLen )
 
 /**
  * <PRE>
- * 　目的関数の4th DeJong's Function関数の計算を実行します。
- *   大域的最適解 Xi = 1 のときf(Xi) = 0
+ * 　目的関数の4th DeJong's Function( Quartic Function )関数の計算を実行します。
+ *	 \sum^{n}_{i=1}(ix_{i}^4)
+ * 　大域的最適解 -1.28 \leq x_{i} \leq 1.28 x = (0,0,0,0...,0)
+ *  ver 0.1 初期版
+ *  ver 0.2 2016/12/05 実装ミスを修正
  * </PRE>
  * @param plfX			引数
  * @param iVectorLen	引数の次元数
  * @author kobayashi
  * @since 2015/6/12
- * @version 1.0
+ * @version 0.2
  */
 double lf4thDeJongsFunc( double *plfX, int iVectorLen )
 {
@@ -297,21 +396,25 @@ double lf4thDeJongsFunc( double *plfX, int iVectorLen )
 	for( i = 0;i < iVectorLen; i++ )
 	{
 		lfXX = plfX[i]*plfX[i];
-		lfRes += (double)i*lfXX*lfXX;
+		lfRes += (double)(i+1)*lfXX*lfXX;
 	}
 	return lfRes;
 }
 
 /**
  * <PRE>
- * 　目的関数のModified 4th DeJong's Function関数の計算を実行します。
- *   大域的最適解 Xi = 1 のときf(Xi) = 0
+ * 　的関数のModified 4th DeJong's Function(Quartic Gussian Function)関数の計算を実行します。
+ *  大域的最適解 Xi = 1 のときf(Xi) = 0
+ *	 \sum^{n}_{i=1}(ix_{i}^4)+random[0,1)
+ * 　大域的最適解 -1.28 \leq x_{i} \leq 1.28 x = (0,0,0,0...,0)
+ *  ver 0.1 初期版
+ *  ver 0.2 2016/12/05 実装ミスを修正
  * </PRE>
  * @param plfX			引数
  * @param iVectorLen	引数の次元数
  * @author kobayashi
  * @since 2015/10/16
- * @version 1.0
+ * @version 0.2
  */
 double lfModified4thDeJongsFunc( double *plfX, int iVectorLen )
 {
@@ -320,10 +423,17 @@ double lfModified4thDeJongsFunc( double *plfX, int iVectorLen )
 	double lfXX;
 	for( i = 0;i < iVectorLen; i++ )
 	{
-		lfXX = plfX[i]*plfX[i];
-		lfRes += (double)i*lfXX*lfXX + rnd();
+//		if (-1.28 <= plfX[i] && plfX[i] <= 1.28)
+		{
+			lfXX = plfX[i] * plfX[i];
+			lfRes += (double)(i + 1)*lfXX*lfXX;
+		}
+//		else
+		{
+//			lfRes += (double)(i + 1)*1.28*1.28*1.28*1.28;
+		}
 	}
-	return lfRes;
+	return lfRes+rnd();
 }
 
 /**
@@ -375,6 +485,7 @@ double lf5thDeJongsFunc( double *plfX, int iVectorLen )
  */
 double lfAckley( double *plfX, int iVectorLen )
 {
+#if 0
 	int i;
 	double lfRes = 0.0;
 	double lfCos = 0.0;
@@ -391,21 +502,52 @@ double lfAckley( double *plfX, int iVectorLen )
 
 	lfRes = 20.0-20.0*exp(-0.2*sqrt(lfX2)) + lfE - exp( lfCos );
 	return lfRes;
+#else
+	int i;
+	int iVectorLen51, iVectorLen52;
+	double lfRes = 0.0;
+	double lfCos = 0.0;
+	double lfX2 = 0.0;
+	double lfE = exp(1.0);
+	double lf2pi = pi+pi;
+	double alfCos[5];
+	double alfX2[5];
+
+	iVectorLen51 = iVectorLen % 5;
+	iVectorLen52 = iVectorLen / 5;
+	for (i = 0; i < iVectorLen51; i++)
+	{
+		lfX2 += plfX[i] * plfX[i];
+		lfCos += cos(lf2pi*plfX[i]);
+	}
+	for (i = iVectorLen51; i < iVectorLen; i+=5)
+	{
+		lfX2 += plfX[i]*plfX[i] + plfX[i+1]*plfX[i+1] + plfX[i+2]*plfX[i+2] + plfX[i+3]*plfX[i+3] + plfX[i+4]*plfX[i+4];
+		lfCos += cos(lf2pi*plfX[i]) + cos(lf2pi*plfX[i+1]) + cos(lf2pi*plfX[i+2]) + cos(lf2pi*plfX[i+3]) + cos(lf2pi*plfX[i+4]);
+	}
+	lfX2 = lfX2 / (double)iVectorLen;
+	lfCos = lfCos / (double)iVectorLen;
+
+	lfRes = 20.0 - 20.0*exp(-0.2*sqrt(lfX2)) + lfE - exp(lfCos);
+	return lfRes;
+#endif
 }
 
 /**
  * <PRE>
  * 　目的関数のEasom's Function関数の計算を実行します。
+ *   f(x) = -\cos(x_{1})\cos(x_{2})\exp(-(x_{1}-\pi)^{2}-(x_{2}-\pi)^{2})
  *   大域的最適解 Xi = pi のときf(Xi) = -1
  *   2次元関数であることに注意。
  *   ver 0.1 初期バージョン
  *   ver 0.2 2016/9/27 実装していなかったので実装
+ *   ver 0.3 2016/11/29 実装ミスを修正
  * </PRE>
  * @param plfX			引数
  * @param iVectorLen	引数の次元数
  * @author kobayashi
  * @since 2015/10/16
- * @version 0.2
+ * @version 0.3
  */
 double lfEasoms( double *plfX, int iVectorLen )
 {
@@ -416,10 +558,9 @@ double lfEasoms( double *plfX, int iVectorLen )
 	lfDiff1 = plfX[0]-pi;
 	lfDiff2 = plfX[1]-pi;
 	
-	lfRes = (iVectorLen==2)*cos(plfX[0])*cos(plfX[1])*exp(-(lfDiff1*lfDiff1+lfDiff2*lfDiff2));
-	return lfRes;
+	lfRes = cos(plfX[0])*cos(plfX[1])*exp(-(lfDiff1*lfDiff1+lfDiff2*lfDiff2));
+	return -lfRes;
 }
-
 
 /**
  * <PRE>
@@ -458,15 +599,17 @@ double lfExtendEasoms( double *plfX, int iVectorLen )
 /**
  * <PRE>
  * 　目的関数のEquality-Constrained 関数の計算を実行します。
+ *   -\sqrt(n)^{n}\PRO^{n}_i=1 x_{i}
  *   大域的最適解 Xi = 1.0/\sqrt(n) のときf(Xi) = -1 (0 <= Xi <= 1.0)
  *   ver 0.1 初期バージョン
  *   ver 0.2 2016/9/27 関数に誤りがあり修正
+ *   ver 0.3 2016/12/5 実装ミスのため修正
  * </PRE>
  * @param plfX			引数
  * @param iVectorLen	引数の次元数
  * @author kobayashi
  * @since 2015/6/6
- * @version 0.1
+ * @version 0.3
  */
 double lfEqualityConstrained( double *plfX, int iVectorLen )
 {
@@ -474,10 +617,11 @@ double lfEqualityConstrained( double *plfX, int iVectorLen )
 	double lfRes  = 1.0;
 	double lfSqrt;
 
-	lfSqrt = sqrt((double)iVectorLen);
+	lfSqrt = sqrt(1.0/(double)iVectorLen);
 	for( i = 0; i < iVectorLen; i++ )
 	{
-		lfRes *= lfSqrt*plfX[i];
+		if (0.0 <= plfX[i] && plfX[i] <= 1.0)
+			lfRes *= lfSqrt*plfX[i];
 	}
 	return -lfRes;
 }
@@ -534,7 +678,10 @@ double lfMichaelwicz( double *plfX, int iVectorLen )
 	m = 10;
 	for( i = 0; i < iVectorLen; i++ )
 	{
-		lfRes += sin(plfX[i])*pow(sin((double)i*plfX[i]*plfX[i]/pi),2.0*m);
+		if (0.0 <= plfX[i] && plfX[i] <= pi)
+			lfRes += sin(plfX[i])*pow(sin((double)(i + 1)*plfX[i] * plfX[i] / pi), 2.0*m);
+		else
+			lfRes += 0.0;
 	}
 	return -lfRes;
 }
@@ -587,6 +734,7 @@ double lfKatsuura( double *plfX, int iVectorLen )
  */
 double lfRastrigin( double *plfX, int iVectorLen )
 {
+#if 0
 	int i;
 	double lfRes = 0.0;
 	double lf2pi = 2.0*pi;
@@ -596,6 +744,25 @@ double lfRastrigin( double *plfX, int iVectorLen )
 		lfRes += ( plfX[i]*plfX[i]-10.0*cos(lf2pi*plfX[i]));
 	}
 	return lfRes+10.0*iVectorLen;
+#else
+	int i;
+	double lfRes = 0.0;
+	double lf2pi = 2.0*pi;
+	int iVectorLen5;
+
+	iVectorLen5 = iVectorLen % 5;
+
+	for (i = 0; i < iVectorLen5; i++)
+	{
+		lfRes += (plfX[i] * plfX[i] - 10.0*cos(lf2pi*plfX[i]));
+	}
+	for (i = iVectorLen5; i < iVectorLen; i+=5)
+	{
+		lfRes += (plfX[i]*plfX[i] + plfX[i+1]*plfX[i+1] + plfX[i+2]*plfX[i+2] + plfX[i+3]*plfX[i+3] + plfX[i+4]*plfX[i+4] - 
+				  10.0*( cos(lf2pi*plfX[i]) + cos(lf2pi*plfX[i+1]) + cos(lf2pi*plfX[i+2]) + cos(lf2pi*plfX[i+3]) + cos(lf2pi*plfX[i+4])));
+	}
+	return lfRes + 10.0*iVectorLen;
+#endif
 }
 
 /**
@@ -613,6 +780,7 @@ double lfRastrigin( double *plfX, int iVectorLen )
  */
 double lfRastriginShift( double *plfX, int iVectorLen )
 {
+#if 0
 	int i;
 	double lfXX;
 	double lfRes = 0.0;
@@ -623,6 +791,33 @@ double lfRastriginShift( double *plfX, int iVectorLen )
 		lfRes += ( lfXX*lfXX-10.0*cos(lf2pi*lfXX) );
 	}
 	return lfRes+10.0*iVectorLen;
+#else
+	int i;
+	double lfXX;
+	double lfRes = 0.0;
+	double lf2pi = pi+pi;
+	double alfXX[5];
+	int iVectorLen5;
+
+	iVectorLen5 = iVectorLen % 5;
+
+	for (i = 0; i < iVectorLen5; i++)
+	{
+		lfXX = 1.0 - plfX[i];
+		lfRes += (lfXX*lfXX - 10.0*cos(lf2pi*lfXX));
+	}
+	for (i = iVectorLen5; i < iVectorLen; i += 5)
+	{
+		alfXX[0] = plfX[i]*plfX[i];
+		alfXX[1] = plfX[i+1]*plfX[i+1];
+		alfXX[2] = plfX[i+2]*plfX[i+2];
+		alfXX[3] = plfX[i+3]*plfX[i+3];
+		alfXX[4] = plfX[i+4]*plfX[i+4];
+		lfRes += (alfXX[0]*alfXX[0] + alfXX[1]*alfXX[1] + alfXX[2]*alfXX[2] + alfXX[3]*alfXX[3] + alfXX[4]*alfXX[4] -
+			10.0*(cos(lf2pi*plfX[i]) + cos(lf2pi*plfX[i + 1]) + cos(lf2pi*plfX[i + 2]) + cos(lf2pi*plfX[i + 3]) + cos(lf2pi*plfX[i + 4])));
+	}
+	return lfRes + 10.0*iVectorLen;
+#endif
 }
 
 /**
@@ -645,9 +840,10 @@ double lfSchwefel( double *plfX, int iVectorLen )
 	double lfRes = 0.0;
 	for( i = 0;i < iVectorLen; i++ )
 	{
-		lfRes += ( plfX[i]*sin(sqrt(fabs(plfX[i]))) );
+		if( -512 <= plfX[i] && plfX[i] <= 512 )	
+			lfRes += ( -plfX[i]*sin(sqrt(fabs(plfX[i]))) );
 	}
-	return -lfRes;
+	return 418.982887272433369*iVectorLen-lfRes;
 }
 
 /**
@@ -672,7 +868,7 @@ double lfSixHumpCamelBack( double *plfX, int iVectorLen )
 	double lfXX2;
 	lfXX1 = plfX[0]*plfX[0];
 	lfXX2 = plfX[1]*plfX[1];
-	lfRes = (iVectorLen==2)*( 4.0-2.1*lfXX1+1.0/3.0*lfXX1*lfXX1 )*lfXX1 + plfX[0]*plfX[1] + 4.0*(lfXX2-1.0)*lfXX2;
+	lfRes = ( 4.0-2.1*lfXX1+lfXX1*lfXX1/3.0 )*lfXX1 + plfX[0]*plfX[1] + 4.0*(lfXX2-1.0)*lfXX2;
 	return lfRes;
 }
 
@@ -702,9 +898,9 @@ double lfShubert( double *plfX, int iVectorLen )
 
 	for( i = 0;i < n; i++ )
 	{
-		iData = i+1;
-		lfResX += (double)i*cos(i+iData*plfX[0]);
-		lfResY += (double)i*cos(i+iData*plfX[1]);
+		iData = i+2;
+		lfResX += (double)(i+1)*cos(i+1+iData*plfX[0]);
+		lfResY += (double)(i+1)*cos(i+1+iData*plfX[1]);
 	}
 	return lfResX*lfResY;
 }
@@ -716,12 +912,13 @@ double lfShubert( double *plfX, int iVectorLen )
  *   2次元関数です。
  *   ver 0.1 初期バージョン
  *   ver 0.2 条件を追加(2次元以外はすべて0)
+ *   ver 0.3 2016/11/29 関数の誤りを修正
  * </PRE>
  * @param plfX			引数
  * @param iVectorLen	引数の次元数
  * @author kobayashi
  * @since 2015/6/17
- * @version 1.0
+ * @version 0.3
  */
 double lfGoldsteinPrice( double *plfX, int iVectorLen )
 {
@@ -736,7 +933,8 @@ double lfGoldsteinPrice( double *plfX, int iVectorLen )
 	lfX2_4 = plfX[1]*plfX[1];
 	lfX2_5 = plfX[0]*plfX[1];
 
-	lfRes = (iVectorLen==2)*( 1.0+lfX2_1*( 19.0-14.0*plfX[0]+3*lfX2_3-14*plfX[1]+6*lfX2_5+3*lfX2_4 ) ) * ( 30.0+lfX2_2*( 18.0-32.0*plfX[0]+12.0*lfX2_3+48.0*plfX[1]-36.0*lfX2_5+27.0*lfX2_2) );
+	lfRes = ( 1.0+lfX2_1*( 19.0-14.0*plfX[0]+3*lfX2_3-14*plfX[1]+6*lfX2_5+3*lfX2_4 ) ) *
+			( 30.0+lfX2_2*( 18.0-32.0*plfX[0]+12.0*lfX2_3+48.0*plfX[1]-36.0*lfX2_5+27.0*lfX2_4) );
 
 	return lfRes;
 }
@@ -745,12 +943,14 @@ double lfGoldsteinPrice( double *plfX, int iVectorLen )
  * <PRE>
  * 　目的関数のBranins's rcos 関数の計算を実行します。(2次元関数)
  * 　大域的最適解 (x_{1},x_{2})=0.397887 f(x_{1},x_{2})=(-π,12.275), (π,2.275) (9.42478,2.475)
+ *   ver 0.1 2015/6/17 初期版
+ *   ver 0.2 2016/11/29 実装誤りの修正
  * </PRE>
  * @param plfX			引数
  * @param iVectorLen	引数の次元数
  * @author kobayashi
  * @since 2015/6/17
- * @version 1.0
+ * @version 0.2
  */
 double lfBraninsRCos( double *plfX, int iVectorLen )
 {
@@ -764,10 +964,10 @@ double lfBraninsRCos( double *plfX, int iVectorLen )
 	lfD = 6.0;
 	lfE = 10.0;
 	lfF = 1.0/(8.0*pi);
-	lfX2_1 = plfX[1]-lfB*plfX[0]*plfX[0]+lfC*plfX[1]-lfD;
+	lfX2_1 = plfX[1]-lfB*plfX[0]*plfX[0]+lfC*plfX[0]-lfD;
 	lfX2_1 *= lfX2_1;
 
-	lfRes = lfA*lfX2_1 + lfE*(1.0-lfF)*cos(plfX[1]) + lfE;
+	lfRes = lfA*lfX2_1 + lfE*(1.0-lfF)*cos(plfX[0]) + lfE;
 
 	return lfRes;
 }
@@ -797,6 +997,7 @@ double lfLangermann( double *plfX, int iVectorLen )
 
 	for( i = 0;i < M; i++ )
 	{
+		lfRes1 = lfRes2 = 0.0;
 		for( j = 0;j < iVectorLen; j++ )
 		{
 			lfRes1 += (plfX[j]-pplfA[i][j])*(plfX[j]-pplfA[i][j]);
@@ -829,7 +1030,7 @@ double lfDropWave( double *plfX, int iVectorLen )
 	double lfDist;
 
 	lfDist = plfX[0]*plfX[0]+plfX[1]*plfX[1];
-	lfRes = (iVectorLen==2)*( 1.0+cos(12.0*sqrt(lfDist) ) )/( 0.5*lfDist+2.0 );
+	lfRes = ( 1.0+cos(12.0*sqrt(lfDist) ) )/( 0.5*lfDist+2.0 );
 	return lfRes;
 }
 
@@ -1197,22 +1398,32 @@ double lfSchaffer( double *plfX, int iGenVector )
 	double lfXX = 0.0;
 	double lfSquare = 0.0;
 	double lfSin = 0.0;
+	double lfPower = 0.0;
+	double lfPower2, lfPower4, lfPower8, lfPower10;
 	double alfXX[6];
 	double alfSquare[5];
 	double alfSin[5];
+	double alfPower2[5];
+	double alfPower4[5];
+	double alfPower8[5];
+	double alfPower10[5];
 	int iGenVector_51;
 	int iGenVector_52;
 	int i;
 
-	iGenVector_51 = (iGenVector - 1) % 5;
+	iGenVector_51 = iGenVector % 5;
 	iGenVector_52 = (iGenVector - 1) / 5;
 	for (i = 0; i < iGenVector_51; i++)
 	{
 		lfSquare = plfX[i] * plfX[i] + plfX[i + 1] * plfX[i + 1];
-		lfSin = sin(50.0*pow(lfSquare, 0.1));
-		lfRes += pow(lfSquare, 0.25)*(lfSin*lfSin + 1.0);
+		lfPower2 = pow(lfSquare, 0.05);
+		lfPower4 = lfPower2*lfPower2;
+		lfPower8 = lfPower4*lfPower4;
+		lfPower10 = lfPower2*lfPower8;
+		lfSin = sin(50.0*lfPower4);
+		lfRes += lfPower10*(lfSin*lfSin + 1.0);
 	}
-	for (i = iGenVector_51; i < iGenVector_52; i++)
+	for (i = iGenVector_51; i < iGenVector; i+=5)
 	{
 		alfXX[0] = plfX[i] * plfX[i];
 		alfXX[1] = plfX[i+1] * plfX[i+1];
@@ -1225,16 +1436,36 @@ double lfSchaffer( double *plfX, int iGenVector )
 		alfSquare[2] = alfXX[2] + alfXX[3];
 		alfSquare[3] = alfXX[3] + alfXX[4];
 		alfSquare[4] = alfXX[4] + alfXX[5];
-		alfSin[0] = sin(50.0*pow(alfSquare[0], 0.1));
-		alfSin[1] = sin(50.0*pow(alfSquare[1], 0.1));
-		alfSin[2] = sin(50.0*pow(alfSquare[2], 0.1));
-		alfSin[3] = sin(50.0*pow(alfSquare[3], 0.1));
-		alfSin[4] = sin(50.0*pow(alfSquare[4], 0.1));
-		lfRes += pow(alfSquare[0], 0.25)*(alfSin[0]*alfSin[0]+1.0) + 
-				 pow(alfSquare[1], 0.25)*(alfSin[1]*alfSin[1]+1.0) +
-				 pow(alfSquare[2], 0.25)*(alfSin[2]*alfSin[2]+1.0) +
-				 pow(alfSquare[3], 0.25)*(alfSin[3]*alfSin[3]+1.0) +
-				 pow(alfSquare[4], 0.25)*(alfSin[4]*alfSin[4]+1.0);
+		alfPower2[0] = pow(alfSquare[0], 0.05);
+		alfPower2[1] = pow(alfSquare[1], 0.05);
+		alfPower2[2] = pow(alfSquare[2], 0.05);
+		alfPower2[3] = pow(alfSquare[3], 0.05);
+		alfPower2[4] = pow(alfSquare[4], 0.05);
+		alfPower4[0] = alfPower2[0] * alfPower2[0];
+		alfPower4[1] = alfPower2[1] * alfPower2[1];
+		alfPower4[2] = alfPower2[2] * alfPower2[2];
+		alfPower4[3] = alfPower2[3] * alfPower2[3];
+		alfPower4[4] = alfPower2[4] * alfPower2[4];
+		alfPower8[0] = alfPower4[0] * alfPower4[0];
+		alfPower8[1] = alfPower4[1] * alfPower4[1];
+		alfPower8[2] = alfPower4[2] * alfPower4[2];
+		alfPower8[3] = alfPower4[3] * alfPower4[3];
+		alfPower8[4] = alfPower4[4] * alfPower4[4];
+		alfPower10[0] = alfPower8[0] * alfPower2[0];
+		alfPower10[1] = alfPower8[1] * alfPower2[1];
+		alfPower10[2] = alfPower8[2] * alfPower2[2];
+		alfPower10[3] = alfPower8[3] * alfPower2[3];
+		alfPower10[4] = alfPower8[4] * alfPower2[4];
+		alfSin[0] = sin(50.0*alfPower2[0]);
+		alfSin[1] = sin(50.0*alfPower2[1]);
+		alfSin[2] = sin(50.0*alfPower2[2]);
+		alfSin[3] = sin(50.0*alfPower2[3]);
+		alfSin[4] = sin(50.0*alfPower2[4]);
+		lfRes += alfPower10[0]*(alfSin[0]*alfSin[0]+1.0) +
+				 alfPower10[1]*(alfSin[1]*alfSin[1]+1.0) +
+			     alfPower10[2]*(alfSin[2]*alfSin[2]+1.0) +
+				 alfPower10[3]*(alfSin[3]*alfSin[3]+1.0) +
+				 alfPower10[4]*(alfSin[4]*alfSin[4]+1.0);
 	}
 #endif
 	return lfRes;
@@ -1274,5 +1505,280 @@ double lfBohachevsky( double *plfX, int iGenVector )
 		lfCos2 = 0.4*cos(lf4pi*plfX[i+1]);
 		lfRes += lfXX1+lfXX2-lfCos1-lfCos2+0.7;
 	}
+	return lfRes;
+}
+
+/**
+* <PRE>
+* 　目的関数のZakharov関数の計算を実行します。
+*	 -\sum^{n}_{i=1}(x_{i}^2+(sum^{n}_{i=1}(\dfrac{ix_{i}^2}{2})^{2}+(sum^{n}_{i=1}(\dfrac{ix_{i}^2}{2})^{4})
+* 　大域的最適解 -5.12 \leq x_{i} \leq 5.12 x = (0,0,0,0...,0)
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2016/11/09
+* @version 0.1
+*/
+double lfZakharov(double *plfX, int iGenVector)
+{
+	double lfRes1 = 0.0;
+	double lfRes2 = 0.0;
+	double lfRes4 = 0.0;
+	double lfXX1 = 0.0;
+	double lfXX2 = 0.0;
+	int i;
+
+	for (i = 0; i < iGenVector; i++)
+	{
+		lfXX1 = plfX[i] * plfX[i];
+		lfXX2 = plfX[i] * plfX[i]*(double)i;
+		lfRes1 += lfXX1;
+		lfRes2 += lfXX2;
+	}
+	lfRes4 = 0.25*lfRes2*lfRes2;
+	lfRes4 = lfRes4*lfRes4;
+	return lfRes1+lfRes2+lfRes4;
+}
+
+/**
+* <PRE>
+* 　目的関数のSalomon Problem関数の計算を実行します。
+*	 1-\cos(2\pi\sqrt(\sum^{n}_{i=1}(x_{i}^2)))+0.1*sqrt(\sum^{n}_{i=1}(x_{i}^2))
+* 　大域的最適解 -100 \leq x_{i} \leq 100 x = (0,0,0,0...,0)
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2016/11/09
+* @version 0.1
+*/
+double lfSalomonProblem(double *plfX, int iGenVector)
+{
+	double lfRes1 = 0.0;
+	double lfRes2 = 0.0;
+	double lfRes4 = 0.0;
+	double lfXX1 = 0.0;
+	double lfXX2 = 0.0;
+	int i;
+
+	for (i = 0; i < iGenVector; i++)
+	{
+		lfXX1 = plfX[i] * plfX[i];
+		lfRes1 += lfXX1;
+	}
+	lfRes1 = sqrt(lfRes1);
+	return 1.0 - cos(2.0*pi*lfRes1)+0.1*lfRes1;
+}
+
+/**
+* <PRE>
+* 　目的関数のAlpine functionの計算を実行します。
+*	 \sum^{n}_{i=1}\abs(x_{i}*\sin(x_{i})+0.1*x_{i})
+* 　大域的最適解 -10 \leq x_{i} \leq 10 x = (0,0,0,0...,0)
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2016/11/09
+* @version 0.1
+*/
+double lfAlpine(double *plfX, int iGenVector)
+{
+	double lfRes = 0.0;
+	int i;
+
+	for (i = 0; i < iGenVector; i++)
+	{
+		lfRes += fabs(plfX[i] * sin(plfX[i]) + 0.1*plfX[i]);
+	}
+	return lfRes;
+}
+
+/**
+* <PRE>
+* 　目的関数のWeierstrass functionの計算を実行します。
+*	 \sum^{n}_{i=1}\abs(x_{i}*\sin(x_{i})+0.1*x_{i})
+* 　大域的最適解 -10 \leq x_{i} \leq 10 x = (0,0,0,0...,0)
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2016/11/09
+* @version 0.1
+*/
+double lfWeierstrass(double *plfX, int iGenVector)
+{
+	double lfRes = 0.0;
+	double ikMax = 20;
+	double lfA = 0.5;
+	double lfB = 3.0;
+	double lfRes1 = 0.0;
+	double lfRes2 = 0.0;
+	double lf2pi = pi + pi;
+	double lfPowA = 1.0;
+	double lfPowB = 1.0;
+	int i;
+	int iKMax = 20;
+	double alfA[20];
+	double alfB[20];
+
+	for (i = 0; i < ikMax; i++)
+	{
+		lfPowA *= lfA;
+		lfPowB *= lfB;
+		lfRes1 += lfPowA*cos(lf2pi*lfPowB*(plfX[i] + 0.5));
+		lfRes2 += lfPowA*cos(lf2pi*lfPowB*0.5);
+		lfRes += lfRes1 - iGenVector*lfRes2;
+	}
+	return lfRes;
+}
+
+/**
+* <PRE>
+* 　目的関数のLevy functionの計算を実行します。
+*	 \sin^{2}(\pi\omega_{1})+\sum^{d-1}_{i=1}(\omega-1)^{2}[1+10\sin^{2}(\pi\oemga_{i}+1)]+(\oemga_{d}-1)^{2}[1+\sin^{2}(2\pi\omega_{d})]
+*    \omega_{i} = 1 + \dfrac{x_{i}-1}{4}
+* 　大域的最適解 -10 \leq x_{i} \leq 10 x = (1,1,1,1...,1)
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2017/02/28
+* @version 0.1
+*/
+double lfLevy(double *plfX, int iGenVector)
+{
+	int i;
+	double lfRes = 0.0;
+	double lfOmega;
+	double lfOmega2;
+	double lfSin21;
+	double lfSin22;
+	double lfSin20;
+
+	lfOmega = 1.0 + (plfX[0] - 1.0)*0.25;
+	lfSin20 = sin(pi*lfOmega);
+	lfSin20 *= lfSin20;
+	for (i = 0; i < iGenVector-1; i++)
+	{
+		lfOmega = 1.0 + (plfX[i] - 1.0)*0.25;
+		lfOmega2 = (lfOmega - 1.0);
+		lfOmega2 *= lfOmega2;
+		lfSin21 = sin(pi*lfOmega + 1.0);
+		lfSin21 *= lfSin21;
+		lfRes += lfOmega2*(1.0+10.0*lfSin21);
+	}
+	lfOmega = 1.0 + (plfX[iGenVector-1] - 1.0)*0.25;
+	lfOmega2 = (lfOmega - 1.0);
+	lfOmega2 *= lfOmega2;
+	lfSin22 = sin(2.0*pi*lfOmega);
+	lfSin22 *= lfSin22;
+
+	return lfSin20 + lfRes + lfSin22;
+}
+
+/**
+* <PRE>
+* 　目的関数のBukin functionの計算を実行します。
+*	 f(x) = 100\sqrt{x_{2}-0.01x^{2}_{1}}+0.01|x_{1}+10|
+* 　大域的最適解  f_{x} = 0 x = (10,1)
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2017/02/28
+* @version 0.1
+*/
+double lfBukin(double *plfX, int iGenVector)
+{
+	return 100.0 * sqrt(fabs(plfX[1] - 0.01*plfX[0]*plfX[0])) + 0.01*fabs(plfX[0] + 10.0);
+}
+
+/**
+* <PRE>
+* 　目的関数のGramacy & Lee functionの計算を実行します。
+*	 f(x) = \dfrac{\sin(10\pi x)}{2x}+(x-1)^{4}
+* 　大域的最適解  f_{x} = 0 x = 0.5 or 2.5
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2017/02/28
+* @version 0.1
+*/
+double lfGramacyLee(double *plfX, int iGenVector)
+{
+	return sin(10*pi*plfX[0])/plfX[0]*0.5+(plfX[0]-1.0)*(plfX[0] - 1.0)*(plfX[0] - 1.0)*(plfX[0] - 1.0);
+}
+
+/**
+* <PRE>
+* 　目的関数のMcCormick functionの計算を実行します。
+*	 f(x) = \sin(x_{1}+x_{2})+(x_{1}-x_{2})^{2}-1.5x_{1}+2.5x_{2}+1
+* 　大域的最適解  -1.5 <= x_{1} <= 4, -3 <= x_{2} <= 4 f_{x} = -1.9133 x = (-0.54719, -1.54719)
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2017/03/09
+* @version 0.1
+*/
+double lfMccormick(double *plfX, int iGenVector)
+{
+	return sin(plfX[0]+plfX[1])+(plfX[0]-plfX[1])*(plfX[0] - plfX[1])-1.5*plfX[0]+2.5*plfX[1]+1;
+}
+
+/**
+* <PRE>
+* 　救急部門における混雑度合いを表した評価指標であるNEDOCSの計算を実行します。
+*	 NEDOCS = -20 + 85.8*\dfrac{Total patient}{ED beds} + 600*\dfrac{admits}{hospital beds}+13.4*vetilators+0.93*(longest admit)+5.64*(Last bed time)
+* 　最小値 -20.0 各変数が0の場合 次元数は7次元
+*   ver 0.1 初版
+* </PRE>
+* @param plfX			引数
+* @param iVectorLen	引数の次元数
+* @author kobayashi
+* @since 2017/03/07
+* @version 0.1
+*/
+double lfNedocs(double *plfX, int iGenVector)
+{
+	int i;
+	double lfEdBeds = 0;
+	double lfHospitalBeds = 0;
+	double lfTotalPatients = 0;
+	double lfEdPatients = 0;
+	double lfVentilators = 0;
+	double lfLongestAdmit = 0.0;
+	double lfLastBedTime = 0.0;
+	double lfRes = 0.0;
+
+//	lfTotalPatients = plfX[0];
+//	lfEdBeds = plfX[1];
+//	lfEdPatients = plfX[2];
+//	lfHospitalBeds = plfX[3];
+//	lfVentilators = plfX[4];
+//	lfLongestAdmit = plfX[5];
+//	lfLastBedTime = plfX[6];
+	lfTotalPatients = plfX[35];
+	lfEdBeds = plfX[0] + plfX[2] + plfX[5] * plfX[24] + plfX[6] * plfX[26];
+	lfEdPatients = plfX[36];
+	lfHospitalBeds = plfX[5] * plfX[24] + plfX[6] * plfX[26] + plfX[7] * plfX[28];
+	lfVentilators = plfX[37];
+	lfLongestAdmit = plfX[38];
+	lfLastBedTime = plfX[39];
+	// 診察室、初療室、手術室に人がいない状況が算出される場合は極端な場合がシミュレーション結果として出ているので、
+	// この場合はNEDOCS値を極端に高くし、採用されないようにします。
+	lfRes = -20.0 + 85.8*(lfTotalPatients / lfEdBeds) + 600.0*(lfEdPatients / lfHospitalBeds) + 13.4*lfVentilators + 0.93*lfLongestAdmit + 5.64*lfLastBedTime;
+	lfRes = lfRes < 0.0 ? 10000.0 : lfRes;
 	return lfRes;
 }

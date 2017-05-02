@@ -197,7 +197,8 @@ void CUndx::vImplement()
 			pplfGens[i2][j] = pplfChildren[i2ndGenLoc][j];
 		}
 		// 現在の最良値の番号を取得します。
-		iBestLoc = i1;
+		i1stLoc = i1;
+		i2ndLoc = i2;
 		// 一時的に保持していた子の集合を削除します。
 		for(i = 0;i < iChildrenNumber; i++ )
 		{
@@ -213,61 +214,13 @@ void CUndx::vImplement()
 
 void CUndx::vSelectParent( double **pplfParent1, double **pplfParent2, double **pplfParent3, int *piLoc1, int *piLoc2, int *piLoc3 )
 {
-	int i;
-	int i1 = 0;
-	int i2 = 0;
-	int i3 = 0;
-	double lfSumAbs1 = 0.0;
-	double lfSumAbs2 = 0.0;
+	int i,j;
+	double lfSumAbs1, lfSumAbs2, lfSumAbs3;
+	int i1, i2, i3;
 	int iLoc;
 	int iTemp;
+	int iFlag = 0;
 	// UNDXを行う親を2つ決定します。
-#if 0
-	i1 = mrand() % iGenNumber;
-	for(;;)
-	{
-	  // 重ならないようにします。
-		i2 = mrand() % iGenNumber;
-		if( i1 != i2 )
-		{
-			lfSumAbs1 = 0.0;
-			for( i = 0;i < iGenVector; i++ )
-			{
-				lfSumAbs1 += fabs((pplfGens[i1][i] - pplfGens[i2][i])*(pplfGens[i1][i] - pplfGens[i2][i]));
-			}
-			if( lfSumAbs1 > 0.00000001 )
-			{
-				break;
-			}
-		}
-	}
-	// 第三の親も選択します。
-	for(;;)
-	{
-	  // 重ならないようにします。
-		i3 = mrand() % iGenNumber;
-		if( i1 != i3 && i2 != i3 )
-		{
-			lfSumAbs1 = 0.0;
-			for( i = 0;i < iGenVector; i++ )
-			{
-				lfSumAbs1 += fabs((pplfGens[i1][i] - pplfGens[i3][i])*(pplfGens[i1][i] - pplfGens[i3][i]));
-			}
-			if( lfSumAbs1 > 0.00000001 )
-			{
-				lfSumAbs2 = 0.0;
-				for( i = 0;i < iGenVector; i++ )
-				{
-					lfSumAbs2 += fabs((pplfGens[i2][i] - pplfGens[i3][i])*(pplfGens[i2][i] - pplfGens[i3][i]));
-				}
-				if( lfSumAbs2 > 0.00000001 )
-				{
-					break;
-				}
-			}
-		}
-	}
-#else
 	// 親をランダムにNp個選択します。
 	for (i = iGenNumber - 1; i > 0; i--)
 	{
@@ -276,14 +229,45 @@ void CUndx::vSelectParent( double **pplfParent1, double **pplfParent2, double **
 		piParentLoc[i] = piParentLoc[iLoc];
 		piParentLoc[iLoc] = iTemp;
 	}
+	lfSumAbs1 = lfSumAbs2 = lfSumAbs3 = 0.0;
+	i1 = piParentLoc[0];
+	i2 = piParentLoc[1];
+	i3 = piParentLoc[2];
+	for (i = 1; i < iGenNumber-1; i++)
+	{
+		lfSumAbs1 = lfSumAbs2 = lfSumAbs3 = 0.0;
+		if( iFlag == 1 )
+		{
+			i2 = piParentLoc[i - 1];
+			i3 = piParentLoc[i];
+		}
+		else if( iFlag == 2 ) i2 = piParentLoc[i];
+		else if (iFlag == 3 ) i3 = piParentLoc[i];
+		else if (iFlag == 4 ) i3 = piParentLoc[i];
+		else if( iFlag == 5 ) break;
 
-#endif
-	*pplfParent1 = pplfGens[piParentLoc[0]];
-	*pplfParent2 = pplfGens[piParentLoc[1]];
-	*pplfParent3 = pplfGens[piParentLoc[2]];
-	*piLoc1 = piParentLoc[0];
-	*piLoc2 = piParentLoc[1];
-	*piLoc3 = piParentLoc[2];
+		for (j = 0; j < iGenVector; j++)
+		{
+			lfSumAbs1 += fabs(pplfGens[i1][j] - pplfGens[i2][j]);
+			lfSumAbs2 += fabs(pplfGens[i1][j] - pplfGens[i3][j]);
+			lfSumAbs3 += fabs(pplfGens[i2][j] - pplfGens[i3][j]);
+		}
+		// i1 = i2 = i3の場合（親がすべて等しい場合）
+		if (lfSumAbs1 <= 0.000000000001 && lfSumAbs2 <= 0.000000000001) iFlag = 1;
+		// i1 = i2の場合（1つ目と2つ目の親が等しい場合）
+		else if (lfSumAbs1 <= 0.000000000001) iFlag = 2;
+		// i1 = i3の場合（1つ目と3つ目の親が等しい場合）
+		else if (lfSumAbs2 <= 0.000000000001) iFlag = 3;
+		// i2 = i3の場合（2つ目と3つ目の親が等しい場合）
+		else if (lfSumAbs3 <= 0.000000000001) iFlag = 4;
+		else iFlag = 5;
+	}
+	*pplfParent1 = pplfGens[i1];
+	*pplfParent2 = pplfGens[i2];
+	*pplfParent3 = pplfGens[i3];
+	*piLoc1 = i1;
+	*piLoc2 = i2;
+	*piLoc3 = i3;
 }
 
 void CUndx::vUndx( double *plfParent1, double *plfParent2, double *plfParent3, double lfAlpha, double lfBeta, double *plfChild1, double *plfChild2 )
@@ -324,11 +308,19 @@ void CUndx::vUndx( double *plfParent1, double *plfParent2, double *plfParent3, d
 	}
 	lfDist1 = sqrt( lfDist1 );
 	lfDist2 = sqrt( lfDist2 );
-	lfDistTemp = lfDistTemp/(lfDist1*lfDist2);
+	lfDistTemp = lfDist1 > 0.0 && lfDist2 > 0.0 ? lfDistTemp/(lfDist1*lfDist2) : lfDistTemp/100000000.0;
 	lfDist3 = lfDist2*sqrt(1.0-lfDistTemp*lfDistTemp);
 	lfSigma1 = lfDist1*lfAlpha;
 	lfSigma2 = lfDist3*lfBeta/sqrt((double)iGenVector);
 
+#if 0
+	for (i = 0; i < iGenVector; i++)
+	{
+		// ここで、z1,z2を生成します。z1=N(0,σ_{1}^2), z2=N(0,σ_{2}^2)なので、これに従って生成します。
+		//		stlTempT1.push_back(grand(lfSigma1, 0.0));
+		stlTempT2.push_back(grand(lfSigma2, 0.0));
+	}
+#endif
 	lfProduct = 0.0;
 	for( i = 0; i < iGenVector; i++ )
 	{
@@ -377,6 +369,11 @@ void CUndx::vSelectGens( double **pplfChildren, int *pi1stGenLoc, int *pi2ndGenL
 			lf1stGen = stlFitProb[i].lfFitProb;
 			i1stGenLoc = i;
 		}
+	}
+	if (i1stGenLoc == INT_MAX)
+	{
+		iRank = mrand() % (iChildrenNumber - 1) + 1;
+		i1stGenLoc = stlFitProb[iRank].iLoc;
 	}
 	// 目的関数値によるソートを実施します。
 	std::sort( stlFitProb.begin(), stlFitProb.end(), CCompareToRank() );

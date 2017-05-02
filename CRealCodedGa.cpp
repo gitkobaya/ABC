@@ -331,6 +331,47 @@ void CRealCodedGa::vOutputGlobalMaxGenDataConstFuncValue()
 	printf("%lf\n", lfTemp );
 }
 
+/**
+* <PRE>
+* 　現時点でのもっともよい遺伝子及び最も悪い遺伝子の距離を算出します。
+* </PRE>
+* @author kobayashi
+* @since 2017/03/27
+* @version 0.1
+*/
+void CRealCodedGa::vOutputGlobalMaxMinDistance()
+{
+	int i;
+	int iLocMin, iLocMax;
+	double lfTempMax, lfTempMin;
+	double lfRes = 0.0;
+	double lfDistance = 0.0;
+	lfTempMax = -DBL_MAX;
+	lfTempMin = DBL_MAX;
+	for (i = 0; i < iGenNumber; i++)
+	{
+		// 現時点での各遺伝子の目的関数の値を出力します。
+		lfRes = pflfConstraintFunction(pplfGens[i], iGenVector);
+		if (lfRes <= lfTempMin)
+		{
+			lfTempMin = lfRes;
+			iLocMin = i;
+		}
+		if (lfRes >= lfTempMax)
+		{
+			lfTempMax = lfRes;
+			iLocMax = i;
+		}
+	}
+	// 最適値になっている遺伝子を出力します。
+	for (i = 0; i < iGenVector; i++)
+	{
+		lfDistance += (pplfGens[iLocMax][i] - pplfGens[iLocMin][i])*(pplfGens[iLocMax][i] - pplfGens[iLocMin][i]);
+	}
+	// 最適値になっている目的関数の値を出力します。
+	printf("%lf,%lf,%lf\n", sqrt(lfDistance), pplfGens[iLocMax][0], pplfGens[iLocMin][0]);
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////CCmdCheckExceptionクラス
